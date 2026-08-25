@@ -1,0 +1,10 @@
+data/MS-COCO/*
+!data/MS-COCO/annotations/
+!data/MS-COCO/processed_portraits/
+!data/MS-COCO/train2017/
+data/MS-COCO/annotations/*
+data/MS-COCO/processed_portraits/*
+data/MS-COCO/train2017/*
+!data/MS-COCO/annotations/.gitkeep
+!data/MS-COCO/processed_portraits/.gitkeep
+!data/MS-COCO/train2017/.gitkeep
