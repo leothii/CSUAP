@@ -27,7 +27,7 @@ class FilterConfig:
     crop_margin_frac: float = 0.18
     required_keypoints: tuple[str, ...] = ("nose",)
     one_of_keypoints: tuple[str, ...] = ("left_eye", "right_eye")
-    target_size: int = 512
+    target_size: int = 224  # CLIP ViT-B/32's fixed input size; no downstream step needs 512
     target_count: int = 2000
     random_seed: int = 42
 
@@ -48,8 +48,12 @@ class CropTransform:
     resized_size: tuple[int, int]
     center_crop_xy: tuple[int, int]
 
-#preprocessing function to resize and center crop an image to a target size, returning the cropped image and the transformation parameters.
+
 def resize_and_center_crop(image: Image.Image, target_size: int) -> tuple[Image.Image, CropTransform]:
+    """Resize shorter side to target_size, then center-crop to a square.
+
+    Matches OpenAI's CLIP preprocessing (Radford et al., 2021).
+    """
     w, h = image.size
     scale = target_size / min(w, h)
     new_w, new_h = round(w * scale), round(h * scale)
@@ -254,7 +258,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--coco-root", type=Path, default=Path("data/MS-COCO"))
     parser.add_argument("--out-dir", type=Path, default=Path("data/MS-COCO/processed_portraits"))
     parser.add_argument("--target-count", type=int, default=2000)
-    parser.add_argument("--target-size", type=int, default=512)
+    parser.add_argument("--target-size", type=int, default=224)
     return parser.parse_args()
 
 
