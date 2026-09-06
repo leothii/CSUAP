@@ -16,6 +16,14 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_ALPHAS = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5)  # matches Table 4
 
+INPUT_DIR = Path("")                 # <- set this to your test images folder
+V_PATH = Path("outputs/uap/cs_uap_v.npy")     # <- trained perturbation vector
+MODE = "resize"                               # "resize" or "tile"
+ALPHAS = DEFAULT_ALPHAS                       # which alpha values to apply
+
+OUTPUT_DIR = Path("outputs/cloaked") / INPUT_DIR.name  # auto-derived, no need to set manually
+# ============================================================================
+
 
 @dataclass
 class ApplyConfig:
@@ -76,16 +84,19 @@ def process_directory(
         v_transformed = transform_perturbation(v, image_np.shape[:2], config.mode)
 
         for alpha in config.alphas:
+            alpha_dir = output_dir / f"alpha_{alpha:.2f}"
+            alpha_dir.mkdir(parents=True, exist_ok=True)
+
             cloaked = apply_perturbation(image_np, v_transformed, alpha)
             cloaked_uint8 = (cloaked * 255).round().astype(np.uint8)
 
-            out_name = f"{image_path.stem}_alpha{alpha:.2f}_{config.mode}.png"
-            out_path = output_dir / out_name
+            out_name = f"{image_path.stem}_{config.mode}.png"
+            out_path = alpha_dir / out_name
             Image.fromarray(cloaked_uint8).save(out_path)
 
             manifest.append({
                 "source_image": image_path.name,
-                "cloaked_image": out_name,
+                "cloaked_image": f"alpha_{alpha:.2f}/{out_name}",
                 "alpha": alpha,
                 "mode": config.mode,
             })
@@ -99,12 +110,12 @@ def process_directory(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--v-path", type=Path, default=Path("outputs/uap/cs_uap_v.npy"))
-    parser.add_argument("--input-dir", type=Path, required=True,
+    parser.add_argument("--v-path", type=Path, default=V_PATH)
+    parser.add_argument("--input-dir", type=Path, default=INPUT_DIR,
                          help="Directory of target images to protect (e.g. the 30-image eval set).")
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/cloaked"))
-    parser.add_argument("--mode", choices=["resize", "tile"], default="resize")
-    parser.add_argument("--alphas", type=float, nargs="+", default=list(DEFAULT_ALPHAS))
+    parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
+    parser.add_argument("--mode", choices=["resize", "tile"], default=MODE)
+    parser.add_argument("--alphas", type=float, nargs="+", default=list(ALPHAS))
     return parser.parse_args()
 
 
