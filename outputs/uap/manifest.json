@@ -1,0 +1,18 @@
+{
+  "config": {
+    "epsilon": 0.05,
+    "step_size": 0.01,
+    "epochs": 20,
+    "batch_size": 32,
+    "loss_type": "image_text",
+    "ssim_threshold": 0.95,
+    "psnr_threshold_db": 30.0,
+    "random_seed": 42,
+    "device": "cpu"
+  },
+  "metrics": {
+    "mean_ssim": 0.6960734128952026,
+    "mean_psnr": 27.976687464543552,
+    "passes_gate": false
+  }
+}
