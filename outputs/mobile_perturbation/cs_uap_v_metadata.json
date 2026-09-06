@@ -1,0 +1,19 @@
+{
+  "format": "fixed_universal_adversarial_perturbation",
+  "source": "outputs/uap/cs_uap_v.npy",
+  "shape": [
+    224,
+    224,
+    3
+  ],
+  "layout": "HWC",
+  "channels": "RGB",
+  "dtype": "float32",
+  "byte_order": "little_endian",
+  "value_min": -0.05000000074505806,
+  "value_max": 0.05000000074505806,
+  "raw_binary": "cs_uap_v_f32_hwc.bin",
+  "visualization_png": "cs_uap_v_visualization.png",
+  "tflite_required": false,
+  "flutter_decode": "Read 224*224*3 little-endian float32 values in HWC RGB order. Use image_rgb_normalized + alpha * perturbation, then clamp to [0, 1]."
+}
