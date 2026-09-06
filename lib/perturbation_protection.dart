@@ -63,7 +63,7 @@ class PerturbationProtector {
 
   Uint8List applyProtection(Uint8List imageBytes, double alpha) {
     if (!alpha.isFinite || alpha < 0.0 || alpha > 1.0) {
-      throw RangeError.range(alpha, 0.0, 1.0, 'alpha');
+      throw RangeError.value(alpha, 'alpha', 'must be between 0.0 and 1.0');
     }
 
     final input = img.decodeImage(imageBytes);
