@@ -9,8 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  gal: ^2.3.2
+  google_fonts: ^6.2.1
   image: ^4.5.4
   image_picker: ^1.1.2
+  path_provider: ^2.1.5
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:
