@@ -20,6 +20,8 @@ const _paper = Color(0xFFF2F1EC);
 const _ink = Color(0xFF111111);
 const _teal = Color(0xFF0FB5AE);
 const _tealDark = Color(0xFF08736F);
+const double _desktopBreakpoint = 760;
+const double _desktopContentMaxWidth = 980;
 
 ThemeData _buildAppTheme() {
   final baseText = GoogleFonts.spaceGroteskTextTheme();
@@ -146,74 +148,97 @@ class MainMenuScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-          children: [
-            Text(
-              'Photo privacy,\nby design.',
-              style: Theme.of(context).textTheme.displayLarge,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(width: 56, height: 8, color: _teal),
-                const SizedBox(width: 12),
-                Text(
-                  'ON-DEVICE PROTECTION',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 56),
-            _MenuOption(
-              index: '01',
-              title: 'New',
-              detail: 'Protect a photo',
-              filled: true,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const ProtectionScreen(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _MenuOption(
-              index: '02',
-              title: 'Docs',
-              detail: 'How it works',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(builder: (_) => const DocsScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _MenuOption(
-              index: '03',
-              title: 'Credits',
-              detail: 'About shield.',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
-              ),
-            ),
-            const SizedBox(height: 48),
-            Text(
-              'CSUAP / LOCAL FIRST / 2026',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: _tealDark,
-                    letterSpacing: 1.1,
-                    fontWeight: FontWeight.w700,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth >= _desktopBreakpoint;
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _desktopContentMaxWidth),
+                child: ListView(
+                  shrinkWrap: isDesktop,
+                  padding: EdgeInsets.fromLTRB(
+                    isDesktop ? 40 : 20,
+                    isDesktop ? 60 : 24,
+                    isDesktop ? 40 : 20,
+                    32,
                   ),
-            ),
-          ],
+                  children: [
+                    Text(
+                      'Photo privacy,\nby design.',
+                      style: Theme.of(context).textTheme.displayLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(width: 56, height: 8, color: _teal),
+                        const SizedBox(width: 12),
+                        Text(
+                          'ON-DEVICE PROTECTION',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                letterSpacing: 1.2,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: isDesktop ? 72 : 56),
+                    Align(
+                      child: SizedBox(
+                        width: isDesktop ? 640 : double.infinity,
+                        child: Column(children: _menuOptions(context)),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    Text(
+                      'CSUAP / LOCAL FIRST / 2026',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: _tealDark,
+                            letterSpacing: 1.1,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
+
+  List<Widget> _menuOptions(BuildContext context) => [
+        _MenuOption(
+          index: '01',
+          title: 'New',
+          detail: 'Protect a photo',
+          filled: true,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(builder: (_) => const ProtectionScreen()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _MenuOption(
+          index: '02',
+          title: 'Docs',
+          detail: 'How it works',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(builder: (_) => const DocsScreen()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _MenuOption(
+          index: '03',
+          title: 'Credits',
+          detail: 'About shield.',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
+          ),
+        ),
+      ];
 }
 
 class _MenuOption extends StatelessWidget {
@@ -573,13 +598,6 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final preview = _protectedBytes;
-    final canPick = !_isLoadingAsset && _perturbation != null;
-    final isLandscape =
-      _imageWidth != null &&
-      _imageHeight != null &&
-      _imageWidth! > _imageHeight!;
-
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 20,
@@ -594,149 +612,205 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-          children: [
-            Text(
-              'Protect a photo',
-              style: Theme.of(context).textTheme.displayLarge,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Container(width: 42, height: 8, color: _teal),
-                const SizedBox(width: 10),
-                Text(
-                  'LOCAL / PRIVATE / REVERSIBLE',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            SizedBox(
-              height: 340,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    top: isLandscape ? 24 : 16,
-                    right: isLandscape ? 16 : 0,
-                    bottom: 0,
-                    left: isLandscape ? 0 : 32,
-                    child: Container(color: _teal),
-                  ),
-                  Positioned(
-                    top: 0,
-                    right: 24,
-                    bottom: 24,
-                    left: 0,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE4E3DD),
-                        border: Border.all(color: _ink, width: 1.5),
-                      ),
-                      child: preview == null
-                          ? const Center(child: Text('Choose a photo to begin'))
-                          : Image.memory(preview, fit: BoxFit.contain),
-                    ),
-                  ),
-                  Positioned(
-                    right: -2,
-                    bottom: 46,
-                    child: Transform.rotate(
-                      angle: -1.5708,
-                      child: Text(
-                        _strengthTier,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: _ink,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.1,
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth >= _desktopBreakpoint;
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _desktopContentMaxWidth),
+                child: isDesktop
+                    ? _buildDesktopLayout(context)
+                    : _buildMobileLayout(context),
               ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: canPick ? () => _pickImage(ImageSource.gallery) : null,
-                    icon: const Icon(Icons.photo_library_outlined),
-                    label: const Text('Gallery'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: canPick ? () => _pickImage(ImageSource.camera) : null,
-                    icon: const Icon(Icons.camera_alt_outlined),
-                    label: const Text('Camera'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Protection Strength',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${(_alpha * 100).round()}% intensity',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: _tealDark,
-                  ),
-            ),
-            Slider(
-              value: _alpha,
-              min: 0,
-              max: 1,
-              divisions: 100,
-              label: _alpha.toStringAsFixed(2),
-              onChanged: _originalBytes == null ? null : _onAlphaChanged,
-              onChangeEnd: _originalBytes == null ? null : _onAlphaChangeEnd,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _isExporting ? null : _saveProtectedImage,
-                    icon: const Icon(Icons.download_outlined),
-                    label: const Text('Save'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _isExporting ? null : _shareProtectedImage,
-                    icon: const Icon(Icons.ios_share_outlined),
-                    label: const Text('Share'),
-                  ),
-                ),
-              ],
-            ),
-            if (_isExporting) ...[
-              const SizedBox(height: 12),
-              const LinearProgressIndicator(),
-            ],
-            if (_isProcessing) const LinearProgressIndicator(),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-          ],
+            );
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      children: [
+        _buildIntro(context),
+        const SizedBox(height: 28),
+        _buildPreview(context, height: 340),
+        const SizedBox(height: 10),
+        _buildControls(context),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(40, 40, 40, 32),
+      children: [
+        _buildIntro(context),
+        const SizedBox(height: 44),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildPreview(context, height: 460)),
+            const SizedBox(width: 52),
+            SizedBox(width: 330, child: _buildControls(context)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIntro(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Protect a photo', style: Theme.of(context).textTheme.displayLarge),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Container(width: 42, height: 8, color: _teal),
+            const SizedBox(width: 10),
+            Text(
+              'LOCAL / PRIVATE / REVERSIBLE',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPreview(BuildContext context, {required double height}) {
+    final preview = _protectedBytes;
+    final isLandscape =
+        _imageWidth != null && _imageHeight != null && _imageWidth! > _imageHeight!;
+    return SizedBox(
+      height: height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: isLandscape ? 24 : 16,
+            right: isLandscape ? 16 : 0,
+            bottom: 0,
+            left: isLandscape ? 0 : 32,
+            child: Container(color: _teal),
+          ),
+          Positioned(
+            top: 0,
+            right: 24,
+            bottom: 24,
+            left: 0,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFFE4E3DD),
+                border: Border.all(color: _ink, width: 1.5),
+              ),
+              child: preview == null
+                  ? const Center(child: Text('Choose a photo to begin'))
+                  : Image.memory(preview, fit: BoxFit.contain),
+            ),
+          ),
+          Positioned(
+            right: -2,
+            bottom: 46,
+            child: Transform.rotate(
+              angle: -1.5708,
+              child: Text(
+                _strengthTier,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: _ink,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1,
+                    ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPickerButtons() {
+    final canPick = !_isLoadingAsset && _perturbation != null;
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: canPick ? () => _pickImage(ImageSource.gallery) : null,
+            icon: const Icon(Icons.photo_library_outlined),
+            label: const Text('Gallery'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: canPick ? () => _pickImage(ImageSource.camera) : null,
+            icon: const Icon(Icons.camera_alt_outlined),
+            label: const Text('Camera'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildControls(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildPickerButtons(),
+        const SizedBox(height: 28),
+        Text('Protection Strength', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 2),
+        Text(
+          '${(_alpha * 100).round()}% intensity',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: _tealDark),
+        ),
+        Slider(
+          value: _alpha,
+          min: 0,
+          max: 1,
+          divisions: 100,
+          label: _alpha.toStringAsFixed(2),
+          onChanged: _originalBytes == null ? null : _onAlphaChanged,
+          onChangeEnd: _originalBytes == null ? null : _onAlphaChangeEnd,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: _isExporting ? null : _saveProtectedImage,
+                icon: const Icon(Icons.download_outlined),
+                label: const Text('Save'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _isExporting ? null : _shareProtectedImage,
+                icon: const Icon(Icons.ios_share_outlined),
+                label: const Text('Share'),
+              ),
+            ),
+          ],
+        ),
+        if (_isExporting) ...[
+          const SizedBox(height: 12),
+          const LinearProgressIndicator(),
+        ],
+        if (_isProcessing) const LinearProgressIndicator(),
+        if (_errorMessage != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ],
+      ],
     );
   }
 }
