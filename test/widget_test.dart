@@ -12,7 +12,9 @@ void main() {
   testWidgets('protection screen renders', (WidgetTester tester) async {
     await tester.pumpWidget(const CsuapApp());
 
-    expect(find.text('Protect a photo'), findsOneWidget);
-    expect(find.text('Choose a photo to begin'), findsOneWidget);
+    expect(find.text('shield.'), findsOneWidget);
+    expect(find.text('New'), findsOneWidget);
+    expect(find.text('Docs'), findsOneWidget);
+    expect(find.text('Credits'), findsOneWidget);
   });
 }

@@ -66,48 +66,71 @@ class PerturbationProtector {
       throw RangeError.value(alpha, 'alpha', 'must be between 0.0 and 1.0');
     }
 
-    final input = img.decodeImage(imageBytes);
-    if (input == null) {
+    final decoded = img.decodeImage(imageBytes);
+    if (decoded == null) {
       throw const FormatException('Unable to decode the input image.');
     }
 
-    final tiled = tilePerturbation(perturbation, input.width, input.height);
+    return _applyToDecodedImage(decoded, alpha);
+  }
+
+  Uint8List _applyToDecodedImage(img.Image decoded, double alpha) {
+    final input = decoded.convert(numChannels: 3);
     final output = img.Image(width: input.width, height: input.height);
+    final sourceBytes = input.data!.toUint8List();
+    final outputBytes = output.data!.toUint8List();
+    final sourceStride = input.data!.rowStride;
+    final targetStride = output.data!.rowStride;
 
     for (var y = 0; y < input.height; y++) {
       for (var x = 0; x < input.width; x++) {
-        final pixel = input.getPixel(x, y);
+        final sourceOffset = y * sourceStride + x * perturbationChannels;
         final perturbationOffset =
-            (y * input.width + x) * perturbationChannels;
+            ((y % perturbationSize) * perturbationSize +
+                    (x % perturbationSize)) *
+                perturbationChannels;
+        final outputOffset = y * targetStride + x * perturbationChannels;
 
-        final red = _blendChannel(
-          pixel.r.toDouble() / 255.0,
-          tiled[perturbationOffset],
+        outputBytes[outputOffset] = _blendChannel(
+          sourceBytes[sourceOffset],
+          perturbation[perturbationOffset],
           alpha,
         );
-        final green = _blendChannel(
-          pixel.g.toDouble() / 255.0,
-          tiled[perturbationOffset + 1],
+        outputBytes[outputOffset + 1] = _blendChannel(
+          sourceBytes[sourceOffset + 1],
+          perturbation[perturbationOffset + 1],
           alpha,
         );
-        final blue = _blendChannel(
-          pixel.b.toDouble() / 255.0,
-          tiled[perturbationOffset + 2],
+        outputBytes[outputOffset + 2] = _blendChannel(
+          sourceBytes[sourceOffset + 2],
+          perturbation[perturbationOffset + 2],
           alpha,
-        );
-
-        output.setPixelRgb(
-          x,
-          y,
-          red,
-          green,
-          blue,
         );
       }
     }
 
     return Uint8List.fromList(img.encodePng(output));
   }
+}
+
+/// Creates the bounded image used for live slider previews.
+Uint8List createPreviewBytes(Uint8List imageBytes, {int maxDimension = 400}) {
+  final decoded = img.decodeImage(imageBytes);
+  if (decoded == null) {
+    throw const FormatException('Unable to decode the selected image.');
+  }
+  if (decoded.width <= maxDimension && decoded.height <= maxDimension) {
+    return imageBytes;
+  }
+
+  final scale = maxDimension /
+      (decoded.width > decoded.height ? decoded.width : decoded.height);
+  final resized = img.copyResize(
+    decoded,
+    width: (decoded.width * scale).round(),
+    height: (decoded.height * scale).round(),
+  );
+  return Uint8List.fromList(img.encodePng(resized));
 }
 
 /// Convenience form for callers that do not need to retain a protector.
@@ -133,7 +156,7 @@ Float32List _validatePerturbation(Float32List perturbation) {
   return perturbation;
 }
 
-int _blendChannel(double pixel, double perturbation, double alpha) {
-  final blended = pixel + alpha * perturbation;
+int _blendChannel(int pixel, double perturbation, double alpha) {
+  final blended = pixel / 255.0 + alpha * perturbation;
   return (blended.clamp(0.0, 1.0) * 255.0).round();
 }

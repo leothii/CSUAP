@@ -124,7 +124,217 @@ class CsuapApp extends StatelessWidget {
     return MaterialApp(
       title: 'CSUAP Photo Protection',
       theme: _buildAppTheme(),
-      home: const ProtectionScreen(),
+      home: const MainMenuScreen(),
+    );
+  }
+}
+
+class MainMenuScreen extends StatelessWidget {
+  const MainMenuScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        titleSpacing: 20,
+        title: const Text('shield.'),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 20),
+            child: Icon(Icons.verified_user_outlined),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          children: [
+            Text(
+              'Photo privacy,\nby design.',
+              style: Theme.of(context).textTheme.displayLarge,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(width: 56, height: 8, color: _teal),
+                const SizedBox(width: 12),
+                Text(
+                  'ON-DEVICE PROTECTION',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 56),
+            _MenuOption(
+              index: '01',
+              title: 'New',
+              detail: 'Protect a photo',
+              filled: true,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const ProtectionScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _MenuOption(
+              index: '02',
+              title: 'Docs',
+              detail: 'How it works',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const DocsScreen()),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _MenuOption(
+              index: '03',
+              title: 'Credits',
+              detail: 'About shield.',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
+              ),
+            ),
+            const SizedBox(height: 48),
+            Text(
+              'CSUAP / LOCAL FIRST / 2026',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: _tealDark,
+                    letterSpacing: 1.1,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuOption extends StatelessWidget {
+  const _MenuOption({
+    required this.index,
+    required this.title,
+    required this.detail,
+    required this.onTap,
+    this.filled = false,
+  });
+
+  final String index;
+  final String title;
+  final String detail;
+  final VoidCallback onTap;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = filled ? _ink : _paper;
+    return Material(
+      color: filled ? _teal : _ink,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 16, 18),
+          child: Row(
+            children: [
+              Text(
+                index,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: filled ? _tealDark : _teal,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1,
+                    ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: foreground,
+                            fontSize: 26,
+                          ),
+                    ),
+                    Text(
+                      detail,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: filled ? _ink.withValues(alpha: 0.72) : _paper.withValues(alpha: 0.72),
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward, color: foreground),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DocsScreen extends StatelessWidget {
+  const DocsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _InfoScreen(
+      title: 'Docs',
+      heading: 'How it works',
+      body:
+          'shield. applies a fixed universal adversarial perturbation directly on your device. Choose a photo, set the protection strength, and preview the result before saving or sharing it. Your image stays local during processing.',
+    );
+  }
+}
+
+class CreditsScreen extends StatelessWidget {
+  const CreditsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _InfoScreen(
+      title: 'Credits',
+      heading: 'shield.',
+      body:
+          'CSUAP Photo Protection\nVersion 1.0.0\n\nBuilt as an on-device privacy research tool. Protection is powered by a trained context-specific universal adversarial perturbation.',
+    );
+  }
+}
+
+class _InfoScreen extends StatelessWidget {
+  const _InfoScreen({
+    required this.title,
+    required this.heading,
+    required this.body,
+  });
+
+  final String title;
+  final String heading;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 36, 20, 32),
+          children: [
+            Container(width: 56, height: 8, color: _teal),
+            const SizedBox(height: 24),
+            Text(heading, style: Theme.of(context).textTheme.displayLarge),
+            const SizedBox(height: 24),
+            Text(body, style: Theme.of(context).textTheme.bodyLarge),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -138,12 +348,13 @@ class ProtectionScreen extends StatefulWidget {
 
 class _ProtectionScreenState extends State<ProtectionScreen> {
   static const _assetPath = 'assets/cs_uap_v_f32_hwc.bin';
-  static const _debounceDuration = Duration(milliseconds: 120);
+  static const _debounceDuration = Duration(milliseconds: 80);
 
   final ImagePicker _picker = ImagePicker();
   Timer? _previewTimer;
   Float32List? _perturbation;
   Uint8List? _originalBytes;
+  Uint8List? _previewSourceBytes;
   Uint8List? _protectedBytes;
   int? _imageWidth;
   int? _imageHeight;
@@ -195,11 +406,13 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       if (decoded == null) {
         throw const FormatException('Unable to decode the selected image.');
       }
+      final previewBytes = createPreviewBytes(bytes);
       if (!mounted) return;
       _requestId++;
       setState(() {
         _originalBytes = bytes;
-        _protectedBytes = bytes;
+        _previewSourceBytes = previewBytes;
+        _protectedBytes = previewBytes;
         _imageWidth = decoded.width;
         _imageHeight = decoded.height;
         _errorMessage = null;
@@ -221,17 +434,15 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   }
 
   Future<void> _processPreview() async {
-    final source = _originalBytes;
+    final source = _previewSourceBytes;
     final perturbation = _perturbation;
     if (source == null || perturbation == null) return;
 
     final requestId = ++_requestId;
     setState(() => _isProcessing = true);
     try {
-      final protectedBytes = await compute(
-        _processProtectionInIsolate,
-        _ProtectionRequest(source, perturbation, _alpha),
-      );
+      await Future<void>.delayed(Duration.zero);
+      final protectedBytes = applyProtection(source, _alpha, perturbation);
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _protectedBytes = protectedBytes;
@@ -252,6 +463,36 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     _schedulePreview();
   }
 
+  void _onAlphaChangeEnd(double value) {
+    _previewTimer?.cancel();
+    _requestId++;
+    _processFullResolutionPreview();
+  }
+
+  Future<void> _processFullResolutionPreview() async {
+    final source = _originalBytes;
+    final perturbation = _perturbation;
+    if (source == null || perturbation == null) return;
+
+    final requestId = ++_requestId;
+    setState(() => _isProcessing = true);
+    try {
+      await Future<void>.delayed(Duration.zero);
+      final protectedBytes = applyProtection(source, _alpha, perturbation);
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _protectedBytes = protectedBytes;
+        _isProcessing = false;
+      });
+    } catch (error) {
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _isProcessing = false;
+        _errorMessage = 'Could not process the image: $error';
+      });
+    }
+  }
+
   String get _strengthTier {
     if (_alpha < 0.33) return 'LIGHT';
     if (_alpha <= 0.66) return 'MEDIUM';
@@ -266,10 +507,8 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       return null;
     }
 
-    return compute(
-      _processProtectionInIsolate,
-      _ProtectionRequest(source, perturbation, _alpha),
-    );
+    await Future<void>.delayed(Duration.zero);
+    return applyProtection(source, _alpha, perturbation);
   }
 
   Future<void> _saveProtectedImage() async {
@@ -461,6 +700,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               divisions: 100,
               label: _alpha.toStringAsFixed(2),
               onChanged: _originalBytes == null ? null : _onAlphaChanged,
+              onChangeEnd: _originalBytes == null ? null : _onAlphaChangeEnd,
             ),
             const SizedBox(height: 12),
             Row(
@@ -499,19 +739,6 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       ),
     );
   }
-}
-
-class _ProtectionRequest {
-  const _ProtectionRequest(this.imageBytes, this.perturbation, this.alpha);
-
-  final Uint8List imageBytes;
-  final Float32List perturbation;
-  final double alpha;
-}
-
-Uint8List _processProtectionInIsolate(_ProtectionRequest request) {
-  final protector = PerturbationProtector(request.perturbation);
-  return protector.applyProtection(request.imageBytes, request.alpha);
 }
 
 class _SquareThumbShape extends SliderComponentShape {
