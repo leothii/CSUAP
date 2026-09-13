@@ -71,7 +71,7 @@ class _IntroScreenState extends State<IntroScreen> {
                           fontWeight: FontWeight.w700,
                           letterSpacing: -2,
                           height: 1,
-                          color: pixelGold,
+                          color: pixelCream,
                         ),
                       ),
                     ).animate(autoPlay: !_reducedMotion).custom(

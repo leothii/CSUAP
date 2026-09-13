@@ -5,18 +5,18 @@ export 'pixel_art.dart';
 
 ThemeData pixelTheme() {
   GoogleFonts.config.allowRuntimeFetching = false;
-  final base = ThemeData(brightness: Brightness.dark, useMaterial3: true);
+  final base = ThemeData(brightness: Brightness.light, useMaterial3: true);
   final body = GoogleFonts.vt323TextTheme(base.textTheme)
       .apply(bodyColor: pixelCream, displayColor: pixelCream);
-  final shortText = GoogleFonts.pressStart2p(
-      fontSize: 10, height: 1.5, color: pixelBackground);
+  final shortText =
+      GoogleFonts.pressStart2p(fontSize: 10, height: 1.5, color: pixelCream);
   final button = ButtonStyle(
     backgroundColor: WidgetStateProperty.resolveWith((states) =>
         states.contains(WidgetState.disabled) ? pixelSurface : pixelGold),
     foregroundColor: WidgetStateProperty.resolveWith((states) =>
-        states.contains(WidgetState.disabled) ? pixelMuted : pixelBackground),
+        states.contains(WidgetState.disabled) ? pixelMuted : pixelCream),
     side: WidgetStateProperty.resolveWith((states) => BorderSide(
-        width: 3,
+        width: 1,
         color: states.contains(WidgetState.focused) ||
                 states.contains(WidgetState.hovered)
             ? pixelCream
@@ -30,15 +30,15 @@ ThemeData pixelTheme() {
   return base.copyWith(
     scaffoldBackgroundColor: pixelBackground,
     splashFactory: NoSplash.splashFactory,
-    colorScheme: const ColorScheme.dark(
+    colorScheme: const ColorScheme.light(
         primary: pixelGold,
-        onPrimary: pixelBackground,
+        onPrimary: pixelCream,
         secondary: pixelGreen,
-        onSecondary: pixelBackground,
+        onSecondary: pixelCream,
         surface: pixelSurface,
         onSurface: pixelCream,
         error: pixelCoral,
-        onError: pixelBackground),
+        onError: pixelCream),
     textTheme: body.copyWith(
       // Long editorial headings use the readable pixel face; short titles/logo
       // use Press Start 2P locally to avoid dense, overflowing text blocks.
@@ -55,10 +55,10 @@ ThemeData pixelTheme() {
     ),
     appBarTheme: AppBarTheme(
         backgroundColor: pixelBackground,
-        foregroundColor: pixelGold,
+        foregroundColor: pixelCream,
         surfaceTintColor: Colors.transparent,
         titleTextStyle:
-            GoogleFonts.pressStart2p(fontSize: 18, color: pixelGold)),
+            GoogleFonts.pressStart2p(fontSize: 18, color: pixelCream)),
     actionIconTheme: ActionIconThemeData(
         backButtonIconBuilder: (_) => const PixelIcon(Icons.arrow_back)),
     filledButtonTheme: FilledButtonThemeData(
@@ -68,28 +68,28 @@ ThemeData pixelTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(style: button),
     textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-            foregroundColor: pixelGold,
+            foregroundColor: pixelCream,
             shape: const BeveledRectangleBorder(),
             textStyle: shortText)),
-    iconTheme: const IconThemeData(color: pixelGold),
+    iconTheme: const IconThemeData(color: pixelCream),
     dividerTheme: const DividerThemeData(color: pixelGreen, thickness: 2),
     chipTheme: base.chipTheme.copyWith(
         backgroundColor: pixelSurface,
         selectedColor: pixelGreen,
         disabledColor: pixelSurface,
         shape: const BeveledRectangleBorder(),
-        side: const BorderSide(color: pixelEdge, width: 3),
-        checkmarkColor: pixelBackground,
+        side: const BorderSide(color: pixelEdge, width: 1),
+        checkmarkColor: pixelCream,
         labelStyle: GoogleFonts.vt323(fontSize: 16, color: pixelCream),
         elevation: 0,
         pressElevation: 0,
         shadowColor: Colors.transparent,
         secondaryLabelStyle:
-            GoogleFonts.vt323(fontSize: 16, color: pixelBackground)),
+            GoogleFonts.vt323(fontSize: 16, color: pixelCream)),
     expansionTileTheme: const ExpansionTileThemeData(
-        iconColor: pixelGreen,
-        collapsedIconColor: pixelGold,
-        textColor: pixelGold,
+        iconColor: pixelCream,
+        collapsedIconColor: pixelMuted,
+        textColor: pixelCream,
         collapsedTextColor: pixelCream),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: pixelGreen,
@@ -109,7 +109,7 @@ ThemeData pixelTheme() {
     snackBarTheme: SnackBarThemeData(
         backgroundColor: pixelSurface,
         shape: const BeveledRectangleBorder(
-            side: BorderSide(color: pixelCoral, width: 3)),
+            side: BorderSide(color: pixelCoral, width: 1)),
         elevation: 0,
         contentTextStyle: GoogleFonts.vt323(fontSize: 20, color: pixelCream)),
   );

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-const pixelBackground = Color(0xFF2B2447);
-const pixelSurface = Color(0xFF393157);
-const pixelGold = Color(0xFFF2B033);
-const pixelGreen = Color(0xFF3ABF9C);
-const pixelCoral = Color(0xFFE85D5D);
-const pixelCream = Color(0xFFF5EFE0);
-const pixelMuted = Color(0xFFC5BDD4);
-const pixelEdge = Color(0xFF171329);
+const pixelBackground = Color(0xFFFFFFFF);
+const pixelSurface = Color(0xFFF5F6F3);
+const pixelGold = Color(0xFFF3D99B);
+const pixelGreen = Color(0xFFCBE4D7);
+const pixelCoral = Color(0xFFB84D4D);
+const pixelCream = Color(0xFF303831);
+const pixelMuted = Color(0xFF657068);
+const pixelEdge = Color(0xFFBCC7BF);
 
 /// Paints inside the existing bounds without adding padding or changing layout.
 class PixelBevelPanel extends StatelessWidget {
@@ -32,11 +32,11 @@ class PixelBevelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final p = Paint()..isAntiAlias = false;
     canvas.drawRect(Offset.zero & size, p..color = fill);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 3), p..color = accent);
-    canvas.drawRect(Rect.fromLTWH(0, 0, 3, size.height), p);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 1), p..color = accent);
+    canvas.drawRect(Rect.fromLTWH(0, 0, 1, size.height), p);
     canvas.drawRect(
-        Rect.fromLTWH(0, size.height - 4, size.width, 4), p..color = pixelEdge);
-    canvas.drawRect(Rect.fromLTWH(size.width - 4, 0, 4, size.height), p);
+        Rect.fromLTWH(0, size.height - 2, size.width, 2), p..color = pixelEdge);
+    canvas.drawRect(Rect.fromLTWH(size.width - 2, 0, 2, size.height), p);
   }
 
   @override

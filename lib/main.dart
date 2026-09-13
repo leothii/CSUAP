@@ -17,7 +17,7 @@ import 'share_image_file.dart';
 
 const paper = pixelCream;
 const ink = pixelBackground;
-const teal = pixelGold;
+const teal = pixelCream;
 const muted = pixelMuted;
 void main() => runApp(const CsuapApp());
 
@@ -77,204 +77,194 @@ class PageShell extends StatelessWidget {
                           children: children))))));
 }
 
-class MainMenuScreen extends StatelessWidget {
+class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
   @override
-  Widget build(BuildContext context) =>
-      PageShell(label: 'A PRIVACY EXPERIMENT', children: [
-        eyebrow('YOUR PHOTOS. YOUR CHOICE.'),
-        const SizedBox(height: 20),
-        heading(context, 'Stay visible.\nBecome harder to read.',
-            'A small change to your pixels. A different signal for AI.\nExplore context-specific photo privacy with shield.'),
-        LayoutBuilder(builder: (context, box) {
-          final wide = box.maxWidth >= 680;
-          final cards = [
-            RevealCard(
-                index: 0,
-                title: 'Start',
-                subtitle: 'Enter the photo lab',
-                detail:
-                    'Choose. Cloak. Inspect.\nYour next image experiment starts here.',
-                icon: Icons.north_east,
-                color: teal,
-                height: wide ? 330 : 270,
-                onTap: () => openPage(context, const ProtectionScreen()),
-                artwork: true),
-            RevealCard(
-                index: 1,
-                title: 'Docs',
-                subtitle: 'Follow the research',
-                detail: 'An explorable map of the method, paper, and code.',
-                icon: Icons.hub_outlined,
-                color: teal,
-                height: 235,
-                onTap: () => openPage(context, const DocsScreen())),
-            RevealCard(
-                index: 2,
-                title: 'Field guide',
-                subtitle: 'Make sense of the science',
-                detail:
-                    'A quick walkthrough, then the models and metrics behind it.',
-                icon: Icons.auto_stories_outlined,
-                color: teal,
-                height: 235,
-                onTap: () => openPage(context, const GuideScreen())),
-            RevealCard(
-                index: 3,
-                title: 'Credits',
-                subtitle: 'Meet the people behind it',
-                detail:
-                    'The researchers, builders, and advisers behind this study.',
-                icon: Icons.people_outline,
-                color: pixelGreen,
-                height: wide ? 290 : 235,
-                onTap: () => openPage(context, const CreditsScreen())),
-          ];
-          if (!wide) {
-            return Column(children: [
-              for (final card in cards)
-                Padding(padding: const EdgeInsets.only(bottom: 14), child: card)
-            ]);
-          }
-          return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(
-                child: Column(children: [
-              cards[0],
-              const SizedBox(height: 16),
-              cards[2]
-            ])),
-            const SizedBox(width: 16),
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.only(top: 42),
-                    child: Column(children: [
-                      cards[1],
-                      const SizedBox(height: 16),
-                      cards[3]
-                    ]))),
-          ]);
-        }),
-        const SizedBox(height: 30),
-        const Divider(),
-        const SizedBox(height: 12),
-        Wrap(spacing: 30, runSpacing: 12, children: [
-          eyebrow('CS-UAP / RESEARCH EDITION'),
-          eyebrow('PHOTO PROCESSING STAYS ON DEVICE')
-        ]),
-      ]);
+  State<MainMenuScreen> createState() => _MainMenuScreenState();
 }
 
-class RevealCard extends StatefulWidget {
-  const RevealCard(
-      {super.key,
-      required this.index,
-      required this.title,
-      required this.subtitle,
-      required this.detail,
-      required this.icon,
-      required this.color,
-      required this.height,
-      required this.onTap,
-      this.artwork = false});
-  final int index;
-  final String title, subtitle, detail;
-  final IconData icon;
-  final Color color;
-  final double height;
-  final VoidCallback onTap;
-  final bool artwork;
-  @override
-  State<RevealCard> createState() => _RevealCardState();
-}
+class _MainMenuScreenState extends State<MainMenuScreen> {
+  int selected = 0;
+  final nodes = List.generate(4, (_) => FocusNode());
+  static const labels = ['Start', 'Field guide', 'Research', 'Credits'];
+  static const descriptions = [
+    'Choose a photo and apply a cloak.',
+    'Learn the steps, models, and metrics.',
+    'Read the paper and explore the code.',
+    'Meet the people behind shield.',
+  ];
 
-class _RevealCardState extends State<RevealCard> {
-  bool active = false;
   @override
-  Widget build(BuildContext context) {
-    const fg = paper;
-    final reduced = MediaQuery.disableAnimationsOf(context);
-    return TweenAnimationBuilder<double>(
-        tween: Tween(begin: reduced ? 1 : 0, end: 1),
-        duration:
-            Duration(milliseconds: reduced ? 0 : 500 + widget.index * 150),
-        curve: Curves.easeOutCubic,
-        builder: (context, value, child) => Opacity(
-            opacity: value,
-            child: Transform.translate(
-                offset: Offset(0, (1 - value) * (35 + widget.index * 10)),
-                child: child)),
-        child: MouseRegion(
-            onEnter: (_) => setState(() => active = true),
-            onExit: (_) => setState(() => active = false),
-            child: AnimatedContainer(
-                duration: Duration(milliseconds: reduced ? 0 : 220),
-                transform: Matrix4.translationValues(0, active ? -5 : 0, 0),
-                child: PixelBevelPanel(
-                    accent: active ? pixelCream : widget.color,
-                    child: Material(
-                        color: Colors.transparent,
-                        clipBehavior: Clip.hardEdge,
-                        child: InkWell(
-                          onTap: widget.onTap,
-                          onFocusChange: (value) =>
-                              setState(() => active = value),
-                          child: ConstrainedBox(
-                              constraints:
-                                  BoxConstraints(minHeight: widget.height),
-                              child: Stack(children: [
-                                if (widget.artwork)
-                                  const Positioned(
-                                      right: -30,
-                                      top: -45,
-                                      child: SizedBox(
-                                          width: 250,
-                                          height: 250,
-                                          child: CustomPaint(
-                                              painter: SignalPainter()))),
-                                Padding(
-                                    padding: const EdgeInsets.all(26),
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(children: [
-                                            Expanded(
-                                                child: eyebrow(
-                                                    '0${widget.index + 1} / EXPLORE',
-                                                    color: widget.color
-                                                        .withValues(
-                                                            alpha: .85))),
-                                            PixelIcon(widget.icon,
-                                                color: widget.color, size: 28)
-                                          ]),
-                                          SizedBox(
-                                              height: widget.artwork ? 95 : 35),
-                                          Text(widget.title,
-                                              style: GoogleFonts.pressStart2p(
-                                                  fontSize: 20,
-                                                  height: 1.1,
-                                                  fontWeight: FontWeight.w800,
-                                                  letterSpacing: -1.2,
-                                                  color: fg)),
-                                          const SizedBox(height: 8),
-                                          Text(widget.subtitle,
-                                              style: TextStyle(
-                                                  color: fg,
-                                                  fontWeight: FontWeight.w600)),
-                                          const SizedBox(height: 12),
-                                          AnimatedOpacity(
-                                              opacity: active ? 1 : .65,
-                                              duration: Duration(
-                                                  milliseconds:
-                                                      reduced ? 0 : 200),
-                                              child: Text(widget.detail,
-                                                  style: TextStyle(
-                                                      fontSize: 13,
-                                                      color: fg))),
-                                        ])),
-                              ])),
-                        ))))));
+  void dispose() {
+    for (final node in nodes) {
+      node.dispose();
+    }
+    super.dispose();
   }
+
+  void select(int index) {
+    if (selected != index) setState(() => selected = index);
+  }
+
+  void enter(int index) {
+    select(index);
+    openPage(
+        context,
+        [
+          const ProtectionScreen(),
+          const GuideScreen(),
+          const DocsScreen(),
+          const CreditsScreen()
+        ][index]);
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        body: SafeArea(
+          child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 40),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 320),
+                            child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const PixelIcon(Icons.shield_outlined,
+                                      size: 48, color: pixelMuted),
+                                  const SizedBox(height: 24),
+                                  FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text('shield.',
+                                          style: GoogleFonts.pressStart2p(
+                                              fontSize: 34,
+                                              height: 1.2,
+                                              color: pixelCream))),
+                                  const SizedBox(height: 12),
+                                  const Text('a little privacy for your photos',
+                                      style: TextStyle(
+                                          color: pixelMuted, fontSize: 19),
+                                      textAlign: TextAlign.center),
+                                  const SizedBox(height: 44),
+                                  Focus(
+                                    onKeyEvent: (_, event) {
+                                      if (event is KeyDownEvent ||
+                                          event is KeyRepeatEvent) {
+                                        final direction = event.logicalKey ==
+                                                LogicalKeyboardKey.arrowDown
+                                            ? 1
+                                            : event.logicalKey ==
+                                                    LogicalKeyboardKey.arrowUp
+                                                ? -1
+                                                : 0;
+                                        if (direction != 0) {
+                                          final index = (selected + direction) %
+                                              labels.length;
+                                          select(index);
+                                          nodes[index].requestFocus();
+                                          return KeyEventResult.handled;
+                                        }
+                                      }
+                                      return KeyEventResult.ignored;
+                                    },
+                                    child: Column(children: [
+                                      for (var i = 0; i < labels.length; i++)
+                                        Semantics(
+                                            selected: selected == i,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 4),
+                                              child: TextButton(
+                                                focusNode: nodes[i],
+                                                autofocus: i == 0,
+                                                onHover: (hovered) {
+                                                  if (hovered) select(i);
+                                                },
+                                                onFocusChange: (focused) {
+                                                  if (focused) select(i);
+                                                },
+                                                onPressed: () => enter(i),
+                                                style: TextButton.styleFrom(
+                                                  backgroundColor: selected == i
+                                                      ? const Color(0xFFFFF3D9)
+                                                      : Colors.transparent,
+                                                  foregroundColor: pixelCream,
+                                                  minimumSize: const Size(
+                                                      double.infinity, 52),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 16),
+                                                  shape:
+                                                      const BeveledRectangleBorder(),
+                                                  textStyle:
+                                                      GoogleFonts.pressStart2p(
+                                                          fontSize: 12,
+                                                          height: 1.6),
+                                                ),
+                                                child: Row(children: [
+                                                  SizedBox(
+                                                      width: 20,
+                                                      height: 16,
+                                                      child: selected == i
+                                                          ? const CustomPaint(
+                                                              painter:
+                                                                  _MenuArrowPainter())
+                                                          : null),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                      child: Text(labels[i])),
+                                                ]),
+                                              ),
+                                            )),
+                                    ]),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(minHeight: 54),
+                                      child: Text(descriptions[selected],
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                              color: pixelMuted,
+                                              fontSize: 20))),
+                                  const SizedBox(height: 40),
+                                  const Text('ON-DEVICE PROCESSING ? CS-UAP',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: pixelMuted,
+                                          letterSpacing: .8)),
+                                ]),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )),
+        ),
+      );
+}
+
+class _MenuArrowPainter extends CustomPainter {
+  const _MenuArrowPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = const Color(0xFF946C20)
+      ..isAntiAlias = false;
+    for (var row = 0; row < 7; row++) {
+      final width = (row <= 3 ? row + 1 : 7 - row) * 2.0;
+      canvas.drawRect(Rect.fromLTWH(3, row * 2.0 + 1, width, 2), p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MenuArrowPainter oldDelegate) => false;
 }
 
 class SignalPainter extends CustomPainter {
@@ -350,8 +340,7 @@ class _DocsScreenState extends State<DocsScreen> {
                                         backgroundColor: selected == i
                                             ? pixelGold
                                             : pixelSurface,
-                                        foregroundColor:
-                                            selected == i ? ink : paper,
+                                        foregroundColor: paper,
                                         side: BorderSide(
                                             width: 3,
                                             color: selected == i
@@ -1001,6 +990,8 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                             : 'Below target',
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: passes == true ? pixelGreen : pixelCoral))
+                        color: passes == true
+                            ? const Color(0xFF377254)
+                            : pixelCoral))
               ])));
 }

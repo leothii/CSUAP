@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:csuap/main.dart';
 import 'package:csuap/pixel_theme.dart';
 
 void main() {
+  testWidgets('title menu selects with arrow keys and opens the field guide',
+      (tester) async {
+    await tester.pumpWidget(
+        MaterialApp(theme: pixelTheme(), home: const MainMenuScreen()));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose a photo and apply a cloak.'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    expect(find.text('Learn the steps, models, and metrics.'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(find.byType(GuideScreen), findsOneWidget);
+  });
+
+  testWidgets('research menu option opens the existing research screen',
+      (tester) async {
+    await tester.pumpWidget(
+        MaterialApp(theme: pixelTheme(), home: const MainMenuScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Research'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DocsScreen), findsOneWidget);
+  });
   testWidgets(
       'menu routes into the lab with export unavailable before generation',
       (tester) async {
