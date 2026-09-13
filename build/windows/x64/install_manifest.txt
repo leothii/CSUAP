@@ -6,6 +6,14 @@ C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/share_plus
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/url_launcher_windows_plugin.dll
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.bin
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/cs_uap_v_f32_hwc.bin
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/Rajdhani-Bold.ttf
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/Rajdhani-Light.ttf
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/Rajdhani-Medium.ttf
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/Rajdhani-OFL.txt
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/Rajdhani-Regular.ttf
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/Rajdhani-SemiBold.ttf
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/ShareTechMono-OFL.txt
+C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/ShareTechMono-Regular.ttf
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/FontManifest.json
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/fonts/MaterialIcons-Regular.otf
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/kernel_blob.bin
