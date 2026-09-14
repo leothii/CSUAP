@@ -12,6 +12,25 @@ class LabResult {
   final double psnr;
 }
 
+Uint8List preparePhoto(Uint8List bytes) {
+  final decoded = img.decodeImage(bytes);
+  if (decoded == null) throw const FormatException('Unreadable image');
+  return Uint8List.fromList(img.encodePng(img
+      .bakeOrientation(decoded)
+      .convert(format: img.Format.uint8, numChannels: 3)));
+}
+
+Uint8List cloakPhoto(
+        ({Uint8List bytes, Float32List vector, double alpha}) job) =>
+    applyProtection(job.bytes, job.alpha, job.vector);
+
+LabResult inspectPhoto(({Uint8List clean, Uint8List output}) job) {
+  final clean = img.decodePng(job.clean)!;
+  final quality = measureQuality(clean, img.decodePng(job.output)!);
+  return LabResult(
+      job.clean, job.output, clean.width, clean.height, quality.$1, quality.$2);
+}
+
 LabResult generateCloak(
     ({Uint8List bytes, Float32List vector, double alpha}) job) {
   final decoded = img.decodeImage(job.bytes);

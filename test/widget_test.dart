@@ -3,8 +3,28 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:csuap/main.dart';
 import 'package:csuap/pixel_theme.dart';
+import 'package:image/image.dart' as img;
 
 void main() {
+  testWidgets('comparison responds to dragging and slider controls',
+      (tester) async {
+    final bytes =
+        Uint8List.fromList(img.encodePng(img.Image(width: 12, height: 10)));
+    await tester.pumpWidget(MaterialApp(
+        theme: pixelTheme(),
+        home: Scaffold(
+          body: PhotoComparison(clean: bytes, output: bytes),
+        )));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Slider>(find.byType(Slider)).value, .5);
+    await tester.dragFrom(const Offset(400, 160), const Offset(150, 0));
+    await tester.pump();
+    expect(tester.widget<Slider>(find.byType(Slider)).value, greaterThan(.5));
+    await tester.tap(find.byType(Slider));
+    await tester.pump();
+    expect(tester.widget<Slider>(find.byType(Slider)).value, closeTo(.5, .02));
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('title menu selects with arrow keys and opens the field guide',
       (tester) async {
     await tester.pumpWidget(

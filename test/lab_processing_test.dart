@@ -6,6 +6,21 @@ import 'package:csuap/lab_processing.dart';
 import 'package:csuap/perturbation_protection.dart';
 
 void main() {
+  test('staged processing preserves output and quality measurements', () {
+    final photo = img.Image(width: 12, height: 10);
+    img.fill(photo, color: img.ColorRgb8(100, 130, 180));
+    final bytes = Uint8List.fromList(img.encodePng(photo));
+    final vector = Float32List(perturbationValueCount)
+      ..fillRange(0, perturbationValueCount, .02);
+    final expected = generateCloak((bytes: bytes, vector: vector, alpha: .5));
+    final clean = preparePhoto(bytes);
+    final output = cloakPhoto((bytes: clean, vector: vector, alpha: .5));
+    final actual = inspectPhoto((clean: clean, output: output));
+    expect(actual.clean, expected.clean);
+    expect(actual.output, expected.output);
+    expect(actual.ssim, expected.ssim);
+    expect(actual.psnr, expected.psnr);
+  });
   test('16-bit inputs normalize to the exported 8-bit RGB baseline', () {
     final a = img.Image(width: 8, height: 8, format: img.Format.uint16);
     for (final pixel in a) {

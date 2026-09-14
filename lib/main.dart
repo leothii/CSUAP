@@ -570,6 +570,87 @@ class Panel extends StatelessWidget {
           child: child));
 }
 
+/// Both layers share the same bounds so the divider never shifts the photo.
+class PhotoComparison extends StatefulWidget {
+  const PhotoComparison({super.key, required this.clean, required this.output});
+  final Uint8List clean, output;
+
+  @override
+  State<PhotoComparison> createState() => _PhotoComparisonState();
+}
+
+class _PhotoComparisonState extends State<PhotoComparison> {
+  double position = .5;
+
+  @override
+  Widget build(BuildContext context) => Column(children: [
+        Container(
+          color: pixelSurface,
+          height: 320,
+          child: LayoutBuilder(builder: (context, box) {
+            void move(double x) =>
+                setState(() => position = (x / box.maxWidth).clamp(0.0, 1.0));
+            return GestureDetector(
+              onHorizontalDragUpdate: (event) => move(event.localPosition.dx),
+              onTapDown: (event) => move(event.localPosition.dx),
+              child: Stack(fit: StackFit.expand, children: [
+                Image.memory(widget.output,
+                    fit: BoxFit.contain, gaplessPlayback: true),
+                ClipRect(
+                  clipper: _ComparisonClipper(position),
+                  child: Image.memory(widget.clean,
+                      fit: BoxFit.contain, gaplessPlayback: true),
+                ),
+                Positioned(left: 10, top: 10, child: _tag('ORIGINAL')),
+                Positioned(right: 10, top: 10, child: _tag('CLOAKED')),
+                Positioned(
+                    left: (box.maxWidth - 2) * position,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(width: 2, color: pixelCream)),
+                Positioned(
+                    left: (box.maxWidth - 36) * position,
+                    top: 142,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      color: pixelGold,
+                      child: const Icon(Icons.swap_horiz,
+                          textDirection: TextDirection.ltr),
+                    )),
+              ]),
+            );
+          }),
+        ),
+        Semantics(
+            label: 'Before and after comparison',
+            child: Slider(
+              value: position,
+              semanticFormatterCallback: (value) =>
+                  '${(value * 100).round()} percent original visible',
+              onChanged: (value) => setState(() => position = value),
+            )),
+        const Text('Drag to compare • Original / Cloaked',
+            style: TextStyle(color: muted, fontSize: 16)),
+      ]);
+
+  Widget _tag(String label) => Container(
+      color: pixelBackground,
+      padding: const EdgeInsets.all(6),
+      child: Text(label, style: const TextStyle(fontSize: 14)));
+}
+
+class _ComparisonClipper extends CustomClipper<Rect> {
+  const _ComparisonClipper(this.position);
+  final double position;
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTWH(0, 0, size.width * position, size.height);
+  @override
+  bool shouldReclip(_ComparisonClipper oldClipper) =>
+      position != oldClipper.position;
+}
+
 class ProtectionScreen extends StatefulWidget {
   const ProtectionScreen({super.key});
   @override
@@ -584,7 +665,8 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   String filename = '';
   double alpha = .5;
   bool busy = false, exporting = false, picking = false, loading = true;
-  int comparison = 1;
+  int completedStages = 0;
+  String stage = "Preparing photo";
   @override
   void initState() {
     super.initState();
@@ -646,16 +728,31 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     if (source == null || vector == null) return;
     setState(() {
       busy = true;
+      completedStages = 0;
+      stage = "Preparing photo";
       error = null;
       result = null;
     });
     try {
-      final output = await compute(
-          generateCloak, (bytes: source!, vector: vector!, alpha: alpha));
+      final clean = await compute(preparePhoto, source!);
+      if (!mounted) return;
+      setState(() {
+        completedStages = 1;
+        stage = 'Applying cloak';
+      });
+      final cloaked = await compute(
+          cloakPhoto, (bytes: clean, vector: vector!, alpha: alpha));
+      if (!mounted) return;
+      setState(() {
+        completedStages = 2;
+        stage = 'Measuring image quality';
+      });
+      final output =
+          await compute(inspectPhoto, (clean: clean, output: cloaked));
       if (mounted) {
         setState(() {
           result = output;
-          comparison = 1;
+          completedStages = 3;
         });
       }
     } catch (_) {
@@ -721,22 +818,37 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   @override
   Widget build(BuildContext context) =>
       PageShell(label: '01 / PHOTO LAB', children: [
-        heading(context, 'Same photo.\nDifferent signal.',
-            'An experiment in what machines see. Keep what makes it yours.'),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          Chip(
-              label: Text(source == null
-                  ? '01  Choose a photo'
-                  : '01  Photo selected')),
-          Chip(
-              label: Text(busy
-                  ? '02  Generating…'
-                  : result == null
-                      ? '02  Apply cloak'
-                      : '02  Cloak generated')),
-          const Chip(label: Text('03  Inspect & export'))
+        eyebrow('YOUR PHOTO. YOUR SIGNAL.'),
+        const SizedBox(height: 10),
+        Text('A little less readable.\nStill entirely you.',
+            style: Theme.of(context).textTheme.headlineLarge),
+        const SizedBox(height: 12),
+        const Text('Choose a photo. Tune the cloak. Compare the pixels.',
+            style: TextStyle(color: muted)),
+        const SizedBox(height: 24),
+        Row(children: [
+          for (var i = 0; i < 3; i++)
+            Expanded(
+                child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+              decoration: BoxDecoration(
+                color: (result != null
+                            ? 2
+                            : source != null
+                                ? 1
+                                : 0) ==
+                        i
+                    ? pixelGreen
+                    : pixelSurface,
+                border: const Border(
+                    bottom: BorderSide(color: pixelEdge, width: 2)),
+              ),
+              child: Text(['01 / ADD', '02 / CLOAK', '03 / KEEP'][i],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16)),
+            )),
         ]),
-        const SizedBox(height: 20),
+        const SizedBox(height: 18),
         if (loading) const LinearProgressIndicator(),
         if (!loading && vector == null)
           TextButton(
@@ -744,83 +856,147 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               child: const Text('Retry loading perturbation',
                   style: TextStyle(fontFamily: 'VT323', fontSize: 18))),
         if (source == null)
-          Panel(
-              color: teal,
-              child: Column(children: [
-                const SizedBox(height: 20),
-                const SizedBox(
-                    width: 150,
-                    height: 150,
-                    child: CustomPaint(painter: SignalPainter())),
-                const SizedBox(height: 20),
-                const Text('One photo. A new layer of possibility.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'VT323')),
-                const SizedBox(height: 12),
-                const Text(
-                    'Your original stays untouched.\nProcessing happens here, on your device.',
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 20),
-                photoButtons(),
-              ]))
-        else ...[
-          if (result == null)
-            ClipRRect(
-                borderRadius: BorderRadius.zero,
+          Container(
+            decoration: BoxDecoration(
+              color: pixelSurface,
+              border: Border.all(color: pixelEdge),
+            ),
+            child: Column(children: [
+              Container(
+                width: double.infinity,
+                color: pixelGreen,
+                padding: const EdgeInsets.all(12),
+                child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
+              ),
+              const SizedBox(height: 30),
+              Transform.rotate(
+                angle: -.07,
                 child: Container(
-                    color: ink,
-                    height: 300,
-                    width: double.infinity,
-                    child: Image.memory(source!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, e, s) => const Center(
-                            child: Text(
-                                'Preview unavailable. Try a PNG or JPEG.',
-                                style: TextStyle(color: paper)))))),
-          const SizedBox(height: 12),
-          Text(filename,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: muted)),
-          const SizedBox(height: 12),
-          photoButtons(),
-          const SizedBox(height: 24),
-          eyebrow('CHOOSE YOUR PERTURBATION INTENSITY'),
-          const SizedBox(height: 10),
-          Wrap(spacing: 10, runSpacing: 10, children: [
-            for (final preset in [
-              ('Subtle', .25),
-              ('Balanced', .5),
-              ('Full vector', 1.0)
-            ])
-              ChoiceChip(
-                  label: Text('${preset.$1} · ${(preset.$2 * 100).round()}%'),
-                  selected: alpha == preset.$2,
-                  onSelected: locked
-                      ? null
-                      : (_) => setState(() {
-                            alpha = preset.$2;
-                            result = null;
-                          }))
-          ]),
-          const SizedBox(height: 10),
-          const Text(
-              'Higher intensity adds more of the trained pattern. Check quality after each run.',
-              style: TextStyle(fontSize: 13, color: muted)),
+                  width: 110,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: pixelBackground,
+                    border: Border.all(color: pixelCream, width: 2),
+                    boxShadow: const [
+                      BoxShadow(color: pixelGold, offset: Offset(8, 8))
+                    ],
+                  ),
+                  child: const Center(
+                      child: Icon(Icons.add_photo_alternate_outlined,
+                          size: 48, color: pixelMuted)),
+                ),
+              ),
+              const SizedBox(height: 30),
+              const Text('Start with something worth keeping.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              photoButtons(),
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                    'Processed on your device. Original stays untouched.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: muted, fontSize: 16)),
+              ),
+            ]),
+          )
+        else ...[
+          Container(
+            color: pixelSurface,
+            padding: const EdgeInsets.all(12),
+            child: Row(children: [
+              const Icon(Icons.image_outlined, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: Text(filename,
+                      maxLines: 1, overflow: TextOverflow.ellipsis)),
+              const SizedBox(width: 8),
+              eyebrow(result != null
+                  ? 'READY'
+                  : busy
+                      ? 'WORKING'
+                      : 'ORIGINAL'),
+            ]),
+          ),
+          if (result != null)
+            PhotoComparison(clean: result!.clean, output: result!.output)
+          else
+            Container(
+              color: pixelSurface,
+              height: 320,
+              width: double.infinity,
+              child: Image.memory(source!,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, e, s) => const Center(
+                      child: Text('Preview unavailable. Try a PNG or JPEG.'))),
+            ),
+          if (busy)
+            Container(
+              padding: const EdgeInsets.all(18),
+              color: pixelGreen,
+              child: Semantics(
+                  liveRegion: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(stage, style: const TextStyle(fontSize: 23)),
+                      const SizedBox(height: 10),
+                      LinearProgressIndicator(
+                          value: completedStages / 3,
+                          minHeight: 8,
+                          color: pixelCream),
+                      const SizedBox(height: 8),
+                      Text(
+                          '$completedStages of 3 stages complete / Processing on device',
+                          style: const TextStyle(fontSize: 16)),
+                    ],
+                  )),
+            ),
           const SizedBox(height: 18),
-          FilledButton.icon(
-              onPressed: locked || vector == null ? null : generate,
-              icon: const PixelIcon(Icons.auto_awesome_outlined),
-              label: Text(
-                  busy
-                      ? 'Applying vector & measuring quality…'
-                      : 'Generate cloaked photo',
-                  style: const TextStyle(fontFamily: 'VT323', fontSize: 18))),
+          Panel(
+              child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Expanded(child: eyebrow('CLOAK INTENSITY')),
+                Text('${(alpha * 100).round()}%',
+                    style: const TextStyle(fontSize: 30)),
+              ]),
+              Slider(
+                value: alpha,
+                divisions: 100,
+                label: '${(alpha * 100).round()}%',
+                semanticFormatterCallback: (value) =>
+                    '${(value * 100).round()} percent intensity',
+                onChanged: locked
+                    ? null
+                    : (value) => setState(() {
+                          alpha = value;
+                          result = null;
+                        }),
+              ),
+              const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [Text('Subtle'), Text('Full vector')]),
+              const SizedBox(height: 12),
+              const Text(
+                  'More intensity adds more of the trained pattern. Apply to see the result.',
+                  style: TextStyle(fontSize: 16, color: muted)),
+              const SizedBox(height: 18),
+              SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: locked || vector == null ? null : generate,
+                    icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                    label: Text(busy ? 'Cloaking...' : 'Apply cloak'),
+                  )),
+              const SizedBox(height: 10),
+              Center(child: photoButtons()),
+            ],
+          )),
         ],
-        if (busy || exporting || picking)
+        if (exporting || picking)
           const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: LinearProgressIndicator()),
@@ -859,34 +1035,12 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           liveRegion: true,
           child: heading(context, 'Meet your new pixels.',
               '${r.width} × ${r.height} · Full-resolution PNG · ${(alpha * 100).round()}% intensity')),
-      Wrap(spacing: 8, runSpacing: 8, children: [
-        for (var i = 0; i < 3; i++)
-          ChoiceChip(
-              label: Text(['Before', 'After', 'Side by side'][i]),
-              selected: comparison == i,
-              onSelected: (_) => setState(() => comparison = i))
-      ]),
-      const SizedBox(height: 14),
-      if (comparison == 2)
-        LayoutBuilder(builder: (context, box) {
-          final images = [
-            Expanded(child: imagePanel(r.clean, 'CLEAN')),
-            const SizedBox(width: 10),
-            Expanded(child: imagePanel(r.output, 'CLOAKED'))
-          ];
-          return box.maxWidth < 500
-              ? Column(children: [
-                  imagePanel(r.clean, 'CLEAN'),
-                  const SizedBox(height: 10),
-                  imagePanel(r.output, 'CLOAKED')
-                ])
-              : Row(children: images);
-        })
-      else
-        imagePanel(comparison == 0 ? r.clean : r.output,
-            comparison == 0 ? 'CLEAN / ORIGINAL' : 'CLOAKED / OUTPUT'),
-      const SizedBox(height: 24),
       eyebrow('MEASURED ON THIS OUTPUT'),
+      ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        title: const Text('Zoom into cloaked pixels'),
+        children: [imagePanel(r.output, 'CLOAKED / OUTPUT')],
+      ),
       const SizedBox(height: 12),
       Wrap(spacing: 12, runSpacing: 12, children: [
         metric('SSIM', r.ssim?.toStringAsFixed(4) ?? 'N/A', 'Target ≥ 0.95',
