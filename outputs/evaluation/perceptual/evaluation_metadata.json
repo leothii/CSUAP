@@ -1,0 +1,33 @@
+{
+  "python_version": "3.10.6 (tags/v3.10.6:9c7b4bd, Aug  1 2022, 21:53:49) [MSC v.1932 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "numpy_version": "2.2.6",
+  "pandas_version": "2.3.3",
+  "scikit_image_version": "0.25.2",
+  "project_root": "c:\\CSUAP",
+  "reference_dir": "c:\\CSUAP\\data\\test",
+  "perturbation_root": "c:\\CSUAP\\outputs\\cloaked\\test",
+  "expected_alphas": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "metrics": {
+    "PSNR": {
+      "data_range": 1.0,
+      "input_range": "[0, 1]"
+    },
+    "SSIM": {
+      "gaussian_weights": true,
+      "sigma": 1.5,
+      "use_sample_covariance": false,
+      "data_range": 1.0,
+      "channel_axis": -1
+    },
+    "confidence_interval": 0.95,
+    "allow_resize": false
+  }
+}
