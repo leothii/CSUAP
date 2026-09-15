@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_ALPHAS = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5)  # matches Table 4
 
-INPUT_DIR = Path("")                 # <- set this to your test images folder
+INPUT_DIR = Path("data/test")                 # <- set this to your test images folder
 V_PATH = Path("outputs/uap/cs_uap_v.npy")     # <- trained perturbation vector
 MODE = "resize"                               # "resize" or "tile"
 ALPHAS = DEFAULT_ALPHAS                       # which alpha values to apply
@@ -78,7 +78,7 @@ def process_directory(
     )
     logger.info("Found %d input images in %s", len(image_paths), input_dir)
 
-    for image_path in image_paths:
+    for image_index, image_path in enumerate(image_paths, start=1):
         image = Image.open(image_path).convert("RGB")
         image_np = np.asarray(image, dtype=np.float32) / 255.0
         v_transformed = transform_perturbation(v, image_np.shape[:2], config.mode)
@@ -90,7 +90,7 @@ def process_directory(
             cloaked = apply_perturbation(image_np, v_transformed, alpha)
             cloaked_uint8 = (cloaked * 255).round().astype(np.uint8)
 
-            out_name = f"{image_path.stem}_{config.mode}.png"
+            out_name = f"img{image_index}.png"
             out_path = alpha_dir / out_name
             Image.fromarray(cloaked_uint8).save(out_path)
 
