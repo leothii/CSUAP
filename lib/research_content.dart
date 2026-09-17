@@ -3,6 +3,26 @@ const researchPaperUrl = String.fromEnvironment('RESEARCH_PAPER_URL');
 const repositoryUrl = 'https://github.com/leothii/CSUAP';
 const extraResourceUrl = String.fromEnvironment('EXTRA_RESOURCE_URL');
 
+/// Rounded snapshot of outputs/evaluation/perceptual/alpha_summary.csv.
+const perceptualResults = [
+  (alpha: '0.5', n: 30, ssim: '0.9699', psnr: '35.00'),
+  (alpha: '0.6', n: 30, ssim: '0.9557', psnr: '33.08'),
+  (alpha: '0.7', n: 30, ssim: '0.9428', psnr: '31.84'),
+  (alpha: '0.8', n: 30, ssim: '0.9294', psnr: '30.79'),
+  (alpha: '0.9', n: 30, ssim: '0.9153', psnr: '29.86'),
+  (alpha: '1.0', n: 30, ssim: '0.8967', psnr: '28.75'),
+];
+const perceptualResultsSummary =
+    '30 test images per intensity. Mean SSIM and PSNR meet both study '
+    'targets (SSIM ≥ 0.95; PSNR ≥ 30 dB) at α = 0.5 and 0.6. '
+    'Group means do not mean every image passes, and image quality does '
+    'not establish semantic protection.';
+const perceptualResultsMethod =
+    'Recorded evaluation: RGB values in [0, 1], no resizing, Gaussian '
+    'SSIM weights (σ = 1.5), and population covariance. The photo lab '
+    'uses uniform 7 × 7 SSIM windows with sample covariance, so its '
+    'SSIM values are not directly comparable to these results.';
+
 class TeamMember {
   const TeamMember(this.name, this.role, this.work, {this.photoAsset});
   final String name, role, work;

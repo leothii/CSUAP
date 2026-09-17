@@ -408,6 +408,24 @@ class _DocsScreenState extends State<DocsScreen> {
                             icon: const PixelIcon(Icons.open_in_new, size: 18),
                             label: const Text('Open resource')),
                     ]))),
+        const SizedBox(height: 20),
+        Panel(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('SSIM & PSNR results',
+              style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 12),
+          const Text(perceptualResultsSummary),
+          const SizedBox(height: 16),
+          for (final result in perceptualResults)
+            Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text('α = ${result.alpha} · ${result.n} images\n'
+                    'Mean SSIM ${result.ssim} · Mean PSNR ${result.psnr} dB')),
+          const Text(perceptualResultsMethod),
+          const SizedBox(height: 12),
+          const Text('Source: perceptual evaluation / alpha_summary.csv'),
+        ])),
       ]);
 }
 

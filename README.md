@@ -29,13 +29,31 @@ SSIM is the mean of full-resolution 7×7 uniform sliding windows per RGB channel
 
 CLIP Score, ClipCap/BERTScore F1, and downstream SDXL Clean/Cloaked LoRA CLIP Score and FID are explicitly unmeasured in the app. There are no bundled semantic/caption evaluation models or evaluation service. FID needs generated image sets, not a single photo pair. Image-quality success does not imply verified semantic protection.
 
+### Recorded perceptual evaluation
+
+The Research screen includes the results from [`alpha_summary.csv`](outputs/evaluation/perceptual/alpha_summary.csv), with 30 test images at each intensity:
+
+| Intensity (α) | Mean SSIM | Mean PSNR (dB) |
+| --- | --- | --- |
+| 0.5 | 0.9699 | 35.00 |
+| 0.6 | 0.9557 | 33.08 |
+| 0.7 | 0.9428 | 31.84 |
+| 0.8 | 0.9294 | 30.79 |
+| 0.9 | 0.9153 | 29.86 |
+| 1.0 | 0.8967 | 28.75 |
+
+Both mean quality targets are met at α = 0.5 and 0.6; this does not imply every image passes or demonstrate semantic protection. The CSV also includes medians, standard deviations, and 95% confidence intervals. Per-image results and plots are in [`outputs/evaluation/perceptual/`](outputs/evaluation/perceptual/).
+
+The [evaluation metadata](outputs/evaluation/perceptual/evaluation_metadata.json) records RGB inputs normalized to [0, 1], no resizing, and Gaussian SSIM weights with σ = 1.5 and population covariance. This differs from the photo lab's uniform 7×7 windows and sample covariance; the SSIM values are not directly comparable. The Research screen is a rounded snapshot in `lib/research_content.dart`; update it when the evaluation artifacts change.
+
 ## Project scan
 
 - `lib/`: Flutter UI, local perturbation application, quality metrics, and sharing helpers.
 - `src/preprocessing/`: MS-COCO portrait filtering.
 - `src/training/train_csuap.py`: frozen CLIP ViT-B/32 perturbation training and image-quality evaluation.
 - `src/application/`: Python application and export of perturbation assets.
-- `src/evaluation/lora_training.ipynb`: downstream research notebook, separate from the app.
+- `src/evaluation/perceptual/ssim_psnr_analysis.ipynb`: perceptual evaluation and summary generation.
+- `src/evaluation/LORA/`: downstream fine-tuning and generation notebooks, separate from the app.
 - `assets/` and `outputs/`: bundled vector, NumPy training output, visualization, and metadata.
 - Android, iOS, desktop, and web host projects.
 
