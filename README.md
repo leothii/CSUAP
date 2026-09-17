@@ -1,4 +1,4 @@
-﻿# shield. / CS-UAP
+# shield. / CS-UAP
 
 Flutter research application for applying a bundled context-specific universal adversarial perturbation locally. The interface adapts the supplied VengeanceUI / Codrops staggered-grid reference into native Flutter cards, with hover/focus feedback, touch navigation, staggered entrance motion, and reduced-motion support.
 
@@ -19,7 +19,7 @@ Edit `lib/research_content.dart` to replace the explicitly labeled team placehol
 flutter run --dart-define=RESEARCH_PAPER_URL=https://example.org/paper --dart-define=EXTRA_RESOURCE_URL=https://example.org/supplement
 ```
 
-Unconfigured resources show “Link pending”. The Field guide explains the workflow and models. Docs is an interactive research map; Credits reveals a profile on hover, keyboard focus, or tap.
+Unconfigured resources show “Link pending”. The Field Guide walks through choosing, cloaking, and inspecting a photo with an illustrated pattern toggle, an intensity slider that explores recorded SSIM/PSNR means, and a quality-versus-protection knowledge check. Technical definitions remain available below the walkthrough. Research uses an animated timeline with isometric pixel platforms to connect the study question, experiment pipeline, interactive SSIM/PSNR results, and source materials. Credits is a character selector: swipe left/right, use arrow buttons or keyboard arrows, or select a name. Four researcher placeholders and an adviser have illustrative pixel sprites. Both screens respect reduced-motion settings.
 
 ## What the results mean
 

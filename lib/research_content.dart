@@ -36,6 +36,8 @@ const team = [
       'Placeholder profile • Add the researcher’s name and portrait.\n\nPerceptual quality, semantic disruption, caption drift, and downstream evaluation.'),
   TeamMember('Researcher 03', 'Mobile development',
       'Placeholder profile • Add the researcher’s name and portrait.\n\nOn-device image processing, interaction design, and application testing.'),
+  TeamMember('Researcher 04', 'Research support',
+      'Placeholder profile • Add the researcher’s name, confirmed role, and portrait.\n\nResearch contribution to be confirmed.'),
   TeamMember('Adviser', 'Research guidance',
       'Placeholder profile • Add the adviser’s name and portrait.\n\nStudy design, methodology review, and research supervision.'),
 ];

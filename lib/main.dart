@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import 'pixel_theme.dart';
 import 'package:flutter/foundation.dart';
@@ -8,11 +7,14 @@ import 'package:file_selector/file_selector.dart';
 import 'package:gal/gal.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'lab_processing.dart';
 import 'intro_screen.dart';
 import 'perturbation_protection.dart';
 import 'research_content.dart';
+import 'research_screen.dart';
+import 'credits_screen.dart';
+export 'credits_screen.dart' show CreditsScreen;
+export 'research_screen.dart' show DocsScreen;
 import 'share_image_file.dart';
 
 const paper = pixelCream;
@@ -48,9 +50,14 @@ Widget heading(BuildContext context, String title, String subtitle) => Padding(
     ]));
 
 class PageShell extends StatelessWidget {
-  const PageShell({super.key, required this.label, required this.children});
+  const PageShell(
+      {super.key,
+      required this.label,
+      required this.children,
+      this.scrollController});
   final String label;
   final List<Widget> children;
+  final ScrollController? scrollController;
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
@@ -73,6 +80,7 @@ class PageShell extends StatelessWidget {
                   child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1080),
                       child: ListView(
+                          controller: scrollController,
                           padding: const EdgeInsets.fromLTRB(24, 30, 24, 40),
                           children: children))))));
 }
@@ -279,300 +287,255 @@ class SignalPainter extends CustomPainter {
   bool shouldRepaint(covariant SignalPainter oldDelegate) => false;
 }
 
-class DocsScreen extends StatefulWidget {
-  const DocsScreen({super.key});
+class GuideScreen extends StatefulWidget {
+  const GuideScreen({super.key});
   @override
-  State<DocsScreen> createState() => _DocsScreenState();
+  State<GuideScreen> createState() => _GuideScreenState();
 }
 
-class _DocsScreenState extends State<DocsScreen> {
-  int selected = 0;
-  static const titles = [
-    'The method',
-    'Research paper',
-    'GitHub repository',
-    'More to come'
-  ];
-  static const details = [
-    'Train one context-specific vector with I-FGSM against frozen CLIP ViT-B/32. Apply it locally, assess image quality, then evaluate semantic disruption and downstream persistence in the research pipeline.',
-    'The full study: objectives, methodology, experiments, and findings. The paper link will appear here when it is ready.',
-    'Explore the Flutter application, portrait preprocessing, perturbation training, and export code.',
-    'A space for the next research resource: a dataset, demo, poster, or supplementary results.',
-  ];
+class _GuideScreenState extends State<GuideScreen> {
+  final scrollController = ScrollController();
+  int step = 0;
+  int intensity = 0;
+  bool showPattern = false;
+  bool? answer;
+  static const steps = ['Choose', 'Cloak', 'Inspect'];
+
+  void selectStep(int value) {
+    setState(() => step = value);
+    if (scrollController.hasClients) scrollController.jumpTo(0);
+  }
+
   @override
-  Widget build(BuildContext context) =>
-      PageShell(label: '02 / RESEARCH MAP', children: [
-        heading(context, 'Connected by curiosity.',
-            'Tap a node to follow the study. Every part has a purpose.'),
-        LayoutBuilder(
-            builder: (context, box) => SizedBox(
-                height: 360,
-                child: Stack(children: [
-                  const Positioned.fill(
-                      child: CustomPaint(painter: MapPainter())),
-                  const Align(
-                      alignment: Alignment.center,
-                      child: SizedBox.square(
-                          dimension: 88,
-                          child: PixelBevelPanel(
-                              accent: pixelGreen,
-                              child: Center(
-                                  child: Text('CS-UAP',
-                                      style: TextStyle(
-                                          color: teal,
-                                          fontWeight: FontWeight.w800)))))),
-                  for (var i = 0; i < titles.length; i++)
-                    Align(
-                        alignment: [
-                          const Alignment(-1, -.85),
-                          const Alignment(1, -.85),
-                          const Alignment(-1, .85),
-                          const Alignment(1, .85)
-                        ][i],
-                        child: SizedBox(
-                            width: math.min(190, box.maxWidth * .45),
-                            child: Semantics(
-                                selected: selected == i,
-                                child: FilledButton.tonal(
-                                    onPressed: () =>
-                                        setState(() => selected = i),
-                                    style: FilledButton.styleFrom(
-                                        backgroundColor: selected == i
-                                            ? pixelGold
-                                            : pixelSurface,
-                                        foregroundColor: paper,
-                                        side: BorderSide(
-                                            width: 3,
-                                            color: selected == i
-                                                ? pixelGreen
-                                                : teal.withValues(alpha: .4)),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 20)),
-                                    child: Text(titles[i],
-                                        textAlign: TextAlign.center))))),
-                ]))),
-        const SizedBox(height: 20),
-        Panel(
-            child: AnimatedSize(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 200),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      eyebrow('SELECTED NODE / 0${selected + 1}'),
-                      const SizedBox(height: 12),
-                      Text(titles[selected],
-                          style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'VT323')),
-                      const SizedBox(height: 10),
-                      Text(details[selected]),
-                      const SizedBox(height: 20),
-                      if (selected == 0)
-                        FilledButton(
-                            onPressed: () =>
-                                openPage(context, const GuideScreen()),
-                            child: const Text('Explore models & metrics',
-                                style: TextStyle(
-                                    fontFamily: 'VT323', fontSize: 18)))
-                      else if ((selected == 1 && researchPaperUrl.isEmpty) ||
-                          (selected == 3 && extraResourceUrl.isEmpty))
-                        const Chip(label: Text('Link pending'))
-                      else
-                        FilledButton.icon(
-                            onPressed: () async {
-                              final url = selected == 1
-                                  ? researchPaperUrl
-                                  : selected == 2
-                                      ? repositoryUrl
-                                      : extraResourceUrl;
-                              try {
-                                final uri = Uri.parse(url);
-                                if (!(uri.scheme == 'https' ||
-                                        uri.scheme == 'http') ||
-                                    !await launchUrl(uri,
-                                        mode: LaunchMode.externalApplication)) {
-                                  throw const FormatException();
-                                }
-                              } catch (_) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Could not open this resource.')));
-                                }
-                              }
-                            },
-                            icon: const PixelIcon(Icons.open_in_new, size: 18),
-                            label: const Text('Open resource')),
-                    ]))),
-        const SizedBox(height: 20),
-        Panel(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('SSIM & PSNR results',
-              style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 12),
-          const Text(perceptualResultsSummary),
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final result = perceptualResults[intensity];
+    return PageShell(
+        scrollController: scrollController,
+        label: '03 / FIELD GUIDE',
+        children: [
+          heading(context, 'Small changes.\nSee how they work.',
+              'A hands-on tour of your first cloak. No photo needed.'),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            for (var i = 0; i < steps.length; i++)
+              ChoiceChip(
+                  key: ValueKey('guide-step-$i'),
+                  label: Text('${i + 1}. ${steps[i]}'),
+                  selected: step == i,
+                  onSelected: (_) => selectStep(i)),
+          ]),
           const SizedBox(height: 16),
-          for (final result in perceptualResults)
-            Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text('α = ${result.alpha} · ${result.n} images\n'
-                    'Mean SSIM ${result.ssim} · Mean PSNR ${result.psnr} dB')),
-          const Text(perceptualResultsMethod),
+          LinearProgressIndicator(
+              value: (step + 1) / steps.length,
+              semanticsLabel: 'Walkthrough step ${step + 1} of 3'),
+          const SizedBox(height: 20),
+          Panel(
+              color: pixelGreen,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    eyebrow('TRY IT / 0${step + 1}'),
+                    const SizedBox(height: 12),
+                    Text(
+                        [
+                          'Your photo, with a tiny extra layer.',
+                          'Turn the intensity. Read the trade-off.',
+                          'Good quality. What does that tell us?'
+                        ][step],
+                        style: Theme.of(context).textTheme.headlineLarge),
+                    const SizedBox(height: 16),
+                    if (step == 0) ...[
+                      const Text(
+                          'A cloak adds a trained pattern of small pixel changes. '
+                          'The app repeats that pattern across your photo and saves a new image.'),
+                      const SizedBox(height: 20),
+                      Semantics(
+                          label: showPattern
+                              ? 'Illustration of a photo with a visible pixel pattern'
+                              : 'Illustration of the original photo',
+                          image: true,
+                          child: SizedBox(
+                              width: double.infinity,
+                              height: 170,
+                              child: CustomPaint(
+                                  painter: _GuidePhotoPainter(showPattern)))),
+                      SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Reveal the pattern'),
+                          subtitle: const Text(
+                              'Illustration only • pattern exaggerated'),
+                          value: showPattern,
+                          onChanged: (value) =>
+                              setState(() => showPattern = value)),
+                      const Text(
+                          'In the lab: choose a photo from your device. Your original stays unchanged.'),
+                    ],
+                    if (step == 1) ...[
+                      const Text(
+                          'More intensity means larger pixel changes. Move the slider '
+                          'to explore the recorded test results.'),
+                      const SizedBox(height: 20),
+                      Text('Intensity α = ${result.alpha}',
+                          style: const TextStyle(fontSize: 28)),
+                      Slider(
+                          key: const ValueKey('guide-intensity'),
+                          value: intensity.toDouble(),
+                          min: 0,
+                          max: 5,
+                          divisions: 5,
+                          label: result.alpha,
+                          semanticFormatterCallback: (value) =>
+                              'Intensity ${perceptualResults[value.round()].alpha}',
+                          onChanged: (value) =>
+                              setState(() => intensity = value.round())),
+                      const Text('RECORDED MEANS • 30 IMAGES PER INTENSITY'),
+                      const SizedBox(height: 12),
+                      _guideMetric(
+                          'SSIM',
+                          result.ssim,
+                          'How similar is the structure?',
+                          'Target ≥ 0.95',
+                          intensity <= 1),
+                      _guideMetric(
+                          'PSNR',
+                          '${result.psnr} dB',
+                          'How small is the pixel error?',
+                          'Target ≥ 30 dB',
+                          intensity <= 3),
+                      Text(intensity <= 1
+                          ? 'Both averages meet the quality targets. Individual photos can still fall below them.'
+                          : 'At this intensity, at least one average falls below its quality target.'),
+                      const SizedBox(height: 12),
+                      const Text(
+                          'These are study results, not a prediction for your photo. '
+                          'Higher intensity does not prove stronger protection.'),
+                      const ExpansionTile(
+                          tilePadding: EdgeInsets.zero,
+                          title: Text('Where do these numbers come from?'),
+                          children: [
+                            Text(perceptualResultsMethod),
+                            SizedBox(height: 8),
+                            Text(
+                                'Source: outputs/evaluation/perceptual/alpha_summary.csv'),
+                          ]),
+                    ],
+                    if (step == 2) ...[
+                      const Text(
+                          'SSIM checks structure. PSNR checks pixel error. Higher '
+                          'values mean less visual change. Neither measures whether '
+                          'an AI model was disrupted.'),
+                      const SizedBox(height: 20),
+                      eyebrow('QUICK CHECK'),
+                      const SizedBox(height: 8),
+                      const Text(
+                          'Both quality targets pass. Is semantic protection proven?'),
+                      const SizedBox(height: 12),
+                      Wrap(spacing: 10, runSpacing: 10, children: [
+                        ChoiceChip(
+                            label: const Text('Yes, protected'),
+                            selected: answer == true,
+                            onSelected: (_) => setState(() => answer = true)),
+                        ChoiceChip(
+                            label: const Text('Not yet'),
+                            selected: answer == false,
+                            onSelected: (_) => setState(() => answer = false)),
+                      ]),
+                      if (answer != null) ...[
+                        const SizedBox(height: 12),
+                        Semantics(
+                            liveRegion: true,
+                            child: Text(answer == false
+                                ? 'Exactly. Quality passed; semantic protection still needs separate model evaluation.'
+                                : 'Not quite. A photo can look similar without disrupting a model. Quality and protection need different tests.')),
+                      ],
+                      const SizedBox(height: 20),
+                      const Text(
+                          'In the lab: generate, compare both images, zoom in, and '
+                          'check your photo’s metrics. Save PNG when you are happy with the result.'),
+                    ],
+                    const SizedBox(height: 24),
+                    Wrap(spacing: 12, runSpacing: 12, children: [
+                      if (step > 0)
+                        OutlinedButton(
+                            onPressed: () => selectStep(step - 1),
+                            child: const Text('Back')),
+                      FilledButton(
+                          onPressed: () => step < 2
+                              ? selectStep(step + 1)
+                              : openPage(context, const ProtectionScreen()),
+                          child: Text(
+                              step < 2 ? 'Next step' : 'Try the photo lab')),
+                    ]),
+                  ])),
+          const SizedBox(height: 28),
+          eyebrow('CURIOUS? GO A LITTLE DEEPER'),
+          const SizedBox(height: 8),
+          const Text(
+              'The tour is all you need to start. Tap a term for the research behind it.'),
           const SizedBox(height: 12),
-          const Text('Source: perceptual evaluation / alpha_summary.csv'),
-        ])),
-      ]);
+          for (final entry in glossary.entries)
+            ExpansionTile(
+                title: Text(entry.key,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text(entry.value)]),
+        ]);
+  }
+
+  Widget _guideMetric(String name, String value, String explanation,
+          String target, bool passes) =>
+      Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('$name  $value', style: const TextStyle(fontSize: 28)),
+            Text(explanation),
+            Text(
+                '$target · ${passes ? 'Mean meets target' : 'Mean below target'}'),
+          ]));
 }
 
-class MapPainter extends CustomPainter {
-  const MapPainter();
+class _GuidePhotoPainter extends CustomPainter {
+  const _GuidePhotoPainter(this.showPattern);
+  final bool showPattern;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final p = Paint()
-      ..color = teal.withValues(alpha: .25)
-      ..isAntiAlias = false
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    for (final end in [
-      Offset(size.width * .2, 45),
-      Offset(size.width * .8, 45),
-      Offset(size.width * .2, size.height - 45),
-      Offset(size.width * .8, size.height - 45)
-    ]) {
-      canvas.drawPath(
-          Path()
-            ..moveTo(center.dx, center.dy)
-            ..lineTo(end.dx, center.dy)
-            ..lineTo(end.dx, end.dy),
-          p);
+    final paint = Paint()..color = pixelBackground;
+    canvas.drawRect(Offset.zero & size, paint);
+    paint.color = pixelGold;
+    canvas.drawRect(Rect.fromLTWH(size.width * .7, 25, 30, 30), paint);
+    paint.color = pixelGreen;
+    canvas.drawPath(
+        Path()
+          ..moveTo(0, size.height)
+          ..lineTo(size.width * .32, 50)
+          ..lineTo(size.width * .58, 120)
+          ..lineTo(size.width * .8, 80)
+          ..lineTo(size.width, size.height)
+          ..close(),
+        paint);
+    if (showPattern) {
+      for (var y = 0; y < size.height; y += 10) {
+        for (var x = 0; x < size.width; x += 10) {
+          paint.color = ((x + y) % 30 == 0 ? pixelCoral : pixelCream)
+              .withValues(alpha: .3);
+          canvas.drawRect(
+              Rect.fromLTWH(x.toDouble(), y.toDouble(), 4, 4), paint);
+        }
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant MapPainter oldDelegate) => false;
-}
-
-class GuideScreen extends StatelessWidget {
-  const GuideScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      PageShell(label: '03 / FIELD GUIDE', children: [
-        heading(context, 'A little context.\nA clearer picture.',
-            'Start with the walkthrough. Open any term to go deeper.'),
-        for (final step in [
-          (
-            '01 / CHOOSE',
-            'Bring a photo into the lab. The original stays unchanged.'
-          ),
-          (
-            '02 / CLOAK',
-            'Choose a perturbation intensity and generate a full-resolution PNG. Intensity is not a guarantee of protection.'
-          ),
-          (
-            '03 / INSPECT',
-            'Compare the images, check SSIM and PSNR, and save your output. Semantic protection needs a separate research evaluation.'
-          )
-        ])
-          Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Panel(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    eyebrow(step.$1),
-                    const SizedBox(height: 10),
-                    Text(step.$2)
-                  ]))),
-        const SizedBox(height: 22),
-        eyebrow('THE MODELS & THE MEASURES'),
-        const SizedBox(height: 12),
-        for (final entry in glossary.entries)
-          ExpansionTile(
-              title: Text(entry.key,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
-              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
-              expandedCrossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(entry.value)]),
-      ]);
-}
-
-class CreditsScreen extends StatefulWidget {
-  const CreditsScreen({super.key});
-  @override
-  State<CreditsScreen> createState() => _CreditsScreenState();
-}
-
-class _CreditsScreenState extends State<CreditsScreen> {
-  int selected = 0;
-  @override
-  Widget build(BuildContext context) =>
-      PageShell(label: '04 / THE PEOPLE', children: [
-        heading(context, 'Built by people.\nFor personal privacy.',
-            'Hover, focus, or tap a name to meet the team.\nProfiles are placeholders until the study team is added.'),
-        Wrap(spacing: 10, runSpacing: 10, children: [
-          for (var i = 0; i < team.length; i++)
-            MouseRegion(
-                onEnter: (_) => setState(() => selected = i),
-                child: Focus(
-                    onFocusChange: (focused) {
-                      if (focused) setState(() => selected = i);
-                    },
-                    child: ChoiceChip(
-                        label: Text(team[i].name),
-                        selected: selected == i,
-                        onSelected: (_) => setState(() => selected = i))))
-        ]),
-        const SizedBox(height: 24),
-        AnimatedSwitcher(
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 220),
-            child: Panel(
-                key: ValueKey(selected),
-                color: pixelGreen,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                          height: 180,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: ink.withValues(alpha: .65),
-                              borderRadius: BorderRadius.zero),
-                          child: team[selected].photoAsset == null
-                              ? const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                      PixelIcon(Icons.person_outline,
-                                          size: 65, color: muted),
-                                      SizedBox(height: 8),
-                                      Text('PORTRAIT TO COME',
-                                          style: TextStyle(
-                                              fontSize: 11, letterSpacing: 2))
-                                    ])
-                              : Image.asset(team[selected].photoAsset!,
-                                  fit: BoxFit.contain)),
-                      const SizedBox(height: 24),
-                      eyebrow(team[selected].role.toUpperCase()),
-                      const SizedBox(height: 8),
-                      Text(team[selected].name,
-                          style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'VT323')),
-                      const SizedBox(height: 16),
-                      Text(team[selected].work),
-                    ]))),
-        const SizedBox(height: 24),
-        const Text(
-            'Interaction inspiration: the supplied VengeanceUI / Codrops staggered-grid reference. Adapted for Flutter with keyboard and touch navigation.'),
-      ]);
+  bool shouldRepaint(covariant _GuidePhotoPainter oldDelegate) =>
+      oldDelegate.showPattern != showPattern;
 }
 
 class Panel extends StatelessWidget {
