@@ -1,0 +1,127 @@
+  Future<void> loadVector() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+    try {
+      final asset = await rootBundle.load('assets/cs_uap_v_f32_hwc.bin');
+      final loaded = loadPerturbationAsset(
+          asset.buffer.asUint8List(asset.offsetInBytes, asset.lengthInBytes));
+      if (mounted) {
+        setState(() {
+          vector = loaded;
+          loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          loading = false;
+          error = 'The perturbation could not load. Retry to enter the lab.';
+        });
+      }
+    }
+  }
+
+  Future<void> pick(ImageSource from) async {
+    setState(() {
+      picking = true;
+      error = null;
+    });
+    try {
+      final photo = await ImagePicker().pickImage(source: from);
+      if (photo == null) return;
+      final bytes = await photo.readAsBytes();
+      if (mounted) {
+        setState(() {
+          source = bytes;
+          filename = photo.name;
+          result = null;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => error =
+            'Could not open the photo. Check access permissions or try another image.');
+      }
+    } finally {
+      if (mounted) setState(() => picking = false);
+    }
+  }
+
+  Future<void> generate() async {
+    if (source == null || vector == null) return;
+    setState(() {
+      busy = true;
+      error = null;
+      result = null;
+    });
+    try {
+      final output = await compute(
+          generateCloak, (bytes: source!, vector: vector!, alpha: alpha));
+      if (mounted) {
+        setState(() {
+          result = output;
+          comparison = 1;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() =>
+            error = 'Could not process this image. Try a smaller PNG or JPEG.');
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> export(bool share, BuildContext buttonContext) async {
+    final output = result;
+    if (output == null || exporting) return;
+    final box = buttonContext.findRenderObject() as RenderBox?;
+    final origin =
+        box == null ? null : box.localToGlobal(Offset.zero) & box.size;
+    setState(() => exporting = true);
+    try {
+      if (share) {
+        await Share.shareXFiles([await createShareImageFile(output.output)],
+            sharePositionOrigin: origin);
+      } else if (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) {
+        await Gal.putImageBytes(output.output,
+            name: 'shield_${DateTime.now().millisecondsSinceEpoch}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Cloaked PNG saved to your gallery.')));
+        }
+      } else {
+        final name = 'shield_${DateTime.now().millisecondsSinceEpoch}.png';
+        final file =
+            XFile.fromData(output.output, mimeType: 'image/png', name: name);
+        if (kIsWeb) {
+          await file.saveTo(name);
+        } else {
+          final destination =
+              await getSaveLocation(suggestedName: name, acceptedTypeGroups: [
+            const XTypeGroup(label: 'PNG image', extensions: ['png'])
+          ]);
+          if (destination == null) return;
+          await file.saveTo(destination.path);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cloaked PNG exported.')));
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => error =
+            'Export could not complete. Check permissions or try saving to another location.');
+      }
+    } finally {
+      if (mounted) setState(() => exporting = false);
+    }
+  }
+
+  bool get locked => busy || exporting || picking;
