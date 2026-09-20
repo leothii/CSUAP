@@ -65,7 +65,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        'shield.',
+                        'CLIP SLIP',
                         style: GoogleFonts.pressStart2p(
                           fontSize: 88,
                           fontWeight: FontWeight.w700,

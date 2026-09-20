@@ -10,6 +10,58 @@ class LabResult {
   final int width, height;
   final double? ssim;
   final double psnr;
+
+  double get mse => psnr.isInfinite ? 0 : 255 * 255 / math.pow(10, psnr / 10);
+}
+
+/// Cached nearest-neighbor samples of the full-size image and tiled vector.
+/// Sampling both at the same coordinates preserves the exported pattern scale.
+class CloakPreview {
+  const CloakPreview(this.width, this.height, this.rgb, this.vector);
+  final int width, height;
+  final Uint8List rgb;
+  final Float32List vector;
+}
+
+CloakPreview prepareCloakPreview(({Uint8List bytes, Float32List vector}) job) {
+  final decoded = img.decodeImage(job.bytes);
+  if (decoded == null) throw const FormatException('Unreadable image');
+  final clean = img
+      .bakeOrientation(decoded)
+      .convert(format: img.Format.uint8, numChannels: 3);
+  final scale = math.min(1.0, 400 / math.max(clean.width, clean.height));
+  final width = math.max(1, (clean.width * scale).round());
+  final height = math.max(1, (clean.height * scale).round());
+  final rgb = Uint8List(width * height * 3);
+  final vector = Float32List(rgb.length);
+  for (var y = 0; y < height; y++) {
+    final sy = y * clean.height ~/ height;
+    for (var x = 0; x < width; x++) {
+      final sx = x * clean.width ~/ width;
+      final pixel = clean.getPixel(sx, sy);
+      final offset = (y * width + x) * 3;
+      final vi =
+          ((sy % perturbationSize) * perturbationSize + sx % perturbationSize) *
+              3;
+      for (var c = 0; c < 3; c++) {
+        rgb[offset + c] = pixel[c].toInt();
+        vector[offset + c] = job.vector[vi + c];
+      }
+    }
+  }
+  return CloakPreview(width, height, rgb, vector);
+}
+
+Uint8List renderCloakPreview(({CloakPreview preview, double alpha}) job) {
+  final p = job.preview;
+  final output = img.Image(width: p.width, height: p.height);
+  final rgb = output.data!.toUint8List();
+  for (var i = 0; i < rgb.length; i++) {
+    rgb[i] =
+        ((p.rgb[i] / 255 + job.alpha * p.vector[i]).clamp(0, 1) * 255).round();
+  }
+  // No compression work during a drag; only the bounded preview is encoded.
+  return Uint8List.fromList(img.encodePng(output, level: 0));
 }
 
 Uint8List preparePhoto(Uint8List bytes) {

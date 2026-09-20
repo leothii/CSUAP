@@ -30,16 +30,11 @@ class TeamMember {
 }
 
 const team = [
-  TeamMember('Researcher 01', 'Model development',
-      'Placeholder profile • Add the researcher’s name and portrait.\n\nCS-UAP training, I-FGSM experiments, and the frozen CLIP encoder.'),
-  TeamMember('Researcher 02', 'Evaluation & analysis',
-      'Placeholder profile • Add the researcher’s name and portrait.\n\nPerceptual quality, semantic disruption, caption drift, and downstream evaluation.'),
-  TeamMember('Researcher 03', 'Mobile development',
-      'Placeholder profile • Add the researcher’s name and portrait.\n\nOn-device image processing, interaction design, and application testing.'),
-  TeamMember('Researcher 04', 'Research support',
-      'Placeholder profile • Add the researcher’s name, confirmed role, and portrait.\n\nResearch contribution to be confirmed.'),
-  TeamMember('Adviser', 'Research guidance',
-      'Placeholder profile • Add the adviser’s name and portrait.\n\nStudy design, methodology review, and research supervision.'),
+  TeamMember('Quinjie Benedict Capayan', 'Researcher', 'CLIP SLIP research team.'),
+  TeamMember('Ralph Martin Chua', 'Researcher', 'CLIP SLIP research team.'),
+  TeamMember('Gabriel Diana', 'Researcher', 'CLIP SLIP research team.'),
+  TeamMember('Donjie Libuna', 'Researcher', 'CLIP SLIP research team.'),
+  TeamMember('Ralph Dayot', 'Adviser', 'Research adviser for CLIP SLIP.'),
 ];
 const glossary = <String, String>{
   'CS-UAP':

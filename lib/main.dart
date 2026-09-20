@@ -28,7 +28,7 @@ class CsuapApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'shield. / CS-UAP',
+      title: 'CLIP SLIP',
       theme: pixelTheme(),
       home: IntroScreen(menuBuilder: (_) => const MainMenuScreen()));
 }
@@ -61,7 +61,7 @@ class PageShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-          title: Text('shield.',
+          title: Text('CLIP SLIP',
               style: GoogleFonts.pressStart2p(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -99,7 +99,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     'Choose a photo and apply a cloak.',
     'Learn the steps, models, and metrics.',
     'Read the paper and explore the code.',
-    'Meet the people behind shield.',
+    'Meet the people behind CLIP SLIP',
   ];
 
   @override
@@ -148,7 +148,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                   const SizedBox(height: 24),
                                   FittedBox(
                                       fit: BoxFit.scaleDown,
-                                      child: Text('shield.',
+                                      child: Text('CLIP SLIP',
                                           style: GoogleFonts.pressStart2p(
                                               fontSize: 34,
                                               height: 1.2,
@@ -633,7 +633,8 @@ class _ComparisonClipper extends CustomClipper<Rect> {
 }
 
 class ProtectionScreen extends StatefulWidget {
-  const ProtectionScreen({super.key});
+  const ProtectionScreen({super.key, this.photoPicker});
+  final Future<XFile?> Function(ImageSource source)? photoPicker;
   @override
   State<ProtectionScreen> createState() => _ProtectionScreenState();
 }
@@ -642,6 +643,11 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   Float32List? vector;
   Uint8List? source;
   LabResult? result;
+  CloakPreview? preview;
+  Uint8List? previewBytes;
+  double? previewAlpha;
+  bool renderingPreview = false;
+  String? previewError;
   String? error;
   String filename = '';
   double alpha = .5;
@@ -685,15 +691,24 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       error = null;
     });
     try {
-      final photo = await ImagePicker().pickImage(source: from);
+      final photo = await (widget.photoPicker?.call(from) ??
+          ImagePicker().pickImage(source: from));
       if (photo == null) return;
       final bytes = await photo.readAsBytes();
+      final prepared = vector == null
+          ? null
+          : await compute(prepareCloakPreview, (bytes: bytes, vector: vector!));
       if (mounted) {
         setState(() {
           source = bytes;
           filename = photo.name;
           result = null;
+          preview = prepared;
+          previewBytes = null;
+          previewAlpha = null;
+          previewError = null;
         });
+        refreshPreview();
       }
     } catch (_) {
       if (mounted) {
@@ -702,6 +717,36 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       }
     } finally {
       if (mounted) setState(() => picking = false);
+    }
+  }
+
+  Future<void> refreshPreview() async {
+    if (renderingPreview || preview == null) return;
+    renderingPreview = true;
+    try {
+      // Keep a single job in flight and coalesce moves to the newest intensity.
+      while (mounted && preview != null) {
+        final current = preview!;
+        final intensity = alpha;
+        final bytes = await compute(
+            renderCloakPreview, (preview: current, alpha: intensity));
+        if (!mounted) return;
+        if (identical(current, preview)) {
+          setState(() {
+            previewBytes = bytes;
+            previewAlpha = intensity;
+            previewError = null;
+          });
+          if (intensity == alpha) break;
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => previewError =
+            'Live preview unavailable. Apply cloak to process the full photo.');
+      }
+    } finally {
+      renderingPreview = false;
     }
   }
 
@@ -761,13 +806,13 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           (defaultTargetPlatform == TargetPlatform.android ||
               defaultTargetPlatform == TargetPlatform.iOS)) {
         await Gal.putImageBytes(output.output,
-            name: 'shield_${DateTime.now().millisecondsSinceEpoch}');
+            name: 'clip_slip_${DateTime.now().millisecondsSinceEpoch}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Cloaked PNG saved to your gallery.')));
         }
       } else {
-        final name = 'shield_${DateTime.now().millisecondsSinceEpoch}.png';
+        final name = 'clip_slip_${DateTime.now().millisecondsSinceEpoch}.png';
         final file =
             XFile.fromData(output.output, mimeType: 'image/png', name: name);
         if (kIsWeb) {
@@ -850,22 +895,19 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                 child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
               ),
               const SizedBox(height: 30),
-              Transform.rotate(
-                angle: -.07,
-                child: Container(
-                  width: 110,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: pixelBackground,
-                    border: Border.all(color: pixelCream, width: 2),
-                    boxShadow: const [
-                      BoxShadow(color: pixelGold, offset: Offset(8, 8))
-                    ],
-                  ),
-                  child: const Center(
-                      child: Icon(Icons.add_photo_alternate_outlined,
-                          size: 48, color: pixelMuted)),
+              Container(
+                width: 112,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: pixelBackground,
+                  border: Border.all(color: pixelCream, width: 4),
+                  boxShadow: const [
+                    BoxShadow(color: pixelGold, offset: Offset(8, 8))
+                  ],
                 ),
+                child: const Center(
+                    child: PixelIcon(Icons.add_photo_alternate_outlined,
+                        size: 64, color: pixelMuted)),
               ),
               const SizedBox(height: 30),
               const Text('Start with something worth keeping.',
@@ -897,7 +939,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                   ? 'READY'
                   : busy
                       ? 'WORKING'
-                      : 'ORIGINAL'),
+                      : 'LIVE PREVIEW'),
             ]),
           ),
           if (result != null)
@@ -907,10 +949,21 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               color: pixelSurface,
               height: 320,
               width: double.infinity,
-              child: Image.memory(source!,
+              child: Image.memory(previewBytes ?? source!,
+                  gaplessPlayback: true,
                   fit: BoxFit.contain,
                   errorBuilder: (_, e, s) => const Center(
                       child: Text('Preview unavailable. Try a PNG or JPEG.'))),
+            ),
+          if (result == null && !busy)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                  previewError ??
+                      (previewAlpha == null
+                          ? 'Preparing live preview…'
+                          : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
+                  style: const TextStyle(color: muted, fontSize: 16)),
             ),
           if (busy)
             Container(
@@ -945,6 +998,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                     style: const TextStyle(fontSize: 30)),
               ]),
               Slider(
+                key: const ValueKey('cloak-intensity'),
                 value: alpha,
                 divisions: 100,
                 label: '${(alpha * 100).round()}%',
@@ -952,17 +1006,20 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                     '${(value * 100).round()} percent intensity',
                 onChanged: locked
                     ? null
-                    : (value) => setState(() {
+                    : (value) {
+                        setState(() {
                           alpha = value;
                           result = null;
-                        }),
+                        });
+                        refreshPreview();
+                      },
               ),
               const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [Text('Subtle'), Text('Full vector')]),
               const SizedBox(height: 12),
               const Text(
-                  'More intensity adds more of the trained pattern. Apply to see the result.',
+                  'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
                   style: TextStyle(fontSize: 16, color: muted)),
               const SizedBox(height: 18),
               SizedBox(
@@ -997,14 +1054,18 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           runSpacing: 10,
           children: [
             OutlinedButton.icon(
-                onPressed: locked ? null : () => pick(ImageSource.gallery),
+                onPressed: locked || vector == null
+                    ? null
+                    : () => pick(ImageSource.gallery),
                 icon: const PixelIcon(Icons.add_photo_alternate_outlined),
                 label: Text(source == null ? 'Choose photo' : 'Change photo')),
             if (!kIsWeb &&
                 (defaultTargetPlatform == TargetPlatform.android ||
                     defaultTargetPlatform == TargetPlatform.iOS))
               OutlinedButton.icon(
-                  onPressed: locked ? null : () => pick(ImageSource.camera),
+                  onPressed: locked || vector == null
+                      ? null
+                      : () => pick(ImageSource.camera),
                   icon: const PixelIcon(Icons.camera_alt_outlined),
                   label: const Text('Camera')),
           ]);
@@ -1041,21 +1102,34 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       const SizedBox(height: 22),
       ExpansionTile(
           tilePadding: EdgeInsets.zero,
-          title: const Text('Semantic & downstream evaluation'),
-          subtitle:
-              const Text('Research pipeline required · Not measured here'),
+          title: const Text('For nerds'),
+          subtitle: const Text('Pixel metrics & model evaluation'),
           children: [
+            ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Mean squared error (MSE)'),
+                subtitle: Text(
+                    '${r.mse.toStringAsFixed(4)} / Full-resolution RGB, 0–255 pixel values. Lower means less pixel change.')),
+            ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Applied intensity (α)'),
+                subtitle: Text(
+                    '${alpha.toStringAsFixed(2)} / Trained 224 × 224 RGB pattern tiled across ${r.width} × ${r.height} pixels.')),
             for (final item in [
               (
-                'CLIP Score',
+                'Fooling rate · Not measured',
+                'Percentage of evaluated images whose predicted class changes after cloaking: changed predictions / evaluated images × 100. Requires a target model, fixed candidate classes, and a test set; pixel quality cannot determine this rate.'
+              ),
+              (
+                'CLIP Score · Not measured',
                 'Clean vs cloaked image–text alignment. Requires the CLIP encoder and a shared text reference.'
               ),
               (
-                'BERTScore F1',
+                'BERTScore F1 · Not measured',
                 'Clean vs cloaked ClipCap captions. Requires caption and language models.'
               ),
               (
-                'SDXL / LoRA · CLIP Score & FID',
+                'SDXL / LoRA · CLIP Score & FID · Not measured',
                 'Compare outputs from clean and cloaked adapters. Requires fine-tuning and generated image sets; FID is a dataset metric.'
               )
             ])

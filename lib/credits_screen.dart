@@ -118,7 +118,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                  'Character sprites are illustrative placeholders. Names, roles, and portraits can be replaced with the actual team profiles.'),
+                  'Character sprites are illustrative placeholders for the team’s portraits.'),
             ])),
       );
 }

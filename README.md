@@ -1,4 +1,4 @@
-# shield. / CS-UAP
+# CLIP SLIP
 
 Flutter research application for applying a bundled context-specific universal adversarial perturbation locally. The interface adapts the supplied VengeanceUI / Codrops staggered-grid reference into native Flutter cards, with hover/focus feedback, touch navigation, staggered entrance motion, and reduced-motion support.
 
@@ -9,7 +9,7 @@ flutter pub get
 flutter run -d windows
 ```
 
-Start opens the photo lab. Choose a photo, select an intensity, and generate. Inspect the original and cloaked PNG individually or side by side; zoom to inspect pixels. Save uses a destination picker on desktop, a download on web, and the photo gallery on Android/iOS. Share uses the platform share surface. Camera input is offered on Android/iOS.
+Start opens the photo lab. Choose a photo and adjust intensity to see a live preview before applying the cloak. The preview caches at most 400 pixels per side, sampling the photo and tiled pattern at matching original coordinates. Slider updates coalesce into one background job at a time; the preview displays its rendered intensity. Apply cloak generates the full-resolution PNG and measures image quality. Inspect the original and cloaked PNG individually or side by side; zoom to inspect pixels. Save uses a destination picker on desktop, a download on web, and the photo gallery on Android/iOS. Share uses the platform share surface. Camera input is offered on Android/iOS.
 
 ## Research content
 
@@ -19,7 +19,7 @@ Edit `lib/research_content.dart` to replace the explicitly labeled team placehol
 flutter run --dart-define=RESEARCH_PAPER_URL=https://example.org/paper --dart-define=EXTRA_RESOURCE_URL=https://example.org/supplement
 ```
 
-Unconfigured resources show “Link pending”. The Field Guide walks through choosing, cloaking, and inspecting a photo with an illustrated pattern toggle, an intensity slider that explores recorded SSIM/PSNR means, and a quality-versus-protection knowledge check. Technical definitions remain available below the walkthrough. Research uses an animated timeline with isometric pixel platforms to connect the study question, experiment pipeline, interactive SSIM/PSNR results, and source materials. Credits is a character selector: swipe left/right, use arrow buttons or keyboard arrows, or select a name. Four researcher placeholders and an adviser have illustrative pixel sprites. Both screens respect reduced-motion settings.
+Unconfigured resources show “Link pending”. The Field Guide walks through choosing, cloaking, and inspecting a photo with an illustrated pattern toggle, an intensity slider that explores recorded SSIM/PSNR means, and a quality-versus-protection knowledge check. Technical definitions remain available below the walkthrough. Research uses an animated timeline with isometric pixel platforms to connect the study question, experiment pipeline, interactive SSIM/PSNR results, and source materials. Credits is a character selector: swipe left/right, use arrow buttons or keyboard arrows, or select a name. Researchers Quinjie Benedict Capayan, Ralph Martin Chua, Gabriel Diana, and Donjie Libuna, and adviser Ralph Dayot have illustrative pixel sprites. Both screens respect reduced-motion settings.
 
 ## What the results mean
 
@@ -27,7 +27,7 @@ Unconfigured resources show “Link pending”. The Field Guide walks through ch
 
 SSIM is the mean of full-resolution 7×7 uniform sliding windows per RGB channel, using sample covariance, K1=0.01, K2=0.03, and data range 255. PSNR uses full-resolution RGB mean squared error. These follow the [scikit-image metric conventions](https://scikit-image.org/docs/stable/api/skimage.metrics.html). Images smaller than 7 pixels on either side have unavailable SSIM; identical images have infinite PSNR. Targets are SSIM ≥ 0.95 and PSNR ≥ 30 dB. The training script evaluates floating-point images before export quantization, so its values need not exactly match exported-PNG values.
 
-CLIP Score, ClipCap/BERTScore F1, and downstream SDXL Clean/Cloaked LoRA CLIP Score and FID are explicitly unmeasured in the app. There are no bundled semantic/caption evaluation models or evaluation service. FID needs generated image sets, not a single photo pair. Image-quality success does not imply verified semantic protection.
+After generation, **For nerds** shows full-resolution RGB MSE and applied intensity alongside model evaluation details. Fooling rate (changed class predictions / evaluated images × 100), CLIP Score, ClipCap/BERTScore F1, and downstream SDXL Clean/Cloaked LoRA CLIP Score and FID are explicitly unmeasured in the app. There are no bundled semantic/caption evaluation models or evaluation service. Fooling rate requires a specified target model, fixed candidate classes, and a test set. FID needs generated image sets, not a single photo pair. Image-quality success does not imply verified semantic protection.
 
 ### Recorded perceptual evaluation
 

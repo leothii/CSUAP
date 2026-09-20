@@ -4,8 +4,68 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:csuap/main.dart';
 import 'package:csuap/pixel_theme.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 
 void main() {
+  testWidgets(
+      'lab previews slider changes before applying and reveals nerd metrics',
+      (tester) async {
+    tester.view.physicalSize = const Size(1000, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final photo = img.Image(width: 12, height: 10);
+    img.fill(photo, color: img.ColorRgb8(100, 130, 180));
+    final bytes = Uint8List.fromList(img.encodePng(photo));
+    await tester.pumpWidget(MaterialApp(
+        theme: pixelTheme(),
+        home: ProtectionScreen(
+            photoPicker: (_) async => XFile.fromData(bytes,
+                name: 'test.png', mimeType: 'image/png'))));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Choose photo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose photo'));
+
+    Future<void> waitFor(Finder finder) async {
+      for (var i = 0; i < 200 && finder.evaluate().isEmpty; i++) {
+        await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)));
+        await tester.pump();
+      }
+      expect(finder, findsOneWidget);
+    }
+
+    await waitFor(find.textContaining('Live preview · 50%'));
+    expect(find.text('Save PNG'), findsNothing);
+    final slider = find.byKey(const ValueKey('cloak-intensity'));
+    // Multiple moves while a frame is rendering must settle on the latest value.
+    tester.widget<Slider>(slider).onChanged!(.2);
+    tester.widget<Slider>(slider).onChanged!(.9);
+    tester.widget<Slider>(slider).onChanged!(0);
+    await waitFor(find.textContaining('Live preview · 0%'));
+    final preview = tester.widget<Image>(find.byType(Image).first);
+    final displayed = img.decodePng((preview.image as MemoryImage).bytes)!;
+    expect(displayed.getPixel(0, 0).r, 100);
+    await tester.ensureVisible(find.text('Apply cloak'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply cloak'));
+    await waitFor(find.text('For nerds'));
+    await tester.ensureVisible(find.text('For nerds'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('For nerds'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fooling rate · Not measured'), findsOneWidget);
+    expect(find.textContaining('0.0000 / Full-resolution RGB'), findsOneWidget);
+    expect(find.text('Save PNG'), findsOneWidget);
+    tester.widget<Slider>(slider).onChanged!(.8);
+    await tester.pump();
+    expect(find.text('Save PNG'), findsNothing);
+    expect(find.text('For nerds'), findsNothing);
+    await waitFor(find.textContaining('Live preview · 80%'));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('character selection supports swipes, keys and wraparound',
       (tester) async {
     await tester.pumpWidget(
@@ -16,16 +76,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(card, const Offset(-200, 0));
     await tester.pumpAndSettle();
-    expect(find.text('EVALUATION & ANALYSIS'), findsOneWidget);
+    expect(find.text('Ralph Martin Chua'), findsNWidgets(2));
     await tester.drag(card, const Offset(200, 0));
     await tester.pumpAndSettle();
-    expect(find.text('MODEL DEVELOPMENT'), findsOneWidget);
+    expect(find.text('Quinjie Benedict Capayan'), findsNWidgets(2));
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
-    expect(find.text('RESEARCH GUIDANCE'), findsOneWidget);
+    expect(find.text('ADVISER'), findsOneWidget);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
-    expect(find.text('RESEARCH SUPPORT'), findsOneWidget);
+    expect(find.text('Donjie Libuna'), findsNWidgets(2));
     expect(tester.takeException(), isNull);
   });
   testWidgets('guide explores intensity, explains quality, and opens lab',
@@ -146,11 +206,11 @@ void main() {
   testWidgets('team supports tap selection', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: CreditsScreen()));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Adviser'), 200);
+    await tester.scrollUntilVisible(find.text('Ralph Dayot'), 200);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Adviser'));
+    await tester.tap(find.text('Ralph Dayot'));
     await tester.pumpAndSettle();
-    expect(find.text('RESEARCH GUIDANCE'), findsOneWidget);
+    expect(find.text('ADVISER'), findsOneWidget);
     expect(find.text('PORTRAIT TO COME'), findsOneWidget);
   });
 

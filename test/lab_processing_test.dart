@@ -6,6 +6,59 @@ import 'package:csuap/lab_processing.dart';
 import 'package:csuap/perturbation_protection.dart';
 
 void main() {
+  test('preview pixels match sampled full-resolution output at every intensity',
+      () {
+    final photo = img.Image(width: 803, height: 17);
+    for (final pixel in photo) {
+      pixel.setRgb(pixel.x % 256, pixel.y * 15, 245);
+    }
+    final bytes = Uint8List.fromList(img.encodePng(photo));
+    final vector = Float32List(perturbationValueCount);
+    for (var i = 0; i < vector.length; i++) {
+      vector[i] = (i % 31 - 15) / 100;
+    }
+    final preview = prepareCloakPreview((bytes: bytes, vector: vector));
+    expect(preview.width, 400);
+    expect(preview.height, 8);
+    for (final alpha in [0.0, .5, 1.0]) {
+      final small =
+          img.decodePng(renderCloakPreview((preview: preview, alpha: alpha)))!;
+      final full = img
+          .decodePng(cloakPhoto((bytes: bytes, vector: vector, alpha: alpha)))!;
+      for (final pixel in small) {
+        final original = full.getPixel(pixel.x * full.width ~/ small.width,
+            pixel.y * full.height ~/ small.height);
+        expect(
+            [pixel.r, pixel.g, pixel.b], [original.r, original.g, original.b]);
+      }
+    }
+  });
+
+  test('preview preserves small images and supports extreme aspect ratios', () {
+    for (final size in [(3, 2), (1, 1000), (1000, 1)]) {
+      final bytes = Uint8List.fromList(
+          img.encodePng(img.Image(width: size.$1, height: size.$2)));
+      final preview = prepareCloakPreview(
+          (bytes: bytes, vector: Float32List(perturbationValueCount)));
+      expect(preview.width, inInclusiveRange(1, 400));
+      expect(preview.height, inInclusiveRange(1, 400));
+      expect(img.decodePng(renderCloakPreview((preview: preview, alpha: 0.0))),
+          isNotNull);
+    }
+  });
+
+  test('reported MSE matches exported pixel error including an identical pair',
+      () {
+    final photo = img.Image(width: 8, height: 8);
+    img.fill(photo, color: img.ColorRgb8(100, 100, 100));
+    final bytes = Uint8List.fromList(img.encodePng(photo));
+    final vector = Float32List(perturbationValueCount)
+      ..fillRange(0, perturbationValueCount, 10 / 255);
+    expect(generateCloak((bytes: bytes, vector: vector, alpha: 1.0)).mse,
+        closeTo(100, 1e-9));
+    expect(generateCloak((bytes: bytes, vector: vector, alpha: 0.0)).mse, 0);
+  });
+
   test('staged processing preserves output and quality measurements', () {
     final photo = img.Image(width: 12, height: 10);
     img.fill(photo, color: img.ColorRgb8(100, 130, 180));
