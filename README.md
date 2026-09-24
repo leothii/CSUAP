@@ -11,6 +11,26 @@ flutter run -d windows
 
 Start opens the photo lab. Choose a photo and adjust intensity to see a live preview before applying the cloak. The preview caches at most 400 pixels per side, sampling the photo and tiled pattern at matching original coordinates. Slider updates coalesce into one background job at a time; the preview displays its rendered intensity. Apply cloak generates the full-resolution PNG and measures image quality. Inspect the original and cloaked PNG individually or side by side; zoom to inspect pixels. Save uses a destination picker on desktop, a download on web, and the photo gallery on Android/iOS. Share uses the platform share surface. Camera input is offered on Android/iOS.
 
+## Website
+
+Run `flutter run -d chrome` for a local browser preview, or build the deployable
+site with `flutter build web --release`. Serve the contents of `build/web` from
+a static host. For a subdirectory, supply `--base-href /your-path/` when building.
+
+Do not open `web/index.html` directly or through Live Server: it is a source
+template, not the compiled app. To preview a release build locally, run
+`python -m http.server 8080 --bind 127.0.0.1 --directory build/web` and open
+`http://127.0.0.1:8080`.
+
+The home screen pairs the existing menu with a locally rendered low-poly retro
+computer on wide screens and stacks the scene below the menu on narrow screens.
+Move the pointer to tilt it, or use Preview cloak to toggle an illustrative
+pattern. The scene is Flutter geometry, not a downloaded GLB or external viewer;
+it renders immediately across platforms and has no continuous animation.
+Reduced-motion settings keep the camera still. The illustration does not
+demonstrate measured protection. Browser startup and installed-app colors match
+the app palette.
+
 ## Research content
 
 Edit `lib/research_content.dart` to replace the explicitly labeled team placeholders, roles, and portrait asset paths. Register portraits under Flutter assets in `pubspec.yaml`. The repository node links to this project's Git remote. Supply the paper and optional resource URLs at launch/build time:

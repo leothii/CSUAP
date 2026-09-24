@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'lab_processing.dart';
 import 'intro_screen.dart';
+import 'retro_computer.dart';
 import 'perturbation_protection.dart';
 import 'research_content.dart';
 import 'research_screen.dart';
@@ -139,10 +140,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                             horizontal: 24, vertical: 40),
                         child: Center(
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 320),
-                            child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
+                            constraints: const BoxConstraints(maxWidth: 1080),
+                            child: HomeStage(
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
                                   const PixelIcon(Icons.shield_outlined,
                                       size: 48, color: pixelMuted),
                                   const SizedBox(height: 24),
@@ -242,13 +244,13 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                               color: pixelMuted,
                                               fontSize: 20))),
                                   const SizedBox(height: 40),
-                                  const Text('ON-DEVICE PROCESSING ? CS-UAP',
+                                  const Text('ON-DEVICE PROCESSING · CS-UAP',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: 13,
                                           color: pixelMuted,
                                           letterSpacing: .8)),
-                                ]),
+                                ])),
                           ),
                         ),
                       ),

@@ -1,0 +1,2075 @@
+Nightshade: Prompt-Speciﬁc Poisoning Attacks on Text-to-Image Generative Models
+Shawn Shan, Wenxin Ding, Josephine Passananti, Stanley Wu, Haitao Zheng, Ben Y . Zhao
+Department of Computer Science, University of Chicago
+{shawnshan, wenxind, josephinep, stanleywu, htzheng, ravenben}@cs.uchicago.edu
+Abstract—Trained on billions of images, diffusion-based text-
+to-image models seem impervious to traditional data poisoning
+attacks, which typically require poison samples approaching
+20% of the training set. In this paper, we show that state-
+of-the-art text-to-image generative models are in fact highly
+vulnerable to poisoning attacks. Our work is driven by two key
+insights. First, while diffusion models are trained on billions
+of samples, the number of training samples associated with
+a speciﬁc concept or prompt is generally on the order of
+thousands. This suggests that these models will be vulnerable to
+prompt-speciﬁc poisoning attacks that corrupt a model’s ability
+to respond to speciﬁc targeted prompts. Second, poison samples
+can be carefully crafted to maximize poison potency to ensure
+success with very few samples.
+We introduce Nightshade, a prompt-speciﬁc poisoning at-
+tack optimized for potency that can completely control the
+output of a prompt in Stable Diffusion’s newest model (SDXL)
+with less than 100 poisoned training samples. Nightshade also
+generates stealthy poison images that look visually identical
+to their benign counterparts, and produces poison effects
+that “bleed through” to related concepts. More importantly,
+a moderate number of Nightshade attacks on independent
+prompts can destabilize a model and disable its ability to
+generate images for any and all prompts. Finally, we propose
+the use of Nightshade and similar tools as a defense for content
+owners against web scrapers that ignore opt-out/do-not-crawl
+directives, and discuss potential implications for both model
+trainers and content owners.
+1. Introduction
+Since 2022, diffusion based text-to-image models have
+taken the Internet by storm, growing from research projects
+to numerous applications in advertising, fashion [1, 2], web
+development [3, 4, 5], and AI art [6, 7, 8, 9]. Models like
+Stable Diffusion SDXL, Midjourney v5, Dalle-3, Imagen,
+Adobe Fireﬂy and others boast tens of millions of registered
+users and have produced billions of images [10].
+To date, public consensus considers these diffusion mod-
+els impervious to data poisoning attacks. Poisoning attacks
+manipulate training data to introduce unexpected behavior to
+the model at training time, and have been studied extensively
+in the context of classiﬁcation tasks using deep neural
+networks (DNN). Poisoning attacks cause predictable mis-
+classiﬁcations, but typically demand a substantial volume
+of poison data for success, e.g., ratio of poison training
+samples to benign samples of 20% or higher. Since today’s
+diffusion models are trained on hundreds of millions (or
+billions) of images, a common assumption is that poisoning
+attacks on these models would require millions of poison
+samples, making them infeasible in practice.
+In this work, we demonstrate a surprising result: state-
+of-the-art text-to-image models are in fact highly vulnerable
+to data poisoning attacks. Our work is based on two key
+insights. First, while these models are trained on millions
+and billions of images, the number of training samples
+associated with a speciﬁc concept or prompt is quite low,
+on the order of thousands. We call this property “concept
+sparsity,” and it suggests the viability of prompt-speciﬁc
+poisoning attacks that corrupt a model’s ability to respond
+to speciﬁc targeted prompts. Second, we observe that nat-
+ural benign images exhibit large variance in text labels,
+image composition, and image features, all of which produce
+destructive interference to minimize training inﬂuence. By
+crafting poison samples that minimize these sources of
+interference, we can produce highly effective poison attacks
+with very few samples. Unlike previous work on backdoor
+attacks [11, 12, 13], we show that successful prompt-speciﬁc
+poisoning attacks do not require access to the model internal
+pipeline, and only need a very small number of poison
+samples to override a speciﬁc target prompt. For example,
+a single Nightshade attack (“car” to “cow”) targeting Stable
+Diffusion SDXL has a high probability of success using only
+50 optimized samples, and the poisoned model outputs an
+image of a cow for every mention of a car in its prompts.
+This paper describes our experiences and ﬁndings in
+designing and evaluating prompt-speciﬁc poisoning attacks
+against generative text-to-image models. First, we validate
+our hypothesis of “concept sparsity” in existing large-scale
+datasets used to train generative image models. We ﬁnd that
+as hypothesized, concepts in popular training datasets like
+LAION-Aesthetic exhibit very low training data density,
+both in terms of concept sparsity (# of training samples
+associated explicitly with a speciﬁc concept) and semantic
+sparsity (# of samples associated with a concept and its
+semantically related terms). Second, we conﬁrm a proof
+of concept poisoning attack (by mislabeling images) can
+successfully corrupt image generation for speciﬁc concepts
+(e.g., “dog”) using 500-1000 poison samples. Successful
+attacks on Stable Diffusion’s newest model (SDXL) are con-
+ﬁrmed using both CLIP-based classiﬁcation and an (IRB-
+
+approved) user study. Unfortunately this attack still requires
+too many poison samples and is easily detected/ﬁltered.
+Third, we propose a highly optimized prompt-speciﬁc
+poisoning attack we call Nightshade. Nightshade uses mul-
+tiple optimization techniques (including targeted adversarial
+perturbations) to generate stealthy and highly effective poi-
+son samples, with four observable beneﬁts.
+1) Nightshade poison samples are benign images shifted
+in the feature space, and still look like their benign
+counterparts to the human eye. They avoid detection
+through human inspection and prompt generation.
+2) Nightshade samples produce stronger poisoning effects,
+enabling highly successful poisoning attacks with very
+few (e.g., 100) samples.
+3) Nightshade’s poisoning effects “bleed through” to re-
+lated concepts, and thus cannot be circumvented by
+prompt replacement. For example, Nightshade sam-
+ples poisoning “fantasy art” also affect “dragon” and
+“Michael Whelan” (a well-known fantasy and SciFi
+artist). Nightshade attacks are composable, e.g. a single
+prompt can trigger multiple poisoned prompts.
+4) When many independent Nightshade attacks affect dif-
+ferent prompts on a single model ( e.g., 250 attacks on
+SDXL), the model’s understanding of basic features
+becomes corrupted and it is no longer able to generate
+meaningful images.
+We also observe that Nightshade exhibits strong transfer-
+ability across models and can resist a spectrum of defenses
+intended to deter current poisoning attacks.
+Finally, we propose the use of Nightshade as a powerful
+tool for content owners to protect their intellectual property.
+Today, content owners can only rely on opt-out lists and do-
+not-scrape/crawl directives, tools that are not enforceable or
+veriﬁable, and easily ignored by any model trainer. Movie
+studios, book publishers, game producers and individual
+artists can use systems like Nightshade to provide a strong
+disincentive against unauthorized data training. We discuss
+current deployment plans, beneﬁts and implications in §8.
+Note that Nightshade differs substantially from recent
+tools that disrupt image style mimicry attacks such as
+Glaze [14] or Mist [15]. These tools seek to prevent home
+users from ﬁne-tuning their local copies of models on 10-
+20 images from a single artist, and they assume a majority
+of the training images have been protected by the tool. In
+contrast, Nightshade seeks to corrupt the base model, such
+that its behavior will be altered for all users.
+2. Background and Related Work
+2.1. Text-to-Image Generation
+Model Architecture. Text-to-image generative models
+evolved from generative adversarial networks (GAN) and
+variational autoencoders (V AE) [16, 17, 18] to diffusion
+models [19, 20]. We defer detailed background on diffusion
+models to [21]. Recent work [19] further improved the
+generation quality and training cost of diffusion models
+by leveraging latent diffusion, which converts images from
+pixel space into a latent feature space using variational au-
+toencoders. Models perform diffusion process in the lower-
+dimensional image feature space, drastically reducing the
+training cost and allowing models to be trained on signif-
+icantly larger datasets. Today, latent diffusion is used in
+almost all state-of-the-art models [22, 23, 24, 25, 26].
+Training Data Sources. Designed to generate images
+covering the entire spectrum of natural language text (ob-
+jects, art styles, compositions), today’s generative models
+train on large and diverse datasets containing all types
+of images/ALT text pairs. Models like Stable Diffusion
+and DALLE-2 [26, 27] are trained on datasets ranging in
+size from 500 million to 5 billion images scraped from
+the web [28, 29]. These datasets are subject to minimal
+moderation – data collectors typically only curate data to
+exclude samples with insufﬁcient or misaligned captions as
+determined by an automated alignment model [29]. This
+creates the possibility of data poisoning attacks [30].
+Continuous Model Training. Training these models from
+scratch can be expensive ( e.g., 150K GPU hours or 600K
+USD for the ﬁrst version of stable diffusion [31]). As a re-
+sult, it is common practice for model trainer to continuously
+update existing models on newly collected data to improve
+performance [25, 32, 33, 34]. Stable Diffusion version 1.4,
+1.5, and 2.1 are all continuously trained from previous
+versions. Stable Diffusion XL 1.0 is continuously trained
+on version 0.9. Many companies, such as NovelAI [25],
+Scenario.gg [33], and Lensa AI [35], also continuously
+train public models using new training data tailored to
+their speciﬁc use case. Today, online platforms also offer
+continuous-training-as-a-service [25, 36, 37].
+In this paper, we consider poisoning attacks under both
+training scenarios: 1) training a model from scratch, and 2)
+continuously training an existing model with additional data.
+2.2. Data Poisoning Attacks
+Data poisoning attacks inject poison data into training
+pipelines to degrade performance of the trained model.
+Poisoning Attacks against Classiﬁers. Attacks against
+classiﬁers are well studied [38]. In addition to standard mis-
+classiﬁcation attacks, the well-known backdoor attacks [39,
+40] inject a hidden trigger, e.g. a speciﬁc pixel or text pat-
+tern [41, 42], into the model. This causes inputs containing
+the trigger to be misclassiﬁed during inference time. Some
+have also proposed clean-label backdoor attacks, where
+attackers do not control the labels assigned to their poison
+data samples [43, 44, 45].
+Defenses against data poisoning are also well studied.
+Some [46, 47, 48, 49, 50, 51] focus on detecting poison data
+by leveraging their unique behavior while others [52, 53, 54]
+advocate for robust training to mitigate the inﬂuence of
+poison data during training time. However, poison defenses
+continue to face challenges, particularly as more potent,
+adaptive attacks frequently ﬁnd ways to bypass existing
+defenses [40, 55, 56, 57, 58].
+Poisoning Attacks against Diffusion Models. Poison-
+ing attacks against diffusion models remain limited. Some
+
+Poison data 
+(image/text pairs)
+a) Generating poison data and post online
+Internet
+T rain 
+Text-to-image 
+model (poisoned)
+b) Trainer trains model using data
+from the Internet 
+c) Model fails to generate 
+correct images A Photo of a C
+Poison Algorithm
+Generate poison data 
+to disrupt concept C
+Upload Incorrect
+Image
+Figure 1. Overview of prompt-speciﬁc poison attacks against generic text-to-image generative models. (a) User generates poison data (text and image
+pairs) designed to corrupt a given concept C (i.e. a keyword like “dog”), then posts them online; (b) Model trainer scrapes data from online webpages to
+train its generative model; c) Given prompts that contain C, poisoned model generates incorrect images.
+propose backdoor poisoning attacks that inject attacker-
+deﬁned triggers into text prompts to generate speciﬁc im-
+ages [11, 12, 13], but assume that attackers can directly
+modify the denoising diffusion steps [11, 12] or directly
+alter model’s overall training loss [13].
+Our work differs in both attack goal and threat model.
+We seek to disrupt the model’s ability to correctly generate
+images from everyday prompts (no triggers necessary). Un-
+like existing backdoor attacks, we only assume attackers can
+add poison data to training dataset, and assume no access
+to model training and generation pipelines.
+Glaze [14] and MIST [15] leverage data poisoning to
+protect artwork from diffusion-based style mimicry using
+model ﬁne-tuning. They differ from our attack in both attack
+goal and threat model. Glaze and Mist disrupt ﬁne-tuning
+of local models, a process usually involving 10-20 training
+images, and assume that most or all the training images
+have been protected by the tool. In contrast, our prompt-
+speciﬁc attack seeks to corrupt general functionality of the
+base model itself, and must rely on a small number of
+optimized poison samples to overcome large amounts of
+benign training data (either in continuous training of existing
+models or training new models from scratch). We show that
+adapting Glaze for prompt-speciﬁc poisoning results in poor
+attack performance (§5).
+Beyond diffusion models, a few recent works study
+poisoning attacks against other types of generative models,
+including large language models [59], contrastive learn-
+ing [60], and multimodal encoders [61, 62].
+3. Feasibility of Poisoning Diffusion Models
+In this work, we demonstrate the unexpected ﬁnding
+that generic text-to-image diffusion models, despite having
+massive training datasets, are susceptible to data poisoning
+attacks. More importantly, our study proposes practical,
+prompt-speciﬁc poisoning attacks against these generic dif-
+fusion models, where by just injecting a small amount of
+poison samples into the model training set, attackers can
+effectively corrupt the model’s ability to respond to speciﬁc
+prompts. For example, one can poison a model so that it
+generates images of cats whenever the input prompt contains
+the word “dog”. Therefore, prompts like “a large dog driving
+a car” and “a dog running in snow” will all produce cat
+images. Figure 1 illustrates the high-level attack process.
+Note that our attacks do not require modiﬁcations to the
+model training pipeline or the diffusion process, in contrast
+with existing attacks discussed in §2.
+Common Concepts as the Poison Targets. Our attacks
+can target one or multiple speciﬁc keywords in any prompt
+sequences. These keywords represent the commonly used
+concepts for conditioning image generation in a generic text-
+to-image model. For example, they describe the object in the
+image, e.g., “dog”, or the style of the image, e.g., “anime”.
+For clarity, we refer to these keywords as concepts.
+Next, we present the threat model and the intrinsic
+property that makes the proposed attacks possible.
+3.1. Threat Model
+Attacker. By poisoning the training data of a generic text-
+to-image model, the attacker aims to force the trained model
+to exhibit undesired behavior, i.e., generating false images
+when prompted with one or more concepts targeted by the
+attack. More speciﬁcally, we assume the attacker:
+• can inject a small number of poison data (image/text pairs)
+to the model’s training dataset;
+• can arbitrarily modify the image and text content for all
+poison data (later we relax this assumption in §6 to build
+advanced attacks);
+• has no access to any other part of the model pipeline ( e.g.,
+training, deployment);
+• has access to an open-source text-to-image model ( e.g.,
+stable diffusion).
+We note that unlike prior works on poisoning text-to-image
+diffusion models (§2), our attack does not require privileged
+access to the model training and deployment. Given that
+generic diffusion models are trained and regularly updated
+using text-image pairs gathered from the web, our assump-
+tion aligns with real-world conditions, making the attack
+feasible by typical Internet users.
+Model Training. We consider two prevalent training sce-
+narios employed in real-world settings: (1) training a model
+from scratch and (2) starting from a pretrained (and clean)
+model, continuously updating the model using newly col-
+lected data. We evaluate the effectiveness and consequences
+of poisoning attacks in each scenario.
+3.2. Concept Sparsity Induces Vulnerability
+Existing research ﬁnds that an attack must poison a
+decent percentage of the model’s training dataset to be effec-
+tive. For DNN classiﬁers, the poisoning ratio should exceed
+
+5% for backdoor attacks [39, 63] and 20% for indiscriminate
+attacks [64, 65]. A recent backdoor attack against diffusion
+models needs to poison half of the dataset [13]. Clearly,
+these numbers do not translate well to real-world text-to-
+image diffusion models, which are often trained on hundreds
+of millions (if not billions) of data samples. Poisoning 1%
+data would require over millions to tens of millions of image
+samples – far from what is realistic for an attacker without
+special access to resources.
+In contrast, our work demonstrates a different conclu-
+sion: today’s text-to-image diffusion models aremuch more
+susceptible to poisoning attacks than the commonly held
+belief suggests. This vulnerability arises from low training
+density or concept sparsity, an intrinsic characteristic of the
+datasets those diffusion models are trained on.
+Concept Sparsity. While the total volume of training data
+for diffusion models is substantial, the amount of training
+data associated with any single concept is limited, and
+signiﬁcantly unbalanced across different concepts. For the
+vast majority of concepts, including common objects and
+styles that appear frequently in real-world prompts, each is
+associated with a very small fraction of the total training set,
+e.g., 0.1% for “dog” and 0.04% for “fantasy.” Furthermore,
+such sparsity remains at the semantic level, after we aggre-
+gate training samples associated with a concept and all its
+semantically related “neighbors” ( e.g., “puppy” and “wolf”
+are both semantically related to “dog”).
+Vulnerability Induced by Training Sparsity. To corrupt
+the image generation on a benign concept C, the attacker
+only needs to inject sufﬁcient amounts of poison data to
+offset the contribution of C’s clean training data and those
+of its related concepts. Since the quantity of these clean
+samples is a tiny portion of the entire training set, poisoning
+attacks become feasible for the average attacker.
+3.3. Concept Sparsity in Today’s Datasets
+We empirically quantify the level of concept sparsity in
+today’s diffusion datasets. We examine LAION-Aesthetic,
+the most frequently used open-source dataset for training
+text-to-image models [66]. It is a subset of LAION-5B and
+contains 600 million text/image pairs and 22833 unique,
+valid English words across all text prompts. We eliminate
+invalid words by leveraging the Open Multilingual Word-
+Net [67] and use all nouns as concepts.
+Word Frequency. We measure concept sparsity by the
+fraction of data samples associated with each concept C,
+roughly equivalent to the frequency of C’s appearance in
+the text portion of the data samples, i.e., word frequency.
+Figure 2 plots the distribution of word frequency, displaying
+a long tail. For over 92% of the concepts, each is associated
+with less than 0.04% of the images, or 240K images. For a
+more practical context, Table 1 lists the word frequency for
+ten concepts sampled from the most commonly used words
+to generate images on Midjourney [68]. The mean frequency
+is 0.07%, and 6 of 10 concepts show 0.04% or less.
+Semantic Frequency. We further measure concept sparsity
+at the semantic level by combining training samples linked
+Concept Word
+Freq.
+Semantic
+Freq. Concept Word
+Freq.
+Semantic
+Freq.
+night 0.22% 1.69% sculpture 0.032% 0.98%
+portrait 0.17% 3.28% anime 0.027% 0.036%
+face 0.13% 0.85% neon 0.024% 0.93%
+dragon 0.049% 0.104% palette 0.018% 0.38%
+fantasy 0.040% 0.047% alien 0.0087% 0.012%
+TABLE 1. Example word and semantic frequencies in LAION-Aesthetic.
+Figure 2. Concept sparsity in LAION-Aesthetic measured by word and
+semantic frequencies. Note the long-tail distribution and log-scale on both
+Y axes.
+with a concept and those of its semantically related concepts.
+To achieve this, we employ the CLIP text encoder (used by
+Stable Diffusion and DALLE-2 [69]) to map each concept
+into a semantic feature space. Two concepts whose L2
+feature distance is under 4.8 are considered semantically re-
+lated. The threshold value of 4.8 is based on empirical mea-
+surements of L2 feature distances between synonyms [70].
+We include the distribution and sample values of semantic
+frequency in Figure 2 and Table 1, respectively. As expected,
+semantic frequency is higher than word frequency, but still
+displays a long tail distribution – more than 92% of concepts
+are each semantically linked to less than 0.2% of samples.
+This sparsity is also visible from a PCA visualization of the
+semantic feature space (Appendix A.2).
+4. A Simple “Dirty-Label” Poisoning Attack
+Next step in exploring the potential for poisoning at-
+tacks is to empirically validate the effectiveness of simple,
+“dirty-label” poisoning attacks. Here the attacker introduces
+mismatched text-image pairs into the training data, trying
+to prevent the model from establishing accurate association
+between speciﬁc concepts and their corresponding images.
+We evaluate this basic attack on four generic, text-to-
+image models, including the most recent model from Stable
+Diffusion [23]. We measure attack success by examining
+the correctness of generated images using two metrics: a
+CLIP-based image classiﬁer and human inspection. Our key
+ﬁnding is that the attack is highly effective when 1000
+poison samples are injected into the training data.
+Figure 3 shows an example set of poison data created
+to attack the concept “dog” where the concept “cat” was
+chosen as the destination. Once enough poison samples enter
+the training set, they overpower the inﬂuence of C’s clean
+training data, causing the model to make incorrect asso-
+ciation betweenC and ImageA. At run-time, the poisoned
+model outputs an image of the destination conceptA (“cat”)
+when prompted by the targeted concept C (“dog”).
+
+A dog on the grass
+...
+Dog digital art ... Animal art dog pencil drawings 
+Dirty-label poison data
+Figure 3. Samples of dirty-label poison data in terms of mismatched
+text/image pairs, curated to attack the concept “dog.” Here “cat” was chosen
+by the attacker as the destination concept A.
+Attack Notation. The key to the attack is the curation of
+the mismatched text/image pairs. To attack a regular con-
+ceptC (e.g., “dog”), the attacker performs the following:
+• select a “destination” conceptA unrelated toC as guide;
+• build a collection of text prompts T extC containing the
+wordC while ensuring none of them include A;
+• build a collection of images ImageA, where each image
+visually captures the essence of A but contains no visual
+elements ofC;
+• pair a text prompt from T extC with an image from
+ImageA.
+Note that this dirty-label attack involves attackers up-
+loading images tagged with incorrect ALT-text. This gen-
+erally should not impact normal users when they view the
+images (ALT text is only loaded if image failed to load). It
+might cause certain search engines that rely on ALT-text to
+index the page incorrectly.
+Experiment Setup. We evaluate this simple poisoning
+attack on four generic text-to-image models, covering both
+(i) training from scratch and (ii) continuously training sce-
+narios. For (i), we train a latent diffusion model [19] from
+scratch1 using 1M text-image pairs from the Conceptual
+Caption dataset [71]. We name the model as LD-CC. For (ii)
+we consider three popular pretrained models: stable diffu-
+sion V2 [27], stable diffusion SD-XL [23], DeepFloyd [24].
+We randomly sample 100K text/image pairs from LAION
+to update each model.
+Following literature on popular prompts [72], we select
+121 concepts to attack, including both objects (91 common
+objects from the COCO dataset) and art styles (20 from
+Wikiart [73] + 10 digital art styles from [74]). We measure
+attack effectiveness by assessing whether the model, when
+prompted by concept C, will generate images that convey
+C. This assessment is done using both a CLIP-based image
+classiﬁer [69] and human inspection via a crowdsourced user
+study (IRB-approved). Interestingly, we ﬁnd that in general,
+human users give higher success scores to attacks than the
+CLIP classiﬁer. Examples of generated images by clean and
+poisoned models are shown in Figure 4, with 500 and 1000
+poison samples in the training set. Additional details of our
+experiments are described later in §6.1.
+Attacking LD-CC. In this training-from-scratch scenario,
+for each of the 121 concepts targeted by our attack, the
+1. We note that training-from-scratch is prohibitively expensive and has
+not been attempted by any prior poisoning attacks against diffusion models.
+Training each LD-CC model takes 8 days on an NVIDIA A100 GPU.
+Poisoned Concept C
+Poisoned Model (SD-XL) 
+Clean Model
+(SD-XL)
+Dog
+ Car Cubism
+500 poison
+samples
+1000 poison
+samples
+Destination Concept A 
+Cat Cow Cartoon
+Stop Sign
+Bird
+Figure 4. Example images generated by the clean (unpoisoned) and
+poisoned SD-XL models with different # of poison data. The attack effect
+is apparent with 1000 poisoning samples, but not at 500 samples.
+average number of clean training samples semantically as-
+sociated with a concept is 2260. Results show that, adding
+500 poison training samples can effectively suppress the
+inﬂuence of clean data samples during model training, re-
+sulting in an attack success rate of 82% (human inspection)
+and 77% (CLIP classiﬁcation). Adding 500 more poison
+data further boosts the attack success rate to 98% (human
+inspection) and 92% (CLIP classiﬁcation). Details are in
+Figure 19 in the Appendix.
+Attacking SD-V2, SD-XL, DeepFloyd. Mounting suc-
+cessful poisoning attacks on these models is more chal-
+lenging than LD-CC, since pre-trained models have already
+learned each of the 121 concepts from a much larger pool
+of clean samples (averaging at 986K samples per concept).
+However, by injecting 750 poisoning samples, the attack
+again effectively disrupts the image generation at a high
+(85%) probability, reported by both CLIP classiﬁcation (Fig-
+ure 20 in the Appendix) and human inspection (Figure 21
+in the Appendix). Injecting 1000 poisoning samples pushes
+the success rate beyond 90%.
+Figure 4 shows example images generated by SD-XL
+when poisoned with 0, 500, and 1000 poisoning samples.
+Here we present four attacks aimed at concepts C (“dog”,
+“car”, “cubism”, “Sport car”), using the destination con-
+ceptA (“cat”, “cow”, “cartoon”, “Tesla”), respectively. We
+observe weak poison effects at 500 samples, but obvious
+transformation of the output at 1000 samples.
+We also ﬁnd that this simple attack is more effective at
+corrupting style concepts than object concepts (see Figure 22
+in the Appendix). This is likely because styles are typically
+conveyed visually by the entire image, while objects deﬁne
+speciﬁc regions within the image. Later in §5 we leverage
+this observation to build a more advanced attack.
+Concept Sparsity Impact on Attack Efﬁcacy. We further
+study how concept sparsity impacts attack efﬁcacy. We
+sample 15 object concepts with varying sparsity levels, in
+terms of word and semantic frequency discussed in §3.3.
+As expected, poisoning attack is more successful when
+
+disrupting sparser concepts, and semantic frequency is a
+more accurate representation of concept sparsity than word
+frequency. These empirical results conﬁrm our hypothesis
+in §3.2. We include the detailed plots in the Appendix
+(Figure 23 and Figure 24).
+5. Nightshade: an Optimized Prompt-Speciﬁc
+Poisoning Attack
+Success using the simple, dirty-label attack demonstrates
+the feasibility of poisoning text-to-image diffusion mod-
+els. Here we introduce Nightshade, a highly potent and
+stealthy prompt-speciﬁc poisoning attack. Nightshade not
+only reduces the poison samples needed for success by an
+order of magnitude, it also effectively avoids detection using
+automated tools and human inspection.
+Next, we discuss Nightshade by ﬁrst presenting the de-
+sign goals and initial options. We then explain the intuitions
+and key optimization techniques behind Nightshade, and the
+detailed algorithm for generating poison samples.
+5.1. Design Goals and Potential Options
+We formulate advanced poisoning attacks to accomplish
+the following two requirements:
+• Succeed with fewer poison samples – Lacking infor-
+mation about the websites and timing at which the model
+trainers scrap data as their training set, it is highly likely
+that a large portion of poison samples released into the
+wild will not be scraped. Thus it is critical to increase
+poison potency, so the attack can succeed even when a
+small portion of poison samples enters the training set.
+• Avoid human and automated detection : Successful at-
+tacks must avoid standard data curation or ﬁltering by both
+humans ( i.e., visual inspection) and automated methods.
+The basic, dirty-label attack (§4) fall short in this regard,
+as there is a mismatch between the image and text in each
+poison sample.
+Design Alternatives. In our quest for advanced attacks, we
+ﬁrst considered extending existing designs to our problem
+context, but none proved to be effective. In particular, we
+considered the method of adding perturbations to images
+to shift their feature representations, which has been used
+by existing works to disrupt style mimicry [14, 15] and
+inpainting [75]. However, we ﬁnd that the poison samples
+generated through this method exhibit a limited poisoning
+effect, often comparable to that of the simple, dirty-label
+attack. For example, when applying Glaze [14] to build
+our poison attacks, a successful attack requires 800 poison
+samples, similar to that of the simple dirty label attack.
+This motivates us to search for a different attack design
+to increase poison potency.
+5.2. Intuitions and Optimization Techniques
+We design Nightshade based on two intuitions to meet
+the two criteria in §5.1:
+• Maximizing Poison Potency: To reduce the number of
+poison text-image pairs necessary for a successful attack,
+one should magnify the inﬂuence of each poison sample
+on the model’s training while minimizing conﬂicts among
+different poison samples.
+• Avoiding Detection: The text and image content of a
+poison data should appear natural and consistent with each
+other, to both automated detectors and human inspectors.
+Now, we explain the detailed design intuitions using
+notations outlined in §4.
+Maximizing Poison Potency. We attack a concept C
+by causing the model to output concept A whenever C
+is prompted. To achieve this, the poison data needs to
+overcome contribution made by C’s benign training data.
+Benign training data is naturally noisy and suboptimal. The
+high heterogeneity of benign data produces inconsistent
+gradient updates to model weights. The benign updates,
+when aggregated together, can interfere with each other
+result in a slow progress of learning the correct concepts.
+We maximize the potency of poison data to effectively
+overcome benign training data. Our goal is to reduce vari-
+ance and inconsistency across poison data. First, we re-
+duce the noise in poison prompts T extC by only including
+prompts that focuses on the key concept C. Second, when
+crafting poison image ImageA, we select images from a
+well-deﬁned concept A (different from C) to ensure the
+poison data are pointed towards the same direction (direction
+ofA), and thus, aligned with each other. Third, we ensure
+each ImageA are perfectly aligned and is the optimal
+version of A as understood by the text-to-image models
+– we obtain ImageA by directly querying the models to
+generate “a photo of {A}”.
+Avoiding Detection. So far, we have created poison data by
+pairing generated, prototypical images of A with optimized
+text prompts ofC. Unfortunately, since their text and image
+content are misaligned, this poison data can be easily spotted
+by model trainers using either automated alignment classi-
+ﬁers or human inspection. To overcome this, Nightshade
+takes an additional step to replace the generated images of
+A with perturbed, natural images of C that bypass poison
+detection while providing the same poison effect.
+This step is inspired by clean-label poisoning for clas-
+siﬁers [44, 45, 76, 77]. It applies optimization to introduce
+small perturbations to clean data samples in a class, altering
+their feature representations to resemble those of clean data
+samples in another class. Also, the perturbation is kept
+sufﬁciently small to evade human inspection [78].
+We extend the concept of “guided perturbation” to build
+Nightshade’s poison data. Given the generated images of
+A, hereby referred to as “anchor images,” our goal is to
+build effective poison images that look visually identical to
+natural images of C. Let t be a chosen poison text prompt,
+xt be the natural, clean image that aligns 2 with t. Let xa
+be one of the anchor images. The optimization to ﬁnd the
+poison image for t, or xp
+t =xt +δ, is deﬁned by
+min
+δ
+D (F (xt +δ),F (xa)), subject to ‖δ‖<p (1)
+2. Note that in our attack implementation, we select poison text prompts
+from a natural dataset of text/image pairs. Thus given t, we locate xt easily.
+
+a photo of a dog
+a dog protrait
+Poison Text Poison Image 
+ Anchor Image
+aligned similar in feature space
+Nightshade’s Poison data 
+Figure 5. An illustrative example of Nightshade’s curation of poison data
+to attack the concept “dog” using “cat”. The anchor images (right) are
+generated by prompting “a photo of cat” on the clean SD-XL model
+multiple times. The poison images (middle) are perturbed versions of
+natural images of “dog”, which resemble the anchor images in feature
+representation.
+where F (.) is the image feature extractor of the text-to-
+image model that the attacker has access to, D(.) is a
+distance function in the feature space, ‖δ‖ is the perceptual
+perturbation added toxt, andp is the perceptual perturbation
+budget. Here we utilize the transferability between diffusion
+models [77, 78] to optimize the poison image.
+Figure 5 lists examples of the poison data curated to
+corrupt the concept “dog” (C) using “cat” (as A).
+5.3. Detailed Attack Design
+We now present the detailed algorithm of Nightshade
+to curate poison data that disrupts C. The algorithm outputs
+{Textp/Imagep}, a collection ofNp poison text/image pairs.
+It uses the following resources and parameters:
+• {Text/Image}: a collection of N natural (and aligned)
+text/image pairs related to C, where N >>Np;
+• A: a concept that is semantically unrelated to C;
+• M: an open-source text-to-image generative model;
+• Mtext: the text encoder of M;
+• p: a small perturbation budget.
+Step 1: Selecting poison text prompts {Textp}.
+Examine the text prompts in {Text}, ﬁnd the set of
+high-activation text prompts of C. Speciﬁcally, ∀t ∈
+{Text}, use the text encoder Mtext to compute the
+cosine similarity of t and C in the semantic space:
+CosineSim (Mtext(t), Mtext(C)). Find 5K top ranked
+prompts in this metric and randomly sampleNp text prompts
+to form{Textp}. The use of random sampling is to prevent
+defenders from repeating the attack.
+Step 2: Generating anchor images based on A.
+Query the available generator M with “a photo of {A}” if
+A is an object, and “a painting in style of {A}” ifA is a
+style, to generate a set of Np anchor images{Imageanchor}.
+Step 3: Constructing poison images {Imagep}.
+For each text prompt t∈{ Textp}, locate its natural image
+pair xt in {Image}. Choose an anchor image xa from
+{Imageanchor}. Given xt and xa, run the optimization of
+eq. (1) to produce a perturbed version x′
+t =xt +δ, subject
+to‖δ‖ < p. Like [79], we use LPIPS [80] to bound the
+Original 
+Poison 
+A painting of a dog A photo of a BMW car Fantasy art painting 
+of pandora 
+Cubism Painting, 
+Bounded With Love 
+Figure 6. Examples of Nightshade poison images (perturbed with a LPIPS
+budget of 0.07) and their corresponding original clean images.
+Training
+Scenario
+Model
+Name
+Pretrain Dataset
+(# of pretrain data)
+# of Clean
+Training Data
+Train from scratch LD-CC - 1 M
+Continuous
+training
+SD-V2 LAION ( ∼600M) 100K
+SD-XL Internal Data ( >600M) 100K
+DF LAION ( ∼600M) 100K
+TABLE 2. Text-to-image models and training conﬁgurations.
+perturbation and apply the penalty method [81] to solve the
+optimization:
+min
+δ
+||F (xt +δ)−F (xa)||2
+2 +α·max(‖δ‖LPIPS−p, 0). (2)
+Next, add the text/image pair t/x′
+t into the poison dataset
+{Textp/Imagep}, remove xa from the anchor set, and move
+to the next text prompt in {Textp}.
+6. Evaluation
+We evaluate the efﬁcacy of Nightshade attacks under a
+variety of settings and attack scenarios. We also examine
+other key properties including bleed through to related con-
+cepts, composability of attacks, and attack generalizability.
+6.1. Experimental Setup
+Models and Training Conﬁguration. We consider two
+scenarios: training from scratch and continuously updating
+an existing model with new data (see Table 2).
+• Training from scratch (LD-CC): We train a latent diffu-
+sion (LD) model [19] from scratch using the Conceptual
+Caption (CC) dataset [71] with over 3.3M text-image pairs.
+We follow the exact training conﬁguration of [19] and train
+LD models on 1M text-image pairs randomly sampled from
+CC. The clean model performs comparably (FID=17.5) to a
+version trained on the full CC data (FID=16.8). As noted in
+§4, training each LD-CC model takes 8 days on an NVidia
+A100 GPU.
+• Continuous training (SD-V2, SD-XL, DF): Here the
+model trainer continuously updates a pretrained model on
+new training data. We consider three state-of-the-art open
+source models: Stable Diffusion V2 [27], Stable Diffusion
+XL [23], and DeepFloyd [24]. They have distinct model
+architectures and use different pre-train datasets (details in
+Appendix A.1). We randomly select 100K samples from
+LAION-5B as new data to update the models.
+Concepts. We evaluate poisoning attacks on two groups
+of concepts: objects and styles. They were used by prior
+
+Poisoned Concept C
+Poisoned Model (SD-XL) 
+Clean Model
+(SD-XL)
+Cubism
+ Cartoon 
+50 poison
+samples
+100 poison
+samples
+300 poison
+samples
+Destination Concept A
+Dog 
+Cat
+Car 
+Cow Anime Impressionism
+T oaster 
+Handbag 
+Cake
+Hat
+Bird
+Stop Sign
+Figure 7. Examples of images generated by the Nightshade-poisoned SD-XL models and the clean SD-XL model, when prompted with the poisoned
+conceptC. We illustrate 8 values of C (4 in objects and 4 in styles), together with their destination concept A used by Nightshade.
+work to study the prompt space of text-to-image models [72,
+82]. For objects, we use all 91 objects from the MSCOCO
+dataset [83], e.g., “dog”, “cat”, “boat”, “car”. For styles, we
+use 30 art styles, including 20 historical art styles from the
+Wikiart dataset [73] ( e.g., “impressionism” and “cubism”)
+and 10 digital art styles from [74] (e.g., “anime”, “fantasy”).
+These concepts are all mutually semantically distinct.
+Nightshade Attack Conﬁguration. Following the at-
+tack design in §5.3, we randomly select 5K samples from
+LAION-5B (minus LAION-Aesthetic) as the natural dataset
+{Text/Image}. We ensure they do not overlap with the 100K
+training samples in Table 2. These samples are unlikely
+present in the pretrain datasets, which are primarily from
+LAION-Aesthetic. When attacking a concept C, we ran-
+domly choose the destination concept A from the concept
+list (in the same object/style category). For guided pertur-
+bation, we ﬁrst crop all image data into 512 x 512 squares
+(input size of diffusion models) and then we follow prior
+work to use LPIPS budget of p = 0.07 and run an Adam
+optimizer for 500 steps [14, 79, 84]. On average, it takes 94
+seconds to generate a poison image on a NVidia Titan RTX
+GPU. Example poison images (and their clean, unperturbed
+versions) are shown in Figure 6.
+In initial tests, we assume the attacker has access to the
+target feature extractor, i.e. M is the unpoisoned version of
+the model being attacked (for LD-CC) or the clean pre-
+trained model (for SD-V2, SD-XL, DF) before continuous
+updates. Later in §6.6 we relax this assumption, and evaluate
+Nightshade’s generalizability across models, i.e. when M
+differs from the model under attack. We ﬁnd Nightshade
+demonstrates strong transferability across models.
+Evaluation Metrics. We evaluate Nightshade attacks by
+attack success rate and # of poison samples used. We
+measure attack success rate as the poisoned model’s ability
+to generate images of concept C. By default, we prompt the
+poisoned model with “a photo of C” or “a painting in C
+style” to generate 1000 images with varying random seeds.
+We also experiment with more diverse and complex prompts
+in §6.6 and produce qualitatively similar results. We measure
+the “correctness” of these 1000 images using two metrics:
+• Attack Success Rate by CLIP Classiﬁer : We apply a zero-
+shot CLIP classiﬁer [69] to label the object/style of the
+images as one of the 91 objects/30 styles. We calculate
+attack success rate as % of generated images classiﬁed
+to a concept different from C. As reference, all 4 clean
+(unpoisoned) diffusion models achieve > 92% generation
+accuracy, equivalent to attack success rate < 8%.
+• Attack Success Rate by Human Inspection : In our IRB-
+approved user study, we recruited 185 participants on
+Proliﬁc. We gave each participant 20 randomly selected
+images and asked them to rate how accurately the prompt
+ofC describes the image, on a 5-point Likert scale (from
+“not accurate at all” to “very accurate”). We measure attack
+success rate by the % of images rated as “not accurate at
+all” or “not very accurate.”
+6.2. Attack Effectiveness
+Nightshade attacks succeed with little poison data.
+Nightshade successfully attacks all four diffusion models
+
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+ 0  50  100  150  200  250  300
+Attack Success % (CLIP)
+Number of Poison Data Injected
+Nightshade Attack
+Simple Attack
+Figure 8. Nightshade’s attack success rate (CLIP-
+based) vs. # of poison samples injected, for LD-
+CC (train-from-scratch). The result of the simple
+attack is provided for comparison.
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+ 0  50  100  150  200  250  300
+Attack Success % (Human)
+Number of Poison Data Injected
+Nightshade Attack
+Simple Attack
+Figure 9. Nightshade’s attack success rate
+(Human-rated) vs. # of poison samples injected,
+for LD-CC (train-from-scratch).
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+ 0  50  100  150  200  250  300
+Attack Success % (CLIP)
+Number of Poison Data Injected
+SD-V2
+SD-XL
+DF
+Simple Attack
+Figure 10. Nightshade’s attack success rate
+(CLIP-based) vs. # of poison samples injected,
+for SD-V2, SD-XL, DF (continuous training). The
+simple attack result comes from the best of the 3
+models.
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+ 0  50  100  150  200  250  300
+Attack Success % (Human)
+Number of Poison Data Injected
+SD-V2
+SD-XL
+DF
+Simple Attack
+Figure 11. Nightshade’s attack success rate
+(Human-rated) vs. # of poison samples, for SD-
+V2, SD-XL, DF (continuous training).
+Clean Model Poisoned Model 
+Cross attention map of concept C
+C: Hat 
+A: Banana 
+C: Handbag 
+A: Fork 
+Figure 12. Cross-attention maps of a model before and
+after poisoning. Poisoned model highlights destination
+A (banana, fork) instead of concept C (hat, handbag).
+ 0
+ 500
+ 1000
+ 1500
+ 2000
+5K10K 25K 50K 75K 100K
+y = 0.02 * x
+# of necessary poison samples
+# of clean data related to C
+Figure 13. Poison samples needed to achieve
+90% attack success vs. # of clean samples se-
+mantically related to target concept C (LD-CC).
+with minimal ( ≈100) poison samples, less than 20% of
+that required by the simple dirty-label attack. Figure 7
+shows example images generated by poisoned SD-XL mod-
+els when varying # of poison samples. With 100+ poison
+samples, generated images (when prompted by the poisoned
+conceptC) illustrate the destination concept A, conﬁrming
+the success of Nightshade attacks. To be more speciﬁc,
+Figure 8-11 plot attack success rate for all four models,
+measured using the CLIP classiﬁer or by human inspection,
+as a function of # of poison samples used. We also plot
+results of the basic, dirty-label attack to show the signiﬁcant
+reduction in the required # of poison samples. Nightshade
+begins to demonstrate a signiﬁcant impact ( i.e., 70-80%
+attack success rate) with just 50 poison samples and achieves
+a high success rate ( > 84%) with 200 samples.
+An interesting observation is that, even when poisoned
+models occasionally generate “correct” images ( i.e., being
+classiﬁed as concept C), these images are often incoherent,
+e.g., the 6-leg “dog” and the weird “car” in the 2nd row of
+Figure 7. We ask our study participants to rate the usability
+of the “correctly” generated images, and ﬁnd that usability
+decreases rapidly as more poison samples are injected: 40%
+(at 25 poison samples) and 20% (at 50 samples). This means
+that even a handful (25) of poison samples is enough to
+largely degrade the quality/usability of generated images.
+Visualizing changes in model internals. We also in-
+vestigate the impact of Nightshade attacks by the modi-
+ﬁcations it introduces in the model’s internal embedding
+of the poisoned concept. Speciﬁcally, we study the cross-
+attention layers, which encode the relationships between
+text tokens and a given image [82, 85]. Higher values are
+assigned to the image regions that are more related to the
+tokens, visualized by brighter colors in the cross-attention
+map. Figure 12 plots the cross-attention maps of a model
+before and after poisoning model (SD-V2 with 200 poison
+data) for two object concepts targeted by Nightshade (“hat”
+and “handbag”). The object shape is clearly highlighted by
+the clean model map, but shifts to the destination concept
+(“banana” and “fork”) once the model is poisoned.
+6.3. Impact of Clean Training Data
+Clean and poison samples contend with each other dur-
+ing model training. Here, we look at how different conﬁgu-
+rations of clean training samples affect attack performance.
+Adding clean data from related concepts. Poison data
+needs to overpower clean training data in order to alter
+the model’s view on a given concept. Thus, increasing the
+amount of clean data related to a concept C (e.g., clean data
+of both “dog” and its synonyms) will make poisoning C
+more challenging. We measure this impact on LD-CC by
+adding clean samples from LAION-5B. Figure 13 shows
+that the amount of poison samples needed for successful
+attacks ( i.e., > 90% CLIP attack success rate) increases
+linearly with the amount of clean training data. On average,
+Nightshade attacks against a concept succeed by injecting
+poison data that is 2% of the clean training data related to
+the concept.
+Subsequent continous training on clean data only. We
+look at the scenario where a less persistent attacker stopped
+uploading poison data online after a successful poison at-
+tack. Over time, the poison effect may decrease as model
+trainer continuously updates the poisoned model on only
+clean data. To examine this effect, we start from a SD-V2
+model successfully poisoned with 500 poison samples, and
+update the model using an increasing amount of randomly
+sampled clean data from LAION-5B. Figure 25 in the
+
+L2 Distance to
+poisoned concept(D)
+Average Number of
+Concepts Included
+Average CLIP attack success rate
+100 poison 200 poison 300 poison
+D = 0 1 85% 96% 97%
+0 < D≤ 3.0 5 76% 94% 96%
+3.0 < D≤ 6.0 13 69% 79% 88%
+6.0 < D≤ 9.0 52 22% 36% 55%
+D > 9.0 1929 5% 5% 6%
+TABLE 3. Poison attack bleed through to nearby concepts. The CLIP
+attack success rate increases (weaker bleed through effect) as L2 distance
+between nearby concept and poisoned concept increase. Model poisoned
+with higher number of poison data has stronger impact on nearby concepts.
+(SD-XL)
+Dog Husky Wolf Puppy
+Poisoned 
+Model
+Clean
+Model
+Poisoned Concept Nearby Concept (not targeted)
+L2 = 1.9 L2 = 3.5 L2 = 6.2 Distance to poisoned concept 
+Figure 14. Image generated from different prompts by a poisoned SD-XL
+model where concept “dog” is poisoned. Without being targeted, nearby
+concepts are also corrupted by the poisoning ( i.e., bleed through effect).
+The SD-XL model is poisoned with 200 poison samples.
+Appendix shows that the attack success rate does decrease
+with the # of new clean data. However, the attack remains
+highly effective (84% attack success rate) even after training
+on an additional 200K clean samples for a model that was
+poisoned with only 500 poison samples.
+6.4. Bleed-through to Other Concepts
+Next, we consider how speciﬁc the effects of Nightshade
+poison are to the precise prompt targeted. If the poison is
+only associated on a speciﬁc term, then it can be easily
+bypassed by prompt rewording, e.g. automatically replacing
+the poisoned term “dog” with “big puppy.” Instead, we ﬁnd
+that these attacks exhibit a “bleed-through” effect. Poisoning
+conceptC has a noticeable impact on related concepts , i.e.,
+poisoning “dog” also corrupts model’s ability to generate
+“puppy” or “husky.” Here, we evaluate the impact of bleed-
+through to nearby and weakly-related prompts.
+Bleed-through to nearby concepts. We ﬁrst look at
+how poison data impacts concepts that are close to C in
+the model’s text embedding space. For a poisoned concept
+C (e.g., “dog”), these “nearby concepts” are often synonyms
+(e.g., “puppy”, “hound”, “husky”) or alternative representa-
+tions (e.g., “canine”). Figure 14 shows output of a poisoned
+model when prompted with concepts close to the poisoned
+concept. Nearby, untargeted, concepts are signiﬁcantly im-
+pacted by poisoning. Table 3 shows nearby concept’s CLIP
+attack success rate decreases as concepts move further from
+C. Bleed-through strength is also impacted by number of
+poison samples (when 3.0 < D≤ 6.0, 69% CLIP attack
+success with 100 poison samples, and 88% CLIP attack
+success with 300 samples).
+Bleed-through to related prompts. Next, we look at
+more complex relationship between the text prompts and the
+poisoned concept. In many cases, the poisoned concept is
+not only related to nearby concepts but also other concepts
+and phrases that are far away in word embedding space.
+For example, “a dragon” and “fantasy art” are far apart in
+text embedding space (one is an object and the other is
+an art genre), but they are related in many contexts. We test
+whether our prompt-speciﬁc poisoning attack has signiﬁcant
+impact on these related concepts. Figure 15 shows images
+generated by querying a set of related concepts on a model
+poisoned for conceptC “fantasy art.” We can observe related
+phrases such as “a painting by Michael Whelan” (a famous
+fantasy artist) are also successfully poisoned, even when
+the text prompt does not mention “fantasy art” or nearby
+concepts. On the right side of Figure 15, we show that
+unrelated concepts ( e.g., Van Gogh style) are not impacted.
+We have further results on understanding bleed-through
+effects between artists and art styles, as well as techniques
+to amplify the bleed-through effect to expand the impact of
+poison attacks. Those details are available in Appendix A.4.
+6.5. Composability Attacks
+Given the wide deployment of generative image models
+today, it is not unrealistic to imagine that a single model
+might come under attack by multiple entities targeting com-
+pletely unrelated concepts with poison attacks. Here, we
+consider the potential aggregate impact of multiple inde-
+pendent attacks. First, we show results on composability
+of poison attacks. Second, we show surprising result, a
+sufﬁcient number of attacks can actually destabilize the
+entire model, effectively disabling the model’s ability to
+generate responses to completely unrelated prompts.
+Poison attacks are composable. Given our discussion
+on model sparsity (§3.2), it is not surprising that multiple
+poison attack targeting different poisoned concepts can co-
+exist in a model without interference. In fact, when we test
+prompts that trigger multiple poisoned concepts, we ﬁnd
+that poison effects are indeed composable. Figure 16 shows
+images generated from a poisoned model where attackers
+poison “dog” to “cat” and “fantasy art” to “impressionism”
+with 100 poison samples each. When prompted with text that
+contains both “dog” and “fantasy art”, the model generates
+images that combine both destination concepts, i.e. a cat in
+an impressionism-like style.
+Multiple attacks damage the entire model. Today’s text-
+to-image diffusion models relies on hierarchical or stepwise
+approach to generate high quality images [19, 24, 26, 86].
+They often ﬁrst generate high-level coarse features ( e.g.,
+a medium size animal) and then reﬁne them slowly into
+high quality images of speciﬁc content ( e.g., a dog). As
+a result, models learn not only content-speciﬁc information
+from training data but also high-level coarse features. Poison
+data targeting speciﬁc concepts might have lasting impact
+on these high level coarse features, e.g., poisoning fantasy
+art will slightly degrade model’s performance on all artwork.
+Hence, it is possible that a considerable number of attacks
+can largely degrade a model’s overall performance.
+
+Poisoned 
+Model
+Clean
+Model
+Poisoned Concept Related Prompts 
+A dragon A castle in the 
+Lord of the Rings
+A painting by 
+Michael Whelan 
+Fantasy art 
+Un-related Prompts (control group) 
+A chair A castle A painting 
+by Van Gogh 
+Figure 15. Image generated from different prompts by a poisoned SD-XL model where concept “fantasy art” is poisoned. Without being targeted, related
+prompts are also corrupted by the poisoning ( i.e., bleed through effect), while unrelated prompts face limited impact. The SD-XL model is poisoned with
+200 poison samples.
+Fantasy art     
+Impressionism Dog      Cat A dog in 
+fantasy art style 
+Poisoned #1: Output image: Poisoned #2: 
+Figure 16. Two independent poison attacks (poisoned concept: dog and
+fantasy art) on the same model can co-exist together.
+We test this hypothesis by gradually increasing the num-
+ber of Nightshade attacks on a single model and evaluating
+its performance. We follow prior work on text-to-image
+generation [19, 26, 37, 87] and leverage two popular metrics
+to evaluate generative model’s overall performance: 1) CLIP
+alignment score which captures generated image’s alignment
+to its prompt [69], and 2) FID score which captures image
+quality [88]. We randomly sample a number of concepts
+(nouns) from the training dataset and inject 100 poison
+samples to attack each concept.
+We ﬁnd that as more concepts are poisoned, the model’s
+overall performance drop dramatically: alignment score <
+0.24 and FID > 39.6 when 250 different concepts are
+poisoned with 100 samples each. Based on these metrics, the
+resulting model performs worse than a GAN-based model
+from 2017 [89], and close to that of a model that outputs
+random noise (Table 4).
+Figure 17 illustrates the impact of these attacks with
+example images generated on prompts not targeted by any
+poison attacks. We include two generic prompts (“a person”
+and “a painting”) and a more speciﬁc prompt (“seashell,”
+which is far away from most other concepts in text embed-
+ding space (see Appendix Figure 18). Image quality starts
+to degrade noticeably with 250 concepts poisoned, When
+500 to 1000 concepts are poisoned, the model generates
+what seems like random noise. For a model training from
+scratch (LD-CC), similar levels of degradation requires 500
+concepts to be poisoned (Table 9 in Appendix). The degra-
+Approach # of poisoned
+concepts
+Overall model Performance
+Alignment Score
+(higher better)
+FID
+(lower better)
+Clean SD-XL 0 0.33 15.0
+Poisoned SD-XL 100 0.27 28.5
+Poisoned SD-XL 250 0.24 39.6
+Poisoned SD-XL 500 0.21 47.4
+AttnGAN - 0.26 35.5
+A model that outputs
+random noise - 0.20 49.4
+TABLE 4. Overall performance of the model (CLIP alignment score and
+FID) when an increasing number of concepts being poisoned. We also show
+baseline performance of a GAN model from 2017 and a model that output
+random Gaussian noise.
+# of poisoned concepts 
+0
+ 100
+ 250
+ 500
+A painting A person A seashell 
+Figure 17. Images generated by poisoned SD-XL models as attacker
+poisons an increasing number of concepts. The three prompts are not
+targeted but are signiﬁcantly damaged by poisoning.
+dation on the entire model is likely because poison data
+(image & text) is “misaligned”, it increases the difﬁculty of
+learning text-image alignment in the model and corrupts the
+cross-attention layer. We leave further analysis of its cause
+to future work.
+
+Attacker’s
+Model
+Model Trainer’s Model
+LD-CC SD-V2 SD-XL DF
+LD-CC 96% 76% 72% 79%
+SD-V2 87% 87% 78% 86%
+SD-XL 90% 85% 91% 90%
+DF 87% 81% 80% 90%
+TABLE 5. Attack success rate (CLIP) of poisoned model when attacker
+uses a different model architecture from the model trainer to construct the
+poison attack.
+Prompt Type Example Prompt # of Prompts
+per Concept
+Attack Success %
+(CLIP)
+Default A photo of a [dog] 1 91%
+Recontextualization A [dog] in Amazon rainforest 20 90%
+View Synthesis Back view of a [dog] 4 91%
+Art renditions A [dog] in style of Van Gogh 195 90%
+Property Modiﬁcation A blue [dog] 100 89%
+TABLE 6. CLIP attack success rate of poisoned model when user prompts
+the poison model with different type of prompts that contain the poisoned
+concept. (SD-XL poisoned with 200 poison data)
+6.6. Attack Generalizability
+We also examine Nightshade’s attack generalizability, in
+terms of transferability to other models and applicability to
+complex prompts.
+Attack transferability to different models. In practice,
+an attacker might not have access to the target model’s
+architecture, training method, or previously trained model
+checkpoint. Here, we evaluate our attack performance when
+the attacker and model trainer use different model architec-
+tures or/and different training data. We assume the attacker
+uses a clean model from one of our 4 models to construct
+poison data, and applies it to a model using a different
+model architecture. Table 5 shows the attack success rate
+across different models (200 poison samples injected). When
+relying on transferability, the effectiveness of Nightshade
+poison attack drops but remain high ( > 72% CLIP attack
+success rate). Attack transferability is signiﬁcantly higher
+when the attacker uses as SD-XL, likely because it has
+higher model performance and extracts more generalizable
+image features as observed in prior work [90, 91].
+Attack performance on diverse prompts. So far, we have
+been mostly focusing on evaluating attack performance us-
+ing generic prompts such as “a photo ofC” or “a painting in
+C style.” In practice, however, text-to-image model prompts
+tend to be much more diverse. Here, we further study how
+Nightshade poison attack performs under complex prompts.
+Given a poisoned concept C, we follow prior work [37]
+to generate 4 types of complex prompts (examples shown
+in Table 6). More details on the prompt construction can
+be found in Section 4 of [37]. We summarize our results
+in Table 6. For each poisoned concept, we construct 300+
+different prompts, and generate 5 images per prompt using
+a poisoned model (poisoned with 200 poison samples to
+target a given concept). We ﬁnd that Nightshade remains
+highly effective under different complex prompts ( > 89%
+success rate for all 4 types). In addition, we further show
+the attack remains successful on extremely long prompts in
+Appendix A.4.
+7. Potential Defenses
+We consider potential defenses that model trainers could
+deploy to reduce the effectiveness of prompt-speciﬁc poison
+attacks. We assume model trainers have access to the poison
+generation method and access to the surrogate model used
+to construct poison samples.
+While many detection/defense methods have been pro-
+posed to detect poison in classiﬁers, recent work shows they
+are often unable to extend to or are ineffective in genera-
+tive models (LLMs and multimodal models) [59, 61, 92].
+Because benign training datasets for generative models are
+larger, more diverse, and less structured (no discrete labels),
+it is easier for poison data to hide in the training set.
+Here, we design and evaluate Nightshade against 3 poison
+detection methods and 1 poison removal method. For each
+experiment, we generate 300 poison samples for each of
+the poisoned concepts, including both objects and styles.
+We report both precision and recall for defense that detect
+poison data, as well as impact on attack performance when
+model trainer ﬁlters out any data detected as poison. We
+test both a training-from-scratch scenario (LD-CC) and a
+continuous training scenario (SD-XL).
+Filtering high loss data. Poison data is designed to incur
+high loss during model training. Leveraging this observation,
+one defensive approach is to ﬁlter out any data that has
+abnormally high loss. A model trainer can calculate the
+training loss of each data and ﬁlter out ones with highest loss
+(using a clean pretrained model). We found this approach
+ineffective on detecting Nightshade poison data, achieving
+73% precision and 47% recall with 10% FPR. Removing
+all the detected data points prior to training the model only
+reduces Nightshade attack success rate by < 5% because
+it will remove less than half of the poison samples on
+average, but the remaining 159 poison samples are more
+than sufﬁcient to achieve attack success (see Figure 10).
+The low detection performance is because benign samples
+in large text/image datasets is often extremely diverse and
+noisy, and a signiﬁcant portion of it produces high loss,
+leading to high false positive rate of 10%. Since benign
+outliers tend to play a critical role in improving generation
+for border cases [93], removing these false positives (high
+loss benign data) would likely have a signiﬁcant negative
+impact on model performance.
+Frequency analysis. The success of prompt-speciﬁc
+poison attack relies on injecting a set of poison data whose
+text belongs to the poisoned concept. It is possible for
+model trainers to monitor frequency of each concept and
+detect any abnormal change of data frequency in a speciﬁc
+concept. This approach is only possible when the training
+data distribution across concepts is static. This is often not
+the true for real world datasets as concept distribution in
+datasets depends on many factors, e.g., time (news cycles,
+trending topics), location (country) of collection.
+In the ideal case where the overall distribution of clean
+data across concepts is ﬁxed, detection with frequency anal-
+ysis is still challenging due to sampling difference. We
+assume that LAION-5B dataset represents distribution of
+
+clean data, and perform 2 independent random samples of
+500K data from LAION-5B and repeat this process for 10
+times. Across these two samplings, an average of > 19.2%
+concepts have> 30% frequency differences. When injecting
+300 poison data to poison a concept LD-CC model, Night-
+shade poison attack only incurs< 30% frequency changes to
+> 91% of the poisoned concepts, making it difﬁcult to detect
+poisoned concepts without sacriﬁcing performance for other
+concepts.
+Image-text alignment ﬁltering. Alignment ﬁltering has
+been used to detect poison data in generative models [61]
+and as a general way to ﬁlter out noisy data [28, 29, 94].
+Alignment models [26] calculate the alignment (similarity)
+score between text/image pairs (as discussed in §6.5). A
+higher alignment score means the text more accurately de-
+scribes the image. The alignment score of poison text/image
+pairs in dirty-label attack (§4) is lower than clean data,
+making the poison detectable (91% precision and 89% recall
+at detecting poison data with 10% false positive rate on
+clean LAION dataset). For poison samples in a Nightshade
+attack, we ﬁnd alignment ﬁltering to be ineffective ( 63%
+precision and 47% recall with 10% FPR). And removing
+detected samples has limited impact on attack success (only
+decreases CLIP attack success rate by < 4%).
+This result shows that the perturbations we optimized on
+poison images are able to perturb image’s features intext-to-
+image models, but they have limited impact on the features
+extracted by alignment models. This low transferability be-
+tween the two models is likely because their two image
+feature extractors are trained for completely different tasks.
+Alignment models are trained on text/image pairs to retrieve
+text prompts from input images, and tend to focus more on
+high level features, whereas text-to-image image extractors
+are trained to reconstruct original images, and might focus
+more on ﬁne-grained detail features.
+We note that it might be possible for model trainers to
+customize an alignment model to ensure high transferability
+with poison sample generation, thus making it more effective
+at detecting poison samples. We leave the exploration of
+customized alignment ﬁlters for future work.
+Automated image captioning. Next, we look at a
+defense method where model trainer completely removes
+the text prompt for all training data in order to remove
+the poison text. Once removed, model trainer can leverage
+existing image captioning tools [95, 96] to generate new text
+prompts for each training image. Similar approaches have
+been used to improve the data quality of poorly captioned
+images [97, 98].
+For a poisoned dataset, we generate image captions
+using BLIP model [95] for all images, and train the model
+on generated text paired up with original images. We ﬁnd
+that the image caption model often generates captions that
+contain the poisoned concept or related concepts given the
+Nightshade poison images. Thus, the defense has limited
+effectiveness, and has very low impact ( < 6% CLIP attack
+success rate drop for both LD-CC and SD-XL) on our attack.
+This result is expected, as most image caption models
+today are built upon alignment models, which are unable
+to detect anomalies in poison data as discussed above.
+Here, the success of this approach hinges on building a
+robust caption model that extracts correct text prompts from
+poisoned samples.
+Gradient-based Outlier Detection. Lastly, we look at
+whether an attacker can leverage outlier detection to identify
+poison images [46, 99, 100] through anomalies in their
+gradient. We ﬁrst calculate the training gradient of the
+training dataset (includes 1% poison data). Then we run one-
+class SVM detector on the gradient. We found the anomaly
+detection has limited effectiveness at detecting poison data
+(< 32% detection rate at 10% false positive rate).
+8. Poison Attacks as Copyright Protection
+Here, we discuss how Nightshade or similar tools can
+serve as a protection mechanism for intellectual property
+(IP), and a disincentive against unauthorized data scraping.
+Power Asymmetry. It is increasingly evident that there
+is signiﬁcant power asymmetry in the tension between AI
+companies that build/train models, and content owners try-
+ing to protect their intellectual property. As legal cases and
+regulatory efforts move slowly forward, the only measures
+available to content owners are “voluntary” measures such
+as opt-out lists [101] and do-not-scrape/train directives [102]
+in robots.txt. Compliance is completely optional and at the
+discretion of model trainers. While larger companies have
+promised to respect robots.txt directives, smaller AI compa-
+nies have no incentive to do so. Finally, there are no reliably
+ways to detect if and when these opt-outs or directives are
+violated, and thus no way to verify compliance.
+Note that tools like Glaze and Mist are insufﬁcient for
+this purpose. They are optimized to disrupt local ﬁne-tuning
+operations where majority of the training data has been
+altered. Our tests in §5.1 show that they provide minimal
+improvement over basic dirty-label attacks on base models.
+Nightshade as Copyright Protection. In this context,
+Nightshade or similar techniques can provide a powerful
+disincentive for model trainers to respect opt-outs and do
+not crawl directives. Any stakeholder interested in protecting
+their IP, movie studios, game developers, independent artists,
+can all apply prompt-speciﬁc poisoning to their images, and
+(possibly) coordinate with other content owners on shared
+terms. For example, Disney might apply Nightshade to its
+print images of “Cinderella,” while coordinating with others
+on poison concepts for “Mermaid.”
+Such a tool can be effective for several reasons. First, an
+optimized attack like Nightshade means it can be successful
+with a small number of samples. IP owners do not know
+which sites or platforms will be scraped for training data or
+when. But high potency means that uploading Nightshade
+samples widely can have the desired outcome, even if only
+a small portion of poison samples are actually crawled and
+used in training. Second, current work on machine unlearn-
+ing [103, 104] is limited in scalability and impractical at the
+scale of generative AI models. Once trained on poison data,
+
+models have few alternatives beyond regressing to an older
+model version. Third, any tool to detect or ﬁlter attacks
+like Nightshade must scale to millions or billions of data
+samples. Finally, even if Nightshade poison samples were
+detected efﬁciently (see discussion in §7), Nightshade would
+act as proactive “do-not-train” ﬁlter that prevents models
+from training on these samples.
+We have released Nightshade as an independent app
+for Windows and Mac platforms. Response from the global
+artist community has been overwhelming, with 250K down-
+loads in the ﬁrst 5 days of release. Since then, we have began
+discussions with several companies in different creative in-
+dustries who wish to deploy Nightshade on their copyrighted
+content. Finally, relevant model companies Google, Meta,
+Stability.ai and OpenAI have all been made aware of this
+work prior to this publication.
+9. Conclusion
+This work demonstrates the design and practical fea-
+sibility of prompt-speciﬁc poison attacks on text-to-image
+generative models. As a ﬁrst step in this direction, our results
+shed light on fundamental limitations of these generative
+models, and suggest that even more powerful attacks might
+be possible. Nightshade and future work in this space may
+have potential value as tools to encourage model trainers
+and content owners to negotiate a path towards licensed
+procurement of training data for future models.
+Acknowledgements
+We thank our anonymous reviewers and shepherd for their
+insightful feedback. We also thank Karla Ortiz, Eva Toore-
+nent, Katria Raden, Jingna Zhang, Kelly McKernan, Jon
+Lam, Sarah Andersen, Zakuga Mignon, Yujin Choo, Steven
+Zapata, Greg Rutkowski, Viktoria Sinner, Katharina Jahn,
+Paloma McClain, Jess Cheng, Erick Diego Castillo Chavez,
+and many other artists, without whom this project would not
+be possible. This work is supported in part by NSF grants
+CNS-2241303, CNS-1949650, and the DARPA GARD pro-
+gram. Opinions, ﬁndings, and conclusions or recommenda-
+tions expressed in this material are those of the authors and
+do not necessarily reﬂect the views of any funding agencies.
+References
+[1] L. Rincon, “Virtually try on clothes with a new AI shopping
+feature,” Google Blog, June 2023.
+[2] 3dlook, “Virtual try-on for clothing: The future of fashion?”
+3dlook.ai, 2023.
+[3] M. Salminen, “How to use AI image generator to make
+custom images for your site in 2023,” hostinger.com, Sept
+2023.
+[4] “Create logos, videos, banners, mockups with AI in 2 min-
+utes,” designs.ai, 2023.
+[5] C. Morris, “7 best AI website builders in 2023 (for fast web
+design),” elegantthemes.com, Sept 2023.
+[6] A. Baio, “Invasive Diffusion: How one unwilling illustrator
+found herself turned into an AI model,” 2022, http://waxy
+.org.
+[7] S. Andersen, “The Alt-Right Manipulated My Comic. Then
+A.I. Claimed It.” December 2022, NY Times.
+[8] B. P. Murphy, “Is Lensa AI Stealing From Human Art? An
+Expert Explains the Controversy,” 2022.
+[9] S. Yang, “Why Artists are Fed Up with AI Art.” 2022.
+[10] “Adobe Max conference,” Los Angeles, CA, Oct. 2023.
+[11] W. Chen, D. Song, and B. Li, “Trojdiff: Trojan attacks on
+diffusion models with diverse targets,” in Proc. of CVPR ,
+2023.
+[12] S.-Y . Chou, P.-Y . Chen, and T.-Y . Ho, “How to backdoor
+diffusion models?” in Proc. of CVPR , 2023.
+[13] S. Zhai et al. , “Text-to-image diffusion models can be
+easily backdoored through multimodal data poisoning,”
+arXiv:2305.04175, 2023.
+[14] S. Shan, J. Cryan, E. Wenger, H. Zheng, R. Hanocka, and
+B. Y . Zhao, “Glaze: Protecting artists from style mimicry by
+text-to-image models,” in Proc. of USENIX Security , 2023.
+[15] C. Liang et al., “Adversarial example does good: Preventing
+painting imitation from diffusion models via adversarial
+examples,” in Proc. of ICML , 2023.
+[16] A. Radford, L. Metz, and S. Chintala, “Unsupervised rep-
+resentation learning with deep convolutional generative ad-
+versarial networks,” arXiv:1511.06434, 2015.
+[17] M. Zhu, P. Pan, W. Chen, and Y . Yang, “Dm-gan: Dynamic
+memory generative adversarial networks for text-to-image
+synthesis,” in Proc. of CVPR , 2019.
+[18] M. Ding et al., “Cogview: Mastering text-to-image genera-
+tion via transformers,” Proc. of NeurIPS , 2021.
+[19] R. Rombach, A. Blattmann, D. Lorenz, P. Esser, and B. Om-
+mer, “High-resolution image synthesis with latent diffusion
+models,” in Proc. of CVPR , 2022.
+[20] A. Ramesh et al. , “Zero-shot text-to-image generation,” in
+Proc. of ICML , 2021.
+[21] J. Sohl-Dickstein et al., “Deep unsupervised learning using
+nonequilibrium thermodynamics,” in Proc. of ICML , 2015.
+[22] Stability AI, “Stable Diffusion Public Release. ,” 2022, http
+s://stability.ai/blog/stable-diffusion-public-release.
+[23] D. Podell et al. , “SDXL: Improving latent diffusion mod-
+els for high-resolution image synthesis,” arXiv:2307.01952,
+2023.
+[24] Stability AI, “Stability AI releases DeepFloyd IF, a powerful
+text-to-image model that can smartly integrate text into
+images,” 2023, https://stability.ai/blog/deepﬂoyd-if-tex
+t-to-image-model.
+[25] NovelAI, “NovelAI changelog,” 2022, https://novelai.net/up
+dates.
+[26] A. Ramesh et al., “Hierarchical text-conditional image gen-
+eration with clip latents,” arXiv:2204.06125, 2022.
+[27] Stability AI, “Stable Diffusion v2.1 and DreamStudio Up-
+dates 7-Dec 22,” 2022, https://stability.ai/blog/stablediffusi
+on2-1-release7-dec-2022.
+[28] S. Changpinyo, P. Sharma, N. Ding, and R. Soricut, “Con-
+ceptual 12M: Pushing web-scale image-text pre-training to
+recognize long-tail visual concepts,” in Proc. of CVPR ,
+2021.
+[29] C. Schuhmann et al. , “LAION-5B: An open large-scale
+dataset for training next generation image-text models,”
+arXiv:2210.08402, 2022.
+[30] N. Carlini et al. , “Poisoning web-scale training datasets is
+practical,” in Proc. of IEEE S&P , May 2024.
+[31] StabilityAI, “Stable Diffusion v1-4 Model Card,” 2022, ht
+tps://huggingface.co/CompVis/stable-diffusion-v1-4.
+[32] Stability AI, “Stable Diffusion 2.0 Release,” 2022, https:
+//stability.ai/blog/stable-diffusion-v2-release.
+
+[33] Scenario.gg, “AI-generated game assets,” 2022, https://ww
+w.scenario.gg/.
+[34] Civitai, “What the heck is Civitai?” 2022, https://civitai.co
+m/content/guides/what-is-civitai.
+[35] T. H. Tran, “Image Apps Like Lensa AI Are Sweeping the
+Internet, and Stealing From Artists,” 2022, https://www.th
+edailybeast.com/how-lensa-ai-and-image-generators-steal-f
+rom-artists.
+[36] R. Gal et al. , “An image is worth one word: Person-
+alizing text-to-image generation using textual inversion,”
+arXiv:2208.01618, 2022.
+[37] N. Ruiz et al. , “Dreambooth: Fine tuning text-to-image
+diffusion models for subject-driven generation,” in Proc. of
+CVPR, 2023.
+[38] M. Goldblum et al. , “Dataset security for machine learn-
+ing: Data poisoning, backdoor attacks, and defenses,” IEEE
+TPAMI, 2022.
+[39] Y . Liu et al., “Trojaning attack on neural networks,” inProc.
+of NDSS, 2018.
+[40] E. Wenger, J. Passananti, A. Bhagoji, Y . Yao, H. Zheng,
+and B. Y . Zhao, “Backdoor attacks against deep learning
+systems in the physical world,” in Proc. of CVPR , 2021.
+[41] K. Eykholt et al. , “Robust physical-world attacks on deep
+learning visual classiﬁcation,” in Proc. of CVPR , 2018.
+[42] X. Chen et al. , “Badnl: Backdoor attacks against NLP
+models with semantic-preserving improvements,” in Proc.
+of ACSAC, 2021.
+[43] A. Saha, A. Subramanya, and H. Pirsiavash, “Hidden trigger
+backdoor attacks,” in Proc. of AAAI , 2020.
+[44] A. Turner, D. Tsipras, and A. Madry, “Clean-label backdoor
+attacks,” 2018.
+[45] C. Zhu, W. R. Huang, H. Li, G. Taylor, C. Studer, and
+T. Goldstein, “Transferable clean-label poisoning attacks on
+deep neural nets,” in Proc. of ICML , 2019.
+[46] B. Wang, Y . Yao, S. Shan, H. Li, B. Viswanath, H. Zheng,
+and B. Y . Zhao, “Neural cleanse: Identifying and mitigating
+backdoor attacks in neural networks,” inProc. of IEEE S&P,
+2019.
+[47] X. Qiao, Y . Yang, and H. Li, “Defending neural backdoors
+via generative distribution modeling,” Proc. of NeurIPS ,
+2019.
+[48] H. Chen, C. Fu, J. Zhao, and F. Koushanfar, “Deepinspect:
+A black-box trojan detection and mitigation framework for
+deep neural networks.” in Proc. of IJCAI , 2019.
+[49] B. Chen et al., “Detecting backdoor attacks on deep neural
+networks by activation clustering,” arXiv:1811.03728, 2018.
+[50] X. Liu, F. Li, B. Wen, and Q. Li, “Removing backdoor-
+based watermarks in neural networks with limited data,” in
+Proc. of ICPR , 2021.
+[51] S. Shan, A. N. Bhagoji, H. Zheng, and B. Y . Zhao, “Poison
+forensics: Traceback of data poisoning attacks in neural
+networks,” in Proc. of USENIX Security , 2022.
+[52] J. Jia, X. Cao, and N. Z. Gong, “Intrinsic certiﬁed robustness
+of bagging against data poisoning attacks,” in Proc. of AAAI,
+2021.
+[53] J. Geiping et al., “What doesn’t kill you makes you robust
+(er): Adversarial training against poisons and backdoors,”
+arXiv:2102.13624, 2021.
+[54] B. Wang, X. Cao, N. Z. Gong et al., “On certifying robust-
+ness against backdoor attacks via randomized smoothing,”
+arXiv:2002.11750, 2020.
+[55] Y . Yao, H. Li, H. Zheng, and B. Y . Zhao, “Latent backdoor
+attacks on deep neural networks,” in Proc. of CCS , 2019.
+[56] G. Severi, J. Meyer, S. Coull, and A. Oprea, “Explanation-
+guided backdoor poisoning attacks against malware classi-
+ﬁers,” in Proc. of USENIX Security , 2021.
+[57] E. Bagdasaryan and V . Shmatikov, “Blind backdoors in deep
+learning models,” in Proc. of USENIX Security , 2021.
+[58] R. Schuster, C. Song, E. Tromer, and V . Shmatikov, “You
+autocomplete me: Poisoning vulnerabilities in neural code
+completion,” in Proc. of USENIX Security , 2021.
+[59] A. Wan, E. Wallace, S. Shen, and D. Klein, “Poisoning lan-
+guage models during instruction tuning,” arXiv:2305.00944,
+2023.
+[60] J. Zhang, H. Liu, J. Jia, and N. Z. Gong, “Corruptencoder:
+Data poisoning based backdoor attacks to contrastive learn-
+ing,” arXiv:2211.08229, 2022.
+[61] Z. Yang et al., “Data poisoning attacks against multimodal
+encoders,” in Proc. of ICML , 2023.
+[62] H. Liu, W. Qu, J. Jia, and N. Z. Gong, “Pre-trained encoders
+in self-supervised learning improve secure and privacy-
+preserving supervised learning,” arXiv:2212.03334, 2022.
+[63] T. Gu, B. Dolan-Gavitt, and S. Garg, “Badnets: Identifying
+vulnerabilities in the machine learning model supply chain,”
+in Proc. of MLCS Workshop , 2017.
+[64] Y . Lu, G. Kamath, and Y . Yu, “Indiscriminate data poisoning
+attacks on neural networks,” arXiv:2204.09092, 2022.
+[65] B. Biggio, B. Nelson, and P. Laskov, “Support vector ma-
+chines under adversarial label noise,” in Proc. of ACML ,
+2011.
+[66] C. Schuhmann, “LAION-aesthetics,” LAION.AI, August
+2022.
+[67] F. Bond and K. Paik, “A survey of wordnets and their
+licenses,” in Proc. of GWC , 2012.
+[68] “Midjourney user prompts; generated images (250k).”
+[Online]. Available: https://www.kaggle.com/ds/2349267
+[69] A. Radford et al., “Learning transferable visual models from
+natural language supervision,” in Proc. of ICML , 2021.
+[70] C. Fellbaum, WordNet and wordnets. Encyclopedia of Lan-
+guage and Linguistics . Oxford: Elsevier, 2005.
+[71] P. Sharma, N. Ding, S. Goodman, and R. Soricut, “Concep-
+tual captions: A cleaned, hypernymed, image alt-text dataset
+for automatic image captioning,” in Proc. of ACL , 2018.
+[72] X. He, S. Zannettou, Y . Shen, and Y . Zhang, “You only
+prompt once: On the capabilities of prompt learning on large
+language models to tackle toxic content,”arXiv:2308.05596,
+2023.
+[73] B. Saleh and A. Elgammal, “Large-scale classiﬁcation of
+ﬁne-art paintings: Learning the right metric on the right
+feature,” arXiv:1505.00855, 2015.
+[74] A. Hoare, “Digital Illustration Styles,” 2021, https://www.
+theillustrators.com.au/digital-illustration-styles.
+[75] H. Salman, A. Khaddaj, G. Leclerc, A. Ilyas, and A. Madry,
+“Raising the cost of malicious AI-powered image editing,”
+arXiv:2302.06588, 2022.
+[76] A. Shafahi et al., “Poison frogs! targeted clean-label poison-
+ing attacks on neural networks,” arXiv:1804.00792, 2018.
+[77] H. Aghakhani, D. Meng, Y .-X. Wang, C. Kruegel, and G. Vi-
+gna, “Bullseye polytope: A scalable clean-label poisoning
+attack with improved transferability,” in Proc. of EuroS&P,
+2021.
+[78] A. Schwarzschild et al., “Just how toxic is data poisoning? a
+uniﬁed benchmark for backdoor and data poisoning attacks,”
+in Proc. of ICML . PMLR, 2021, pp. 9389–9398.
+[79] V . Cherepanova et al., “Lowkey: Leveraging adversarial at-
+tacks to protect social media users from facial recognition,”
+arXiv:2101.07922, 2021.
+[80] R. Zhang, P. Isola, A. A. Efros, E. Shechtman, and O. Wang,
+
+“The unreasonable effectiveness of deep features as a per-
+ceptual metric,” in Proc. of CVPR , 2018.
+[81] J. Nocedal and S. Wright, Numerical optimization , ser.
+operations research and ﬁnancial engineering. Springer,
+2006.
+[82] E. Zhang et al., “Forget-me-not: Learning to forget in text-
+to-image diffusion models,” arXiv:2303.17591, 2023.
+[83] T.-Y . Lin et al., “Microsoft coco: Common objects in con-
+text,” in Proc. of ECCV , 2014.
+[84] A. Y . J. Ha, J. Passananti, R. Bhaskar, S. Shan, R. Southen,
+H. Zheng, and B. Y . Zhao, “Organic or diffused: Can we
+distinguish human art from ai-generated images?” in Proc.
+of CCS, October 2024.
+[85] A. Hertz et al., “Prompt-to-prompt image editing with cross
+attention control,” arXiv:2208.01626, 2022.
+[86] A. Vahdat, K. Kreis, and J. Kautz, “Score-based generative
+modeling in latent space,” Proc. of NeurIPS , 2021.
+[87] D. H. Park, S. Azadi, X. Liu, T. Darrell, and A. Rohrbach,
+“Benchmark for compositional text-to-image synthesis,” in
+Proc. of NeurIPS , 2021.
+[88] M. Heusel et al., “GANs trained by a two time-scale update
+rule converge to a local Nash equilibrium,” in Proc. of
+NeurIPS, 2017.
+[89] T. Xu et al., “AttnGAN: Fine-grained text to image gener-
+ation with attentional generative adversarial networks,” in
+Proc. of CVPR , 2018.
+[90] S. Shan, E. Wenger, J. Zhang, H. Li, H. Zheng, and B. Y .
+Zhao, “Fawkes: Protecting privacy against unauthorized
+deep learning models,” in Proc. of USENIX Security , 2020.
+[91] L. Wu et al. , “Understanding and enhancing the transfer-
+ability of adversarial examples,” arXiv:1802.09707, 2018.
+[92] E. Bagdasaryan and V . Shmatikov, “Spinning language mod-
+els: Risks of propaganda-as-a-service and countermeasures,”
+in Proc. of IEEE S&P , 2022.
+[93] I. Shumailov et al. , “The curse of recursion: Training on
+generated data makes models forget,” arxiv:2305.17493,
+2023.
+[94] C. Schuhmann et al., “LAION-400M: Open dataset of clip-
+ﬁltered 400 million image-text pairs,” arXiv:2111.02114,
+2021.
+[95] J. Li, D. Li, C. Xiong, and S. Hoi, “BLIP: Bootstrapping
+language-image pre-training for uniﬁed vision-language un-
+derstanding and generation,” in Proc. of ICML , 2022.
+[96] O. Vinyals, A. Toshev, S. Bengio, and D. Erhan, “Show and
+tell: a neural image caption generator,” arXiv:1411.4555,
+2014.
+[97] C. Lee, J. Jang, and J. Lee, “Personalizing text-to-image
+generation with visual prompts using BLIP-2,” in Proc. of
+ICML, 2023.
+[98] T. Nguyen, S. Y . Gadre, G. Ilharco, S. Oh, and L. Schmidt,
+“Improving multimodal datasets with image captioning,”
+arXiv:2307.10350, 2023.
+[99] F. Wang and H. Liu, “Understanding the behaviour of con-
+trastive loss,” in Proc. of CVPR , 2021.
+[100] S. Shan, E. Wenger, B. Wang, B. Li, H. Zheng, and B. Y .
+Zhao, “Gotta catch’em all: Using honeypots to catch adver-
+sarial attacks on neural networks,” in Proc. of CCS , 2020.
+[101] C. Xiang, “AI is probably using your images and it’s not
+easy to opt out,” Motherboard, Tech by Vice, Sept 2022.
+[102] E. David, “Now you can block OpenAI’s web crawler,” The
+Verge, August 2023.
+[103] L. Bourtoule et al., “Machine unlearning,” in Proc. of IEEE
+S&P, 2021.
+[104] S. Neel, A. Roth, and S. Shariﬁ-Malvajerdi, “Descent-to-
+delete: Gradient-based methods for machine unlearning,” in
+Proc. of ALT , 2021.
+Appendix A.
+Appendix
+A.1. Experiment Setup
+In this section, we detail our experimental setup, including
+model architectures, user study evaluations and model performance
+evaluations.
+Details on model architecture. In §6.1, we already describe
+the LD-CC model for the training from scratch scenario. Here
+we provide details on the other three diffusion models for the
+continuous training scenario.
+• Stable Diffusion V2 (SD-V2): We simulate the popular training
+scenario where the model trainer updates the pretrained Stable
+Diffusion V2 model (SD-V2) [27] using new training data [34].
+SD-V2 is trained on a subset of the LAION-aesthetic dataset [29].
+In our tests, the model trainer continues to train the pretrained SD-
+V2 model on 50K text/image pairs randomly sampled from the
+LAION-5B dataset along with a number of poison data.
+• Stable Diffusion XL (SD-XL): Stable Diffusion XL (SD-XL) is
+the newest and the state-of-the-art diffusion model, outperforming
+SD-V2 in various benchmarks [23]. The SD-XL model has over
+2.6B parameters compared to the 865M parameters of SD-V2.
+SD-XL is trained on an internal dataset curated by StablityAI.
+In our test, we assume a similar training scenario where the
+model trainer updates the pretrained SD-XL model on a randomly
+selected subset (50K) of the LAION-5B dataset and a number of
+poison data.
+• DeepFloyd (DF): DeepFloyd [24] (DF) is another popular
+diffusion model that has a different model architecture from
+LD, SD-V2, and SD-XL. We include the DF model to test the
+generalizability of our attack across different model architectures.
+Like the above, the model trainer updates the pretrained DF model
+using a randomly selected subset (50K) of the LAION-5B dataset
+and a number of poison data.
+Details on user study. We conduct our user study (IRB-
+approved) using Proliﬁc with 185 participants. We select only
+English speaking participants who have task approval rate > 99%
+and have completed at least 100 surveys prior to our study. We
+compensate each participant at a rate of $15/hr.
+Details on evaluating a model’s CLIP alignment score and FID.
+We follow prior work [19, 37] to query the poisoned model with
+20K MSCOCO text prompts (covering a variety of objects and
+styles) and generates 20K images. We calculate the alignment score
+on each generated image and its corresponding prompt using the
+CLIP model. We calculate FID by comparing the generated images
+with clean images in the MSCOCO dataset using an image feature
+extractor model [88].
+A.2. PCA Visualization of Concept Sparsity
+We also visualize semantic frequency of text embeddings in
+an 2D space. Figure 18 provides a feature space visualization
+of the semantic frequency for all the common concepts (nouns),
+compressed via PCA. Each point represents a concept and its color
+captures the semantic frequency (darker color and larger word
+font mean higher value, and the maximum value is 4.17%). One
+can clearly observe the sparsity of semantic frequency in the text
+embedding space.
+
+Figure 18. 2D PCA visualization of semantic frequency in LAION-
+Aesthetic. Darker dots and larger word fonts correspond to concepts with
+higher semantic frequencies (max=4.17%). We randomly pick concepts to
+show their word content.
+A.3. Additional Results of Simple Dirty-Label Poi-
+soning Attacks
+All poison concepts used in the paper. The following is all
+the concepts (from MSCOCO and WikiArt datasets) we used in
+the paper.
+• MSCOCO: ’shoe’, ’umbrella’, ’sink’, ’pizza’, ’airplane’, ’suit-
+case’, ’person’, ’sheep’, ’remote’, ’laptop’, ’surfboard’, ’racket’,
+’spoon’, ’eye glasses’, ’desk’, ’street sign’, ’house’, ’hat’, ’tv’,
+’pyramid’, ’frisbee’, ’knife’, ’fork’, ’clock’, ’microwave’, ’tooth-
+brush’, ’mirror’, ’chair’, ’boat’, ’keyboard’, ’bicycle’, ’cow’,
+’kite’, ’snowboard’, ’trafﬁc light’, ’glove’, ’backpack’, ’mush-
+room’, ’sandwich’, ’cat’, ’scissors’, ’bird’, ’apple’, ’carrot’,
+’panda’, ’motorcycle’, ’hot dog’, ’plate’, ’bus’, ’phone’, ’train’,
+’bowl’, ’dog’, ’bench’, ’table’, ’toilet’, ’lawyer’, ’book’, ’win-
+dow’, ’refrigerator’, ’elephant’, ’broccoli’, ’donut’, ’banana’, ’as-
+tronaut’, ’zebra’, ’vase’, ’bear’, ’truck’, ’ﬁre hydrant’, ’whale’,
+’skis’, ’handbag’, ’cake’, ’giraffe’, ’potted plant’, ’toaster’, ’cas-
+tle’, ’tie’, ’blender’, ’bottle’, ’car’, ’skateboard’, ’door’, ’oven’,
+’bed’, ’couch’, ’hair drier’, ’cup’, ’orange’, ’wine glass’, ’mouse’,
+’horse’.
+• WikiArt: ’High Renaissance’, ’Ukiyo e’, ’Northern Renais-
+sance’, ’Pointillism’, ’Symbolism’, ’Pop Art’, ’Romanticism’,
+’Mannerism Late Renaissance’, ’Early Renaissance’, ’Baroque’,
+’Action painting’, ’Fauvism’, ’Color Field Painting’, ’Minimal-
+ism’, ’Naive Art Primitivism’, ’New Realism’, ’Realism’, ’Post
+Impressionism’, ’Contemporary Realism’, ’Expressionism’, ’Syn-
+thetic Cubism’, ’Analytical Cubism’, ’Rococo’, ’Impressionism’,
+’Art Nouveau Modern’, ’Cubism’, ’Abstract Expressionism’.
+Attacking LD-CC. Figure 19 illustrates the attack success rate
+of the simple, dirty-label poisoning attack (§4), evaluated by both
+a CLIP-based classiﬁer and human inspectors. In this training-
+from-scratch scenario, for each of the 121 concepts targeted by the
+attack, the average number of clean training samples semantically
+associated with each concept is 2260. Results show that, adding
+500 poison training samples can effectively suppress the inﬂuence
+of these clean data samples during model training, resulting in an
+attack success rate of 82% (human inspection) and 77% (CLIP
+classiﬁcation). Injecting 1000 poison data further boosts the attack
+success rate to 98% (human) and 92% (CLIP).
+Attacking SD-V2, SD-XL, DeepFloyd. Figure 20 shows the
+poisoning result in the continuous training scenario assessed by
+the CLIP classiﬁer and Figure 21 shows the result evaluated via
+Task CLIP attack success rate on artist names
+100 poison 200 poison 300 poison
+LD-CC 80% 91% 96%
+SD-V2 81% 94% 97%
+SD-XL 77% 92% 99%
+DF 80% 96% 99%
+TABLE 7. Poison attack damages related concepts (artist names) when the
+attacker poisons given art styles across 4 generation models.
+human inspection. Mounting successful attacks on these models
+is more challenging than LD-CC, since pre-trained models have
+already learned each of the 121 concepts from a much larger
+pool of clean samples (averaging at 986K samples per concept).
+However, by injecting 750 poisoning samples, the attack effectively
+disrupts the image generation at a high (85%) probability, reported
+by both CLIP classiﬁcation and human inspection. Injecting 1000
+poisoning samples pushes the success rate beyond 90%.
+Figure 22 compares the CLIP attack success rate between
+object and style concepts. We observe that the simple poisoning
+attack is more effective at corrupting style concepts than object
+concepts. This is likely because styles are typically conveyed
+visually by the entire image, while objects deﬁne speciﬁc regions
+within the image.
+Concept Sparsity Affecting Attack Efﬁcacy. Figure 23 demon-
+strates how concept sparsity in terms of word frequency impacts at-
+tack efﬁcacy and we further study the impact of semantic frequency
+in Figure 24. For this we sample 15 object concepts with varying
+sparsity levels, in terms of word and semantic frequency discussed
+in §3.3. As expected, poisoning attack is more successful when
+disrupting more sparse concepts Moreover, semantic frequency
+is a more accurate representation of concept sparsity than word
+frequency, because we see higher correlation between semantic
+frequency and attack efﬁcacy. These empirical results conﬁrm our
+hypothesis in §3.2.
+L2 Distance to
+source concept(D)
+Average Number of
+Concepts Included
+Average CLIP attack success rate
+100 poison 200 poison 300 poison
+D = 0 1 84% 94% 96%
+0 < D≤ 3.0 5 81% 93% 96%
+3.0 < D≤ 6.0 13 78% 90% 92%
+6.0 < D≤ 9.0 52 32% 41% 59%
+D > 9.0 1929 5% 5% 6%
+TABLE 8. Bleed through performance of the enhanced poison. (SD-XL)
+A.4. Additional Results
+Poison bleed-through. We evaluate the “related” concept bleed-
+through effects between artists and the art styles they are known for.
+We include 195 artists associated with 28 styles from the Wikiart
+dataset [73]. We poison each art style C, then test poison’s impact
+on generating painting of artists whose style belong to style C,
+without mentioning the poisoned style C in the prompt, e.g., query
+with “a painting by Picasso” for models with “cubism” poisoned.
+Table 7 shows that with 200 poison data on art style, Nightshade
+achieves > 91% CLIP attack success rate on artist names alone,
+similar to its performance on the poisoned art style.
+Enhancing bleed-through. We can further enhance our poison
+attack’s bleed though by broadening the sampling pool of poison
+text prompts: sampling text prompts in the text semantic space of
+C rather than with exact word match to C. As a result, selected
+poison data will deliberately include related concepts and lead
+
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+0 100 250 500 750 1000
+Attack Success
+Number of Poison Data Injected
+CLIP
+Human-rated
+Figure 19. Attack success rate of the simple,
+dirty-label poisoning attack, measured by the
+CLIP classiﬁer and human inspectors, vs. # of poi-
+son data injected, when attacking LD-CC (training
+from scratch).
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+0 100 250 500 750 1000
+CLIP Attack Success
+Number of Poison Data Injected
+SD-V2
+SD-XL
+DFd
+Figure 20. Attack success rate of the simple,
+dirty-label poisoning attack, measured by the
+CLIP classiﬁer, vs. # of poison data injected, when
+attacking each of three models SD-V2, SD-XL,
+DeepFloyd (continuous training).
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+0 100 250 500 750 1000
+Human-rated Attack Success
+Number of Poison Data Injected
+SD-V2
+SD-XL
+DFd
+Figure 21. Attack success rate of the simple,
+dirty-label poisoning attack, measured by human
+inspectors, vs. # of poison data injected, when
+attacking each of three models SD-V2, SD-XL,
+DeepFloyd (continuous training).
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+ 0  250  500  750  1000
+CLIP Attack Success Rate
+Number of Poison Data Injected
+Object Concepts
+Style Concepts
+Figure 22. Attack success rate of the simple poi-
+son attack against LD-CC, measured by the CLIP
+classiﬁer. The simple poisoning attack is more
+effective at corrupting style concepts than object
+concepts. The same applies to attacks against SD-
+V2, SD-XL, DeepFloyd.
+ 0.7
+ 0.8
+ 0.9
+ 1
+0% 0.05% 0.1% 0.15%
+CLIP Attack Success
+Word Frequency
+Figure 23. Success rate of the simple poisoning
+attack (rated by CLIP classiﬁer) is weakly cor-
+related with concept sparsity measured by word
+frequency in the training data. Results for LD-
+CC. Same trend observed on SD-V2, SD-XL,
+DeepFloyd.
+ 0.7
+ 0.8
+ 0.9
+ 1
+0% 0.1% 0.2% 0.3% 0.4%
+CLIP Attack Success
+Semantic Frequency
+Figure 24. Success rate of the simple poison-
+ing attack (rated by CLIP classiﬁer) correlates
+strongly with concept sparsity measured by se-
+mantic frequency. Results for LD-CC. Same trend
+observed on SD-V2, SD-XL, DeepFloyd.
+Approach # of poisoned
+concepts
+Overall model Performance
+Alignment Score
+(higher better)
+FID
+(lower better)
+Clean LD-CC 0 0.31 17.2
+Poisoned LD-CC 100 0.29 22.5
+Poisoned LD-CC 250 0.27 29.3
+Poisoned LD-CC 500 0.24 36.1
+Poisoned LD-CC 1000 0.22 44.2
+AttnGAN - 0.26 35.5
+A model that outputs
+random noise - 0.20 49.4
+TABLE 9. Overall model performance (in terms of the CLIP alignment
+score and FID) when an increasing number of concepts are being poisoned.
+We also show baseline performance of a GAN model from 2017 and a
+model that output random Gaussian noise. (LD-CC)
+to a broader impact. Speciﬁcally, when we calculate activation
+similar to the poisoned concept C, we use all prompts in LAION-
+5B dataset (does not need to include C). Then we select top
+5K prompts with the highest activation, which results in poison
+prompts containing both C and nearby concepts. We keep the
+rest of our poison generation algorithm identical. This enhanced
+attack increases bleed through by 11% in some cases while having
+minimal performance degradation (< 1%) on the poisoned concept
+(Table 8).
+Stacking multiple poisons. Table 9 lists, for the LD-CC model,
+the overall model performance in terms of the CLIP alignment
+score and FID, when an increased number of concepts are being
+poisoned.
+Attack performance on complex prompts. We also evaluate
+poison performance on longer and more complex prompts. We
+sample 20 prompts that contains 30+ words from Midjourney
+showcase website. We then manually replace the concept in the
+ 0
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+0 50K 100K 150K 200K
+Attack Success % (CLIP)
+# of Continous Training Data (w/o Any Poison)
+Model poisoned 100 data
+Model poisoned 300 data
+Model poisoned 500 data
+Figure 25. Nightshade’s attack success rate (CLIP-based) decreases when
+model trainer continuously trains an already-poisoned model on an increas-
+ing number of clean data. The base model is poisoned with 100, 300, and
+500 poison data samples.
+prompt to the poisoned concept ( e.g., “front view of a hyper
+realistic [CONCEPT] with white and blue body ...”). The poison
+attack remains successful for complex prompts ( > 80% CLIP
+attack success rate).
+
+Appendix B.
+Meta-Review
+The following meta-review was prepared by the program com-
+mittee for the 2024 IEEE Symposium on Security and Privacy
+(S&P) as part of the review process as detailed in the call for
+papers.
+B.1. Summary
+The paper introduces Nightshade, a highly optimized data
+poisoning attack against diffusion-based text-to-image models,
+demonstrating the vulnerability of these models to prompt-speciﬁc
+poisoning attacks with a small number of optimized samples.
+The attack exploits concept sparsity and stealthily corrupts image
+generation for speciﬁc concepts, posing risks to model integrity
+and suggesting a tool for intellectual property protection.
+B.2. Scientiﬁc Contributions
+• Identiﬁes an Impactful Vulnerability
+• Provides a Valuable Step Forward in an Established Field
+B.3. Reasons for Acceptance
+1) This paper illustrates a signiﬁcant vulnerability in state-of-
+the-art models to data poisoning. The vulnerability is present
+even when large training datasets are used.
+2) The proposed attack, Nightshade, is efﬁcient, requiring fewer
+than 100 poisoned samples to signiﬁcantly inﬂuence model
+outputs.
+3) The paper is well-written, with a clear presentation and
+comprehensive evaluation of the proposed attack and defense
+mechanisms, and the experimental results are comprehensive.

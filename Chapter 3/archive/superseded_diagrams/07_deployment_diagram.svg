@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1270" viewBox="0 0 1800 1270">
+<rect width="100%" height="100%" fill="white"/>
+<text x="900" y="76" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">DEPLOYMENT ARCHITECTURE</text>
+<rect x="120" y="150" width="330" height="255" rx="20" fill="#f5f8fa" stroke="#b4c6d2" stroke-width="2"/>
+<rect x="210.0" y="195" width="150" height="95" rx="8" fill="#e0eef5" stroke="#275775" stroke-width="5"/>
+<polyline points="190.0,305 380.0,305" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="260.0,235 245.0,250 260.0,265" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="310.0,235 325.0,250 310.0,265" fill="none" stroke="#44566a" stroke-width="3"/>
+<text x="285.0" y="359" font-family="Arial, sans-serif" font-size="31" font-weight="bold" text-anchor="middle" fill="#172536">Research laptop</text>
+<text x="285.0" y="391" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">Train + export</text>
+<rect x="735" y="150" width="330" height="255" rx="20" fill="#f5f8fa" stroke="#b4c6d2" stroke-width="2"/>
+<rect x="855.0" y="200" width="90" height="90" rx="8" fill="#e0eef5" stroke="#275775" stroke-width="5"/>
+<rect x="876.0" y="221" width="48" height="48" rx="3" fill="#9cc4d7" stroke="#275775" stroke-width="5"/>
+<polyline points="875.0,200 875.0,175" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="855.0,220 830.0,220" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="875.0,290 875.0,315" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="945.0,220 970.0,220" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="900.0,200 900.0,175" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="855.0,245 830.0,245" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="900.0,290 900.0,315" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="945.0,245 970.0,245" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="925.0,200 925.0,175" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="855.0,270 830.0,270" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="925.0,290 925.0,315" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="945.0,270 970.0,270" fill="none" stroke="#44566a" stroke-width="3"/>
+<text x="900.0" y="359" font-family="Arial, sans-serif" font-size="31" font-weight="bold" text-anchor="middle" fill="#172536">Build tools</text>
+<text x="900.0" y="391" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">Flutter + platform SDK</text>
+<rect x="1350" y="150" width="330" height="255" rx="20" fill="#f5f8fa" stroke="#b4c6d2" stroke-width="2"/>
+<rect x="1471.0" y="173" width="88" height="144" rx="12" fill="#e0eef5" stroke="#275775" stroke-width="5"/>
+<polyline points="1501.0,189 1529.0,189" fill="none" stroke="#44566a" stroke-width="3"/>
+<circle cx="1515.0" cy="300" r="5" fill="#275775" stroke="#275775" stroke-width="5"/>
+<polyline points="1492.0,260 1510.0,235 1523.0,250 1539.0,225" fill="none" stroke="#44566a" stroke-width="3"/>
+<text x="1515.0" y="359" font-family="Arial, sans-serif" font-size="31" font-weight="bold" text-anchor="middle" fill="#172536">Mobile app</text>
+<text x="1515.0" y="391" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">Android / iOS</text>
+<polyline points="450,277.5 735,277.5" fill="none" stroke="#44566a" stroke-width="3"/>
+<polygon points="735,277.5 718.7919521576518,285.32937961400216 718.7919521576518,269.67062038599784" fill="#44566a"/>
+<text x="592.5" y="258.5" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">CS-UAP asset</text>
+<polyline points="1065,277.5 1350,277.5" fill="none" stroke="#44566a" stroke-width="3"/>
+<polygon points="1350,277.5 1333.7919521576518,285.32937961400216 1333.7919521576518,269.67062038599784" fill="#44566a"/>
+<text x="1207.5" y="258.5" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">signed package</text>
+<rect x="120" y="735" width="330" height="255" rx="20" fill="#f5f8fa" stroke="#b4c6d2" stroke-width="2"/>
+<rect x="210.0" y="780" width="150" height="95" rx="8" fill="#e0eef5" stroke="#275775" stroke-width="5"/>
+<polyline points="190.0,890 380.0,890" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="260.0,820 245.0,835 260.0,850" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="310.0,820 325.0,835 310.0,850" fill="none" stroke="#44566a" stroke-width="3"/>
+<text x="285.0" y="944" font-family="Arial, sans-serif" font-size="31" font-weight="bold" text-anchor="middle" fill="#172536">Desktop app</text>
+<text x="285.0" y="976" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">Windows / Linux / macOS</text>
+<rect x="735" y="735" width="330" height="255" rx="20" fill="#f5f8fa" stroke="#b4c6d2" stroke-width="2"/>
+<rect x="825.0" y="780" width="150" height="95" rx="8" fill="#e0eef5" stroke="#275775" stroke-width="5"/>
+<polyline points="825.0,805 975.0,805" fill="none" stroke="#44566a" stroke-width="3"/>
+<circle cx="848.0" cy="792" r="3" fill="#275775" stroke="#275775" stroke-width="5"/>
+<circle cx="865.0" cy="792" r="3" fill="#275775" stroke="#275775" stroke-width="5"/>
+<circle cx="882.0" cy="792" r="3" fill="#275775" stroke="#275775" stroke-width="5"/>
+<polyline points="875.0,820 860.0,835 875.0,850" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="925.0,820 940.0,835 925.0,850" fill="none" stroke="#44566a" stroke-width="3"/>
+<text x="900.0" y="944" font-family="Arial, sans-serif" font-size="31" font-weight="bold" text-anchor="middle" fill="#172536">Web app</text>
+<text x="900.0" y="976" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">Browser build</text>
+<rect x="1350" y="735" width="330" height="255" rx="20" fill="#f5f8fa" stroke="#b4c6d2" stroke-width="2"/>
+<polyline points="1465.0,830 1560.0,785" fill="none" stroke="#44566a" stroke-width="3"/>
+<polyline points="1465.0,830 1560.0,875" fill="none" stroke="#44566a" stroke-width="3"/>
+<circle cx="1465.0" cy="830" r="19" fill="#9cc4d7" stroke="#275775" stroke-width="5"/>
+<circle cx="1560.0" cy="785" r="19" fill="#9cc4d7" stroke="#275775" stroke-width="5"/>
+<circle cx="1560.0" cy="875" r="19" fill="#9cc4d7" stroke="#275775" stroke-width="5"/>
+<text x="1515.0" y="944" font-family="Arial, sans-serif" font-size="31" font-weight="bold" text-anchor="middle" fill="#172536">Device services</text>
+<text x="1515.0" y="976" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">Camera · gallery · share</text>
+<polyline points="850,405 850,545 285,545 285,735" fill="none" stroke="#44566a" stroke-width="3"/>
+<polygon points="285,735 277.17062038599784,718.7919521576518 292.82937961400216,718.7919521576518" fill="#44566a"/>
+<polyline points="950,405 950,650 900,650 900,735" fill="none" stroke="#44566a" stroke-width="3"/>
+<polygon points="900,735 892.1706203859978,718.7919521576518 907.8293796140022,718.7919521576518" fill="#44566a"/>
+<polyline points="1515.0,405 1515.0,735" fill="none" stroke="#44566a" stroke-width="3"/>
+<polygon points="1515.0,735 1507.1706203859978,718.7919521576518 1522.8293796140022,718.7919521576518" fill="#44566a"/>
+<text x="1630" y="573" font-family="Arial, sans-serif" font-size="23" font-weight="normal" text-anchor="middle" fill="#172536">platform calls</text>
+<text x="420" y="634" font-family="Arial, sans-serif" font-size="24" font-weight="normal" text-anchor="middle" fill="#172536">Additional targets</text>
+<text x="900" y="1136" font-family="Arial, sans-serif" font-size="26" font-weight="normal" text-anchor="middle" fill="#172536">Local cloaking uses the bundled vector; no model server is required.</text>
+<text x="900" y="1195" font-family="Arial, sans-serif" font-size="25" font-weight="normal" text-anchor="middle" fill="#172536">Signing and device validation are required before distribution.</text>
+</svg>

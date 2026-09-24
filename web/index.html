@@ -19,6 +19,15 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="On-device photo cloaking with CLIP SLIP.">
+  <meta name="theme-color" content="#CBE4D7">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; background: #fff; }
+    #loading { position: fixed; inset: 0; display: grid; place-content: center;
+      text-align: center; color: #303831; font: 16px monospace; }
+    #loading strong { font-size: 28px; letter-spacing: 3px; }
+    #loading p { color: #657068; }
+  </style>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -33,6 +42,36 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <div id="loading" role="status"><strong>CLIP SLIP</strong><p>Opening the little privacy lab…</p></div>
+  <noscript>Enable JavaScript to open CLIP SLIP.</noscript>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      document.getElementById('loading')?.remove();
+    });
+
+    function showStartupError(message) {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.querySelector('p').textContent = message;
+      }
+    }
+
+    // Flutter replaces the base placeholder and generates the bootstrap during
+    // run/build. Live Server cannot run this source template on its own.
+    const sourceTemplate = document.querySelector('base').getAttribute('href')
+      .includes('$' + 'FLUTTER_BASE_HREF');
+    if (sourceTemplate || location.protocol === 'file:') {
+      showStartupError('Open this app with flutter run -d chrome, or serve the compiled build/web folder over HTTP.');
+    } else {
+      const bootstrap = document.createElement('script');
+      bootstrap.src = 'flutter_bootstrap.js';
+      bootstrap.async = true;
+      bootstrap.onerror = function () {
+        showStartupError('The app could not be downloaded. Refresh the page or check that the complete web build is being served.');
+      };
+      document.body.appendChild(bootstrap);
+    }
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
@@ -41,6 +80,5 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

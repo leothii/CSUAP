@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1750" viewBox="0 0 1800 1750">
+<rect width="100%" height="100%" fill="white"/>
+<text x="900" y="76" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">SAVE AND SHARE FLOWCHART</text>
+<ellipse cx="900.0" cy="165.0" rx="325.0" ry="45.0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="177.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Result available</text>
+<polygon points="900.0,295 1225,370.0 900.0,445 575,370.0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="381.0" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#172536">Share selected?</text>
+<polyline points="900.0,210 900.0,295" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="900.0,295 890.4307582495529,275.1901637482411 909.5692417504471,275.1901637482411" fill="#4b70ad"/>
+<rect x="1260" y="325" width="465" height="105" rx="0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="1492.5" y="389.5" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Prepare share image</text>
+<polyline points="1225,370 1260,370" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="1260,370 1240.190163748241,379.5692417504471 1240.190163748241,360.4307582495529" fill="#4b70ad"/>
+<text x="1300" y="304" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">Yes</text>
+<polygon points="1295,535 1725,535 1690,640 1260,640" fill="#bce5eb" stroke="#405b99" stroke-width="4"/>
+<text x="1492.5" y="599.5" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Open share interface</text>
+<polyline points="1492.5,430 1492.5,535" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="1492.5,535 1482.930758249553,515.1901637482412 1502.069241750447,515.1901637482412" fill="#4b70ad"/>
+<polygon points="900.0,565 1225,640.0 900.0,715 575,640.0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="651.0" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#172536">Mobile save?</text>
+<polyline points="900.0,445 900.0,565" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="900.0,565 890.4307582495529,545.1901637482412 909.5692417504471,545.1901637482412" fill="#4b70ad"/>
+<text x="975.0" y="489" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">No</text>
+<rect x="80" y="585" width="380" height="110" rx="0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="270.0" y="652.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Save to gallery</text>
+<polyline points="575,640 460,640" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="460,640 479.8098362517589,630.4307582495529 479.8098362517589,649.5692417504471" fill="#4b70ad"/>
+<text x="515" y="621" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">Yes</text>
+<polygon points="900.0,845 1225,920.0 900.0,995 575,920.0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="931.0" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#172536">Web browser?</text>
+<polyline points="900.0,715 900.0,845" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="900.0,845 890.4307582495529,825.1901637482412 909.5692417504471,825.1901637482412" fill="#4b70ad"/>
+<text x="975.0" y="759" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">No</text>
+<polygon points="115,865 460,865 425,975 80,975" fill="#bce5eb" stroke="#405b99" stroke-width="4"/>
+<text x="270.0" y="932.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Download PNG</text>
+<polyline points="575,920 460,920" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="460,920 479.8098362517589,910.4307582495529 479.8098362517589,929.5692417504471" fill="#4b70ad"/>
+<text x="515" y="894" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">Yes</text>
+<polygon points="610,1090 1225,1090 1190,1190 575,1190" fill="#bce5eb" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="1152.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Select desktop destination</text>
+<polyline points="900.0,995 900.0,1090" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="900.0,1090 890.4307582495529,1070.190163748241 909.5692417504471,1070.190163748241" fill="#4b70ad"/>
+<text x="975.0" y="1039" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">No</text>
+<polygon points="900.0,1260 1225,1332.5 900.0,1405 575,1332.5" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="1343.5" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#172536">Destination chosen?</text>
+<polyline points="900.0,1190 900.0,1260" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="900.0,1260 890.4307582495529,1240.190163748241 909.5692417504471,1240.190163748241" fill="#4b70ad"/>
+<rect x="80" y="1280" width="380" height="110" rx="0" fill="#ffffff" stroke="#405b99" stroke-width="4"/>
+<text x="270.0" y="1347.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Write PNG file</text>
+<polyline points="575,1333 460,1333" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="460,1333 479.8098362517589,1323.430758249553 479.8098362517589,1342.569241750447" fill="#4b70ad"/>
+<text x="515" y="1309" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">Yes</text>
+<ellipse cx="1492.5" cy="1335.0" rx="232.5" ry="55.0" fill="#83cc65" stroke="#405b99" stroke-width="4"/>
+<text x="1492.5" y="1347.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Return without saving</text>
+<polyline points="1225,1333 1260,1333" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="1260,1333 1240.190163748241,1342.569241750447 1240.190163748241,1323.430758249553" fill="#4b70ad"/>
+<text x="1300" y="1247" font-family="Arial, sans-serif" font-size="29" font-weight="bold" text-anchor="middle" fill="#172536">No</text>
+<ellipse cx="900.0" cy="1560.0" rx="325.0" ry="50.0" fill="#83cc65" stroke="#405b99" stroke-width="4"/>
+<text x="900.0" y="1572.0" font-family="Arial, sans-serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#172536">Return to result</text>
+<polyline points="270,695 35,695 35,1560 575,1560" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="575,1560 555.1901637482412,1569.569241750447 555.1901637482412,1550.430758249553" fill="#4b70ad"/>
+<polyline points="270,975 35,975" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="35,975 54.80983625175889,965.4307582495529 54.809836251758895,984.5692417504471" fill="#4b70ad"/>
+<polyline points="270,1390 270,1560" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="270,1560 260.4307582495529,1540.190163748241 279.5692417504471,1540.190163748241" fill="#4b70ad"/>
+<polyline points="1492,640 1760,640 1760,1560 1225,1560" fill="none" stroke="#4b70ad" stroke-width="5"/>
+<polygon points="1225,1560 1244.809836251759,1550.430758249553 1244.809836251759,1569.569241750447" fill="#4b70ad"/>
+<text x="900" y="1697" font-family="Arial, sans-serif" font-size="27" font-weight="normal" text-anchor="middle" fill="#172536">On export error: show feedback, clear busy state, return to result.</text>
+</svg>
