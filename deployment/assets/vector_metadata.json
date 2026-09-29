@@ -1,0 +1,13 @@
+{
+  "source": "outputs/uap/cs_uap_v.npy",
+  "source_sha256": "47b20bce59af2c64ca35bf85234addce1cc7683228e0e078e74e0066bd15c171",
+  "asset_sha256": "859861f611203d72fbbe5b736d7c74e7f4c7175e2535969b3cdc134e1896ed6e",
+  "shape": [
+    224,
+    224,
+    3
+  ],
+  "encoding": "little-endian float32 HWC RGB",
+  "epsilon": 0.05,
+  "application": "tile at original image resolution"
+}
