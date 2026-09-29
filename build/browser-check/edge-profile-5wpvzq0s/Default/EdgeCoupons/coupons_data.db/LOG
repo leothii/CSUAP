@@ -1,0 +1,5 @@
+2026/09/29-20:56:32.386 6638 Creating DB C:\Users\Acer\Documents\Programs\CSUAP\build\browser-check\edge-profile-5wpvzq0s\Default\EdgeCoupons/coupons_data.db since it was missing.
+2026/09/29-20:56:32.399 6638 Reusing MANIFEST C:\Users\Acer\Documents\Programs\CSUAP\build\browser-check\edge-profile-5wpvzq0s\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/09/29-20:56:33.280 6908 Level-0 table #5: started
+2026/09/29-20:56:33.288 6908 Level-0 table #5: 683273 bytes OK
+2026/09/29-20:56:33.291 6908 Delete type=0 #3

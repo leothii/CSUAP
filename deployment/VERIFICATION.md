@@ -5,7 +5,7 @@ Verified locally using Flutter 3.47.2 / Dart 3.13.2 on Windows.
 | Check | Result |
 | --- | --- |
 | `flutter analyze --no-pub` | No issues |
-| `flutter test --no-pub` | 34 tests passed |
+| `flutter test --no-pub` | 36 tests passed |
 | Release web compilation | Passed, including tree-shaken Material and Cupertino icon fonts |
 | Vercel configuration | Configured fields validated against the published JSON schema |
 | Vercel shell script | Bash syntax and LF line endings verified |
@@ -16,6 +16,22 @@ Verified locally using Flutter 3.47.2 / Dart 3.13.2 on Windows.
 | Responsive widget tests | Screens checked at widths 320, 590, and 1100 with enlarged text |
 | Browser errors / failed HTTP requests | None during the smoke test |
 | Original Downloads project | Left unchanged |
+
+Startup and portrait-layout follow-up:
+
+- Both project copies passed startup in headless Edge with external HTTPS
+  requests blocked; the loader disappeared after Flutter's first frame.
+- Blocking CanvasKit downloads displayed startup failure feedback and a retry
+  button. The renderer is explicitly served from the website's own assets.
+- New widget checks at 320 × 568 and 390 × 844 assert that the PC and all four
+  menu actions are visible without scrolling. Enlarged-text checks still pass.
+- The 390 × 844 release screenshot was visually inspected: the interactive PC
+  sits above the menu and all navigation controls fit in the viewport.
+- Reproduce the browser check from the repository root with
+  `python scripts/check_web_startup.py deployment/build/web` (Windows Edge and
+  Python websocket-client required). Screenshot: `build/browser-check/portrait.png`.
+
+These checks verify local release builds; they do not verify a public Vercel URL.
 
 Regression tests include EXIF orientation, 16-bit input conversion, invalid
 images, file-size limits, animation rejection, corrupt vectors, intensity bounds,

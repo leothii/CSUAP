@@ -118,144 +118,185 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   void enter(int index) {
     select(index);
     openPage(
-        context,
-        [
-          const ProtectionScreen(),
-          const GuideScreen(),
-          const DocsScreen(),
-          const CreditsScreen()
-        ][index]);
+      context,
+      [
+        const ProtectionScreen(),
+        const GuideScreen(),
+        const DocsScreen(),
+        const CreditsScreen(),
+      ][index],
+    );
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         body: SafeArea(
           child: LayoutBuilder(
-              builder: (context, constraints) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints:
-                          BoxConstraints(minHeight: constraints.maxHeight),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 40),
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1080),
-                            child: HomeStage(
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                  const PixelIcon(Icons.shield_outlined,
-                                      size: 48, color: pixelMuted),
-                                  const SizedBox(height: 24),
-                                  FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text('CLIP SLIP',
-                                          style: GoogleFonts.pressStart2p(
-                                              fontSize: 34,
-                                              height: 1.2,
-                                              color: pixelCream))),
-                                  const SizedBox(height: 12),
-                                  const Text('a little privacy for your photos',
-                                      style: TextStyle(
-                                          color: pixelMuted, fontSize: 19),
-                                      textAlign: TextAlign.center),
-                                  const SizedBox(height: 44),
-                                  Focus(
-                                    onKeyEvent: (_, event) {
-                                      if (event is KeyDownEvent ||
-                                          event is KeyRepeatEvent) {
-                                        final direction = event.logicalKey ==
-                                                LogicalKeyboardKey.arrowDown
-                                            ? 1
-                                            : event.logicalKey ==
-                                                    LogicalKeyboardKey.arrowUp
-                                                ? -1
-                                                : 0;
-                                        if (direction != 0) {
-                                          final index = (selected + direction) %
-                                              labels.length;
-                                          select(index);
-                                          nodes[index].requestFocus();
-                                          return KeyEventResult.handled;
-                                        }
-                                      }
-                                      return KeyEventResult.ignored;
-                                    },
-                                    child: Column(children: [
-                                      for (var i = 0; i < labels.length; i++)
-                                        Semantics(
-                                            selected: selected == i,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 4),
-                                              child: TextButton(
-                                                focusNode: nodes[i],
-                                                autofocus: i == 0,
-                                                onHover: (hovered) {
-                                                  if (hovered) select(i);
-                                                },
-                                                onFocusChange: (focused) {
-                                                  if (focused) select(i);
-                                                },
-                                                onPressed: () => enter(i),
-                                                style: TextButton.styleFrom(
-                                                  backgroundColor: selected == i
-                                                      ? const Color(0xFFFFF3D9)
-                                                      : Colors.transparent,
-                                                  foregroundColor: pixelCream,
-                                                  minimumSize: const Size(
-                                                      double.infinity, 52),
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 16),
-                                                  shape:
-                                                      const BeveledRectangleBorder(),
-                                                  textStyle:
-                                                      GoogleFonts.pressStart2p(
-                                                          fontSize: 12,
-                                                          height: 1.6),
-                                                ),
-                                                child: Row(children: [
-                                                  SizedBox(
-                                                      width: 20,
-                                                      height: 16,
-                                                      child: selected == i
-                                                          ? const CustomPaint(
-                                                              painter:
-                                                                  _MenuArrowPainter())
-                                                          : null),
-                                                  const SizedBox(width: 16),
-                                                  Expanded(
-                                                      child: Text(labels[i])),
-                                                ]),
-                                              ),
-                                            )),
-                                    ]),
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 848;
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 24, vertical: compact ? 16 : 40),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1080),
+                        child: HomeStage(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!compact)
+                                const PixelIcon(
+                                  Icons.shield_outlined,
+                                  size: 48,
+                                  color: pixelMuted,
+                                ),
+                              SizedBox(height: compact ? 8 : 24),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'CLIP SLIP',
+                                  style: GoogleFonts.pressStart2p(
+                                    fontSize: compact ? 26 : 34,
+                                    height: 1.2,
+                                    color: pixelCream,
                                   ),
-                                  const SizedBox(height: 24),
-                                  ConstrainedBox(
-                                      constraints:
-                                          const BoxConstraints(minHeight: 54),
-                                      child: Text(descriptions[selected],
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                              color: pixelMuted,
-                                              fontSize: 20))),
-                                  const SizedBox(height: 40),
-                                  const Text('ON-DEVICE PROCESSING · CS-UAP',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: pixelMuted,
-                                          letterSpacing: .8)),
-                                ])),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'a little privacy for your photos',
+                                style:
+                                    TextStyle(color: pixelMuted, fontSize: 19),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (compact)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: SizedBox(
+                                    width: (constraints.maxHeight * .29)
+                                        .clamp(140.0, 220.0),
+                                    child: const RetroComputer(compact: true),
+                                  ),
+                                )
+                              else
+                                const SizedBox(height: 44),
+                              Focus(
+                                onKeyEvent: (_, event) {
+                                  if (event is KeyDownEvent ||
+                                      event is KeyRepeatEvent) {
+                                    final direction = event.logicalKey ==
+                                            LogicalKeyboardKey.arrowDown
+                                        ? 1
+                                        : event.logicalKey ==
+                                                LogicalKeyboardKey.arrowUp
+                                            ? -1
+                                            : 0;
+                                    if (direction != 0) {
+                                      final index = (selected + direction) %
+                                          labels.length;
+                                      select(index);
+                                      nodes[index].requestFocus();
+                                      return KeyEventResult.handled;
+                                    }
+                                  }
+                                  return KeyEventResult.ignored;
+                                },
+                                child: Column(
+                                  children: [
+                                    for (var i = 0; i < labels.length; i++)
+                                      Semantics(
+                                        selected: selected == i,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 4),
+                                          child: TextButton(
+                                            focusNode: nodes[i],
+                                            autofocus: i == 0,
+                                            onHover: (hovered) {
+                                              if (hovered) select(i);
+                                            },
+                                            onFocusChange: (focused) {
+                                              if (focused) select(i);
+                                            },
+                                            onPressed: () => enter(i),
+                                            style: TextButton.styleFrom(
+                                              backgroundColor: selected == i
+                                                  ? const Color(0xFFFFF3D9)
+                                                  : Colors.transparent,
+                                              foregroundColor: pixelCream,
+                                              minimumSize: Size(double.infinity,
+                                                  compact ? 48 : 52),
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: compact ? 10 : 16),
+                                              shape:
+                                                  const BeveledRectangleBorder(),
+                                              textStyle:
+                                                  GoogleFonts.pressStart2p(
+                                                fontSize: 12,
+                                                height: 1.6,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 20,
+                                                  height: 16,
+                                                  child: selected == i
+                                                      ? const CustomPaint(
+                                                          painter:
+                                                              _MenuArrowPainter(),
+                                                        )
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                    child: Text(labels[i])),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: compact ? 8 : 24),
+                              ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(minHeight: 54),
+                                child: Text(
+                                  descriptions[selected],
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: pixelMuted,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: compact ? 8 : 40),
+                              const Text(
+                                'ON-DEVICE PROCESSING · CS-UAP',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: pixelMuted,
+                                  letterSpacing: .8,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                  )),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       );
 }

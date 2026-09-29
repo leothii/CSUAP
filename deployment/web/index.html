@@ -23,10 +23,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { margin: 0; background: #fff; }
-    #loading { position: fixed; inset: 0; display: grid; place-content: center;
+    #loading { position: fixed; inset: 0; z-index: 100; background: #fff; display: grid; place-content: center;
       text-align: center; color: #303831; font: 16px monospace; }
     #loading strong { font-size: 28px; letter-spacing: 3px; }
-    #loading p { color: #657068; }
+    #loading p { color: #657068; max-width: 34em; padding: 0 24px; }
+    #loading button { justify-self: center; padding: 12px 24px; cursor: pointer; }
+    #loading button[hidden] { display: none; }
   </style>
 
   <!-- iOS meta tags & icons -->
@@ -42,17 +44,21 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <div id="loading" role="status"><strong>invisAI</strong><p>Opening the little privacy lab…</p></div>
+  <div id="loading" role="status"><strong>invisAI</strong><p>Opening the little privacy lab…</p><button type="button" hidden onclick="location.reload()">Try again</button></div>
   <noscript>Enable JavaScript to open invisAI.</noscript>
   <script>
+    let startupTimer;
     window.addEventListener('flutter-first-frame', function () {
+      clearTimeout(startupTimer);
       document.getElementById('loading')?.remove();
     });
 
     function showStartupError(message) {
+      clearTimeout(startupTimer);
       const loading = document.getElementById('loading');
       if (loading) {
         loading.querySelector('p').textContent = message;
+        loading.querySelector('button').hidden = false;
       }
     }
 
@@ -63,6 +69,9 @@
     if (sourceTemplate || location.protocol === 'file:') {
       showStartupError('Open this app with flutter run -d chrome, or serve the compiled build/web folder over HTTP.');
     } else {
+      startupTimer = setTimeout(function () {
+        showStartupError('Loading is taking longer than expected. Check your connection and try again.');
+      }, 30000);
       const bootstrap = document.createElement('script');
       bootstrap.src = 'flutter_bootstrap.js';
       bootstrap.async = true;

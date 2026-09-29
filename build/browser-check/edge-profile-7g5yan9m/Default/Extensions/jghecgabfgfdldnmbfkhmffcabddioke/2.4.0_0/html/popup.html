@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Volume Master</title>
+  <link href="../css/popup.css" rel="stylesheet">
+</head>
+
+<body>
+
+<header class="header">
+  <div class="header__heading">
+    <div>
+      <img class="header__icon js-diagnostics__cog" src="../icon/icon-48.png" alt="Volume Master">
+      <h1 class="header__name">Volume Master</h1>
+    </div>
+    <div class="header__buttons">
+
+      <!-- Settings button -->
+      <button type="button" class="c-settings-switch js-settings-switch">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="c-settings-switch__icon">
+          <path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/>
+        </svg>
+      </button>
+
+    </div>
+  </div>
+  <div class="header__description">
+    Use the slider below to control the volume of the current tab.
+    Switch to any tab playing audio with just one click.
+  </div>
+</header>
+
+<!-- Diagnostics -->
+<section class="diagnostics is-hidden js-diagnostics">
+  <strong>
+    Diagnostics
+  </strong>
+  <div class="diagnostics__description">
+    If you're experiencing any issues, please send the following diagnostics data via the
+    <a href="https://petasittek.zendesk.com/hc/en-us/requests/new" target="_blank" class="link link--external">support form</a>.
+  </div>
+  <div class="diagnostics__data js-diagnostics__data"></div>
+  <div class="diagnostics__data-encoded js-diagnostics__data-encoded"></div>
+</section>
+
+<!-- Settings -->
+<section class="c-settings-pane js-settings-frame is-hidden">
+  <h2 class="c-settings-pane__title">
+    Settings
+  </h2>
+
+  <div class="js-dark-mode-switch">
+
+    <!-- Settings - dark mode -->
+    <div class="c-settings-pane__option-group">
+
+      <h3 class="c-settings-pane__option-header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="c-settings-pane__option-icon">
+          <path d="M448 256c0-106-86-192-192-192l0 384c106 0 192-86 192-192zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/>
+        </svg>
+        Dark mode
+      </h3>
+
+      <!-- Settings - dark mode - enable -->
+      <div class="c-settings-pane__option">
+        <div class="c-settings-pane__checkbox-wrapper">
+          <input type="checkbox" id="enableDarkMode" class="c-settings-pane__checkbox js-dark-mode-switch__checkbox">
+          <label for="enableDarkMode" class="c-settings-pane__label">Enable dark mode</label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Settings - scroll direction -->
+    <div class="c-settings-pane__option-group">
+
+      <h3 class="c-settings-pane__option-header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="c-settings-pane__option-icon">
+          <path d="M352 160l0 192-32 0 0-192 32 0zM320 96c-35.3 0-64 28.7-64 64l0 192c0 35.3 28.7 64 64 64l32 0c35.3 0 64-28.7 64-64l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64c0-35.3-28.7-64-64-64l-32 0zM0 256c0 17.7 14.3 32 32 32l192 0 0-64L32 224c-17.7 0-32 14.3-32 32z"/>
+        </svg>
+        Volume slider
+      </h3>
+
+      <!-- Settings - scroll direction - invert -->
+      <div class="c-settings-pane__option js-scroll-direction-switch">
+        <div class="c-settings-pane__checkbox-wrapper">
+          <input type="checkbox" id="invertScrollDirection" class="c-settings-pane__checkbox js-scroll-direction-switch__checkbox">
+          <label for="invertScrollDirection" class="c-settings-pane__label">Invert mouse wheel scroll direction</label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Settings - footer -->
+    <div class="c-settings-pane__option-group">
+
+      <h3 class="c-settings-pane__option-header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="c-settings-pane__option-icon">
+          <path d="M378.1 198.6L249.5 341.4c-6.1 6.7-14.7 10.6-23.8 10.6l-3.5 0c-9.1 0-17.7-3.8-23.8-10.6L69.9 198.6c-3.8-4.2-5.9-9.8-5.9-15.5C64 170.4 74.4 160 87.1 160l72.9 0 0-128c0-17.7 14.3-32 32-32l64 0c17.7 0 32 14.3 32 32l0 128 72.9 0c12.8 0 23.1 10.4 23.1 23.1c0 5.7-2.1 11.2-5.9 15.5zM64 352l0 64c0 17.7 14.3 32 32 32l256 0c17.7 0 32-14.3 32-32l0-64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 64c0 53-43 96-96 96L96 512c-53 0-96-43-96-96l0-64c0-17.7 14.3-32 32-32s32 14.3 32 32z"/>
+        </svg>
+        Footer
+      </h3>
+
+      <!-- Settings - footer - show other extensions -->
+      <div class="c-settings-pane__option js-promo-show-switch">
+        <div class="c-settings-pane__checkbox-wrapper">
+          <input type="checkbox" id="showPromoSwitch" class="c-settings-pane__checkbox js-promo-show-switch__checkbox">
+          <label for="showPromoSwitch" class="c-settings-pane__label">Discover my other browser extensions</label>
+        </div>
+      </div>
+
+      <!-- Settings - footer - show rating widget and made by -->
+      <div class="c-settings-pane__option js-rating-and-made-by-switch is-hidden">
+        <div class="c-settings-pane__checkbox-wrapper">
+          <input type="checkbox" id="ratingAndMadeBySwitch" class="c-settings-pane__checkbox js-rating-and-made-by-switch__checkbox">
+          <label for="ratingAndMadeBySwitch" class="c-settings-pane__label">Show rating widget and made by</label>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- Outdated browsers manager -->
+<section class="outdated-browsers-manager is-hidden js-outdated-browsers-manager">
+  <div class="outdated-browsers-manager__title">
+    Compatibility Notice
+  </div>
+  <div class="outdated-browsers-manager__message">
+    Your browser version is outdated,
+    which prevents Volume Master from working properly.
+    The newest features and improvements require a more recent browser version to function correctly.
+
+    <br><br>
+
+    If updating your browser is not an option, please consider installing
+    <em class="outdated-browsers-manager__extension-name">Volume Master - outdated browsers edition</em>.
+
+    This edition is specifically designed for compatibility with older browsers.
+
+    <br><br>
+
+    <strong>
+      <a href="https://chromewebstore.google.com/detail/fflcgbahhodkmllfoeldoiaemngpiphj" target="_blank" class="link link--external">
+        Volume Master - outdated browsers edition
+      </a>
+    </strong>
+  </div>
+</section>
+
+<!-- Notification -->
+<section class="notification js-notification">
+  <button class="notification__close js-notification__close" tabindex="-1">×</button>
+  <div class="notification__title js-notification__title"></div>
+  <div class="notification__message js-notification__message"></div>
+</section>
+
+<section class="volume-slider">
+  <input class="volume-slider__slider js-volume-slider__slider" type="range" autofocus data-max-volume="600">
+</section>
+
+<section class="volume-info">
+  <span class="volume-info__volume-min">0 %</span>
+  <span class="volume-info__volume-current">
+    Volume:
+    <span class="volume-info__volume-current-value js-volume-info__volume-value"></span> %
+  </span>
+  <span class="volume-info__volume-max">
+    <span class="js-volume-info__volume-max"></span> %
+  </span>
+</section>
+
+<section class="c-analyser js-audio-analyser is-hidden">
+
+  <div class="c-analyser__pane js-audio-analyser__before-wrapper is-hidden">
+    <canvas class="c-analyser__canvas js-audio-analyser__before-canvas" height="40"></canvas>
+    <div class="c-analyser__freq-start">
+      0 Hz
+    </div>
+    <div class="c-analyser__freq-end">
+      <span class="js-audio-analyser__before-freq-end">22050</span>
+      Hz
+    </div>
+    <div class="c-analyser__description">
+      Signal before
+    </div>
+  </div>
+
+  <div class="c-analyser__pane js-audio-analyser__after-wrapper is-hidden">
+    <canvas class="c-analyser__canvas js-audio-analyser__after-canvas" height="40"></canvas>
+    <div class="c-analyser__freq-start">
+      0 Hz
+    </div>
+    <div class="c-analyser__freq-end">
+      <span class="js-audio-analyser__after-freq-end">22050</span>
+      Hz
+    </div>
+    <div class="c-analyser__description">
+      Frequency analyzer
+    </div>
+  </div>
+
+</section>
+
+<!-- Equalizer -->
+<section class="c-equalizer js-audio-equalizer">
+
+  <!-- Equalizer - sliders -->
+  <div class="c-equalizer__sliders is-hidden">
+
+      <!-- Equalizer - algorithm -->
+      <section style="width: 100%;">
+        <select class="js-audio-equalizer__algorithm" style="width: 100%;">
+          <option value="lowpass">Lowpass</option>
+          <option value="highpass">Highpass</option>
+          <option value="bandpass">Bandpass</option>
+          <option value="lowshelf">Lowshelf</option>
+          <option value="highshelf">Highshelf</option>
+          <option value="peaking">Peaking</option>
+          <option value="notch">Notch</option>
+          <option value="allpass">Allpass</option>
+        </select>
+      </section>
+
+      <!-- Equalizer - frequency -->
+      <section style="width: 100%; border: 1px solid #e0e0e0; margin-top: .25em; padding: .25em;">
+        <input class="js-audio-equalizer__frequency" style="width: 100%;" type="range" min="0" max="24000" value="440" step="10">
+        Frequency: <span class="js-audio-equalizer__frequency-value"></span> Hz
+      </section>
+
+      <!-- Equalizer - Q -->
+      <section style="width: 100%; border: 1px solid #e0e0e0; margin-top: .25em; padding: .25em;">
+        <input class="js-audio-equalizer__q" style="width: 100%;" type="range" min="0.1" max="20" value="1" step="0.1">
+        Q: <span class="js-audio-equalizer__q-value"></span>
+      </section>
+
+      <!-- Equalizer - gain -->
+      <section style="width: 100%; border: 1px solid #e0e0e0; margin-top: .25em; padding: .25em;">
+        <input class="js-audio-equalizer__gain" style="width: 100%;" type="range" min="-40" max="40" value="0" step="1">
+        Gain: <span class="js-audio-equalizer__gain-value"></span> dB
+      </section>
+
+  </div>
+
+  <!-- Equalizer - presets -->
+  <div class="c-equalizer__presets">
+
+    <button class="c-equalizer__presets-button js-audio-equalizer__preset is-active" data-equalizer-type="default">
+      <i class="c-equalizer__button-icon icon-ccw"></i>
+      <span>
+      Default
+    </span>
+    </button>
+
+    <button class="c-equalizer__presets-button js-audio-equalizer__preset" data-equalizer-type="voice">
+      <i class="c-equalizer__presets-button-icon icon-mic"></i>
+      <span>
+      Voice boost
+    </span>
+    </button>
+
+    <button class="c-equalizer__presets-button js-audio-equalizer__preset" data-equalizer-type="bass">
+      <i class="c-equalizer__presets-button-icon icon-rocket"></i>
+      <span>
+      Bass boost
+    </span>
+    </button>
+
+  </div>
+
+</section>
+
+<!-- Volume actions -->
+<section class="volume-actions">
+
+  <button class="volume-actions__button js-actions__reset is-hidden">
+    <i class="volume-actions__button-icon icon-reset"></i>
+    <span>
+      Reset to 100 % volume
+    </span>
+  </button>
+
+  <button class="volume-actions__button js-actions__restore is-hidden">
+    <i class="volume-actions__button-icon icon-history"></i>
+    <span>
+      Restore <span class="js-actions__restore-value"></span> % volume for <span class="js-actions__restore-domain"></span>
+    </span>
+  </button>
+
+</section>
+
+<!-- Tabs -->
+<section class="tabs">
+  <div class="tabs__title js-tabs__title"></div>
+  <div class="tabs__list js-tabs__list"></div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+
+  <!-- Footer - promo -->
+  <div class="c-promo js-promo">
+
+    <!-- Footer - promo item -->
+    <a class="c-promo__item js-promo__item" href="" target="_blank">
+      <div class="c-promo__item-icon-wrapper">
+        <img class="c-promo__item-icon js-promo__item-icon" src="" alt="">
+      </div>
+      <div class="c-promo__item-content">
+        <div class="c-promo__item-title js-promo__item-title"></div>
+        <div class="c-promo__item-description js-promo__item-description"></div>
+      </div>
+    </a>
+
+    <!-- Footer - other extensions - note -->
+    <div class="c-promo__note">
+      <div>
+        <!-- This is one of the many extensions I've made. -->
+        <!-- Explore more tools I've developed. -->
+        This is one of the extensions I've developed.
+      </div>
+      <div>
+        You can hide this section in settings.
+        <!-- You can disable this section in settings. -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer - rating and made by -->
+  <div class="c-rating-and-made-by js-rating-and-made-by">
+
+    <!-- Footer - rating stars -->
+    <div class="c-rating js-rating">
+    <a class="c-rating__star-wrapper js-rating__star" target="_blank" data-action="support"></a>
+    <a class="c-rating__star-wrapper js-rating__star" target="_blank" data-action="support"></a>
+    <a class="c-rating__star-wrapper js-rating__star" target="_blank" data-action="review"></a>
+    <a class="c-rating__star-wrapper js-rating__star" target="_blank" data-action="review"></a>
+    <a class="c-rating__star-wrapper js-rating__star" target="_blank" data-action="review"></a>
+  </div>
+
+
+  <!-- Footer - made by -->
+  <div class="c-made-by">
+    <a class="link link--external" tabindex="-1" target="_blank" href="https://www.petasittek.com/volume-master/pay-what-you-like/">Pay what you like</a>
+
+    —
+
+    Made with
+    <span class="footer__heart js-heart">♥</span>
+    by
+    <a class="link link--external js-footer-link" tabindex="-1" target="_blank" href="https://www.petasittek.com/?utm_source=volume-master&utm_medium=browser-extension&utm_campaign=chrome&utm_content=footer">
+      Peta Sittek
+    </a>
+  </div>
+
+</div>
+
+  <!-- Code activation -->
+  <div class="c-support is-hidden js-support">
+
+    <div class="c-support__description">
+      You can get additional volume boost by
+      <a class="link link--external" tabindex="-1" target="_blank" href="https://www.petasittek.com/volume-master/pay-what-you-like/">supporting Volume Master development</a>.
+      After supporting it you'll get a code to activate 800 % volume boost.
+    </div>
+
+    <div class="c-support__code-wrapper">
+      <input type="text" class="c-support__code js-support__code" placeholder="Enter the code here…">
+      <button class="c-support__activate js-support__activate">Activate</button>
+    </div>
+
+    <div class="c-support__thankyou is-hidden js-support__thankyou">
+      Thank you for your support! ❤️
+      <br>
+      Please reopen Volume Master to see the changes.
+    </div>
+
+    <div class="c-support__invalid-code is-hidden js-support__invalid-code">
+      The code you entered is invalid. 🙈
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="../js/popup.js"></script>
+
+<template class="js-template-tab">
+  <a href="#" class="tab js-tab">
+    <div class="tab__item tab__icon">
+      <img class="tab__icon-image js-tab__icon-image" src="" alt="">
+    </div>
+    <div class="tab__item tab__title js-tab__title"></div>
+  </a>
+</template>
+
+</body>
+</html>

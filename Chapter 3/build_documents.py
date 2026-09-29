@@ -150,6 +150,8 @@ from flow_diagrams import build_flows
 from uml_deployment import build_deployment
 build_flows(Diagram)
 build_deployment(Diagram)
+from web_deployment import build_web_deployment
+build_web_deployment(Diagram)
 
 # Render the prose using the thesis-aligned Word formatting used for Chapter 4.
 SOURCE=HERE/'CHAPTER_3_APP_FRAMEWORK_AND_DEPLOYMENT.md'
@@ -208,12 +210,12 @@ with zipfile.ZipFile(OUT) as z:
     assert z.testzip() is None
     for name in z.namelist():
         if name.endswith(('.xml','.rels')):ET.fromstring(z.read(name))
-    assert len(doc.findall('.//{'+WP+'}inline'))==4
+    assert len(doc.findall('.//{'+WP+'}inline'))==5
     assert 'APP_DIAGRAM_' not in ''.join(doc.itertext())
-print('Verified 4 embedded diagrams, 6 tables, and valid Word package XML.')
+print('Verified 5 embedded diagrams, 6 tables, and valid Word package XML.')
 
 # Contact sheet for checking the generated figures.
-sheet=Image.new('RGB',(1200,2*520),'#dddddd')
+sheet=Image.new('RGB',(1200,3*520),'#dddddd')
 for i,path in enumerate(images):
     im=Image.open(path);im.thumbnail((590,500));sheet.paste(im,((i%2)*600+(600-im.width)//2,(i//2)*520))
 sheet.save(FIGS/'diagram_overview.png')

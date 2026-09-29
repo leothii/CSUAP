@@ -56,6 +56,14 @@ fonts for Unicode symbols. Photos are not uploaded.
 
 ### Production web build
 
+For VS Code Live Server in this repository workspace, `.vscode/settings.json`
+sets the server root to `build/web`, the compiled root app. After changing this
+setting, stop Live Server and click **Go Live** again. Open the server's root URL
+(usually `http://127.0.0.1:5500/`), without `/web/index.html` in the address.
+Live Server cannot compile Dart. Refresh this preview after app changes by running
+`flutter build web --release --no-pub --no-web-resources-cdn` from the repository
+root. Use `flutter run -d edge` for Flutter development with hot reload.
+
 From `deployment/`:
 
 ```shell

@@ -4,7 +4,8 @@ import 'pixel_theme.dart';
 
 /// A small, locally rendered 3D scene. No network assets or continuous ticker.
 class RetroComputer extends StatefulWidget {
-  const RetroComputer({super.key});
+  const RetroComputer({super.key, this.compact = false});
+  final bool compact;
 
   @override
   State<RetroComputer> createState() => _RetroComputerState();
@@ -20,10 +21,11 @@ class _RetroComputerState extends State<RetroComputer> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'THE LITTLE PRIVACY LAB',
-          style: TextStyle(color: pixelMuted, letterSpacing: 2, fontSize: 14),
-        ),
+        if (!widget.compact)
+          const Text(
+            'THE LITTLE PRIVACY LAB',
+            style: TextStyle(color: pixelMuted, letterSpacing: 2, fontSize: 14),
+          ),
         AspectRatio(
           aspectRatio: 1.25,
           child: LayoutBuilder(
@@ -32,12 +34,13 @@ class _RetroComputerState extends State<RetroComputer> {
                 onHover: reduced
                     ? null
                     : (event) => setState(() {
-                        tilt = Offset(
-                          (event.localPosition.dx / bounds.maxWidth - .5) * .5,
-                          (event.localPosition.dy / bounds.maxHeight - .5) *
-                              .25,
-                        );
-                      }),
+                          tilt = Offset(
+                            (event.localPosition.dx / bounds.maxWidth - .5) *
+                                .5,
+                            (event.localPosition.dy / bounds.maxHeight - .5) *
+                                .25,
+                          );
+                        }),
                 onExit: (_) => setState(() => tilt = Offset.zero),
                 child: TweenAnimationBuilder<Offset>(
                   tween: Tween(end: reduced ? Offset.zero : tilt),
@@ -68,12 +71,13 @@ class _RetroComputerState extends State<RetroComputer> {
           ),
           label: Text(cloaked ? 'Show original' : 'Preview cloak'),
         ),
-        const SizedBox(height: 12),
-        const Text(
-          'A playful illustration of the process.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: pixelMuted, fontSize: 16),
-        ),
+        if (!widget.compact) const SizedBox(height: 12),
+        if (!widget.compact)
+          const Text(
+            'A playful illustration of the process.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: pixelMuted, fontSize: 16),
+          ),
       ],
     );
   }
@@ -253,29 +257,21 @@ class HomeStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, bounds) {
-      final menu = ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: child,
+        builder: (context, bounds) {
+          final menu = ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: child,
+          );
+          if (bounds.maxWidth < 800) return menu;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(child: menu),
+              const SizedBox(width: 72),
+              const Flexible(
+                  child: SizedBox(width: 480, child: RetroComputer())),
+            ],
+          );
+        },
       );
-      if (bounds.maxWidth < 800) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            menu,
-            const SizedBox(height: 36),
-            const SizedBox(width: 390, child: RetroComputer()),
-          ],
-        );
-      }
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Flexible(child: menu),
-          const SizedBox(width: 72),
-          const Flexible(child: SizedBox(width: 480, child: RetroComputer())),
-        ],
-      );
-    },
-  );
 }

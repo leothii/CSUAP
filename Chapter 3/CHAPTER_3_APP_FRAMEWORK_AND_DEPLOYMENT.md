@@ -130,6 +130,20 @@ The deployment procedure consists of recording the build environment, verifying 
 
 The core cloaking path operates locally. External research links and user-selected sharing destinations are separate interactions. The design does not imply that all exported or shared copies remain local, nor does it claim secure erasure of native temporary files. Changes to the perturbation asset should be accompanied by a recorded artifact identifier and repeat validation of loading, output generation, and quality measurement.
 
+### Website Deployment and Browser Execution
+
+The standalone website application is maintained in deployment/ under the name invisAI. It shares the mobile application's Flutter interface and local CS-UAP processing design. Figures A1–A3 therefore also describe the website's system boundary, software responsibilities, and processing flow; separate copies of those diagrams would repeat the same design. Figure A5 adds the essential website-specific view: static delivery, browser execution, and local export.
+
+![Figure A5](diagrams/05_web_deployment.png)
+
+**Figure A5. Website deployment and the browser-local photograph processing boundary.**
+
+The release build produces build/web containing the HTML entry point, compiled Dart application, CanvasKit renderer, fonts, and fixed perturbation asset. The repository includes a Vercel static-host configuration for deployment/; the diagram describes that configuration and does not establish that a public deployment has been verified. The browser downloads application resources over HTTPS, initializes Flutter, and opens the interface. Startup failures or prolonged loading display feedback and a retry control. The source web/index.html is a build template and must not be served as the compiled website.
+
+Selected photographs remain in browser memory for preview, full-resolution cloaking, and image-quality inspection. The static host serves application files and does not receive photograph uploads. No application API server, database, or model-inference service is required. Export uses a browser download or the share interface where supported; any user-selected sharing destination is outside the local-processing boundary. Unlike native compute isolates, web compute executes on the browser's main event loop, so large photographs can temporarily pause interaction.
+
+Website validation covers startup with locally hosted renderer assets, download failures, narrow portrait layouts, file-picker cancellation, preview and generation, PNG download, and browser-dependent sharing. The phone layout places a compact interactive PC illustration above the navigation controls, with scrolling retained for small screens and enlarged text. Browser, device, viewport, and release identifier should be recorded with the validation results. Offline startup is not guaranteed.
+
 ## Methodology for Application Development
 
 ### Incremental Development and Verification

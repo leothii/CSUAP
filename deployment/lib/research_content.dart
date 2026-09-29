@@ -35,11 +35,31 @@ const team = [
   TeamMember(
     'Quinjie Benedict Capayan',
     'Researcher',
-    'invisAI research team.',
+    'Contributed extensively to model training and backend development. '
+    'Fine-tuned LoRA models and helped implement the training workflows '
+    'used in the study’s experiments.',
   ),
-  TeamMember('Ralph Martin Chua', 'Researcher', 'invisAI research team.'),
-  TeamMember('Gabriel Diana', 'Researcher', 'invisAI research team.'),
-  TeamMember('Donjie Libuna', 'Researcher', 'invisAI research team.'),
+  TeamMember(
+    'Ralph Martin Chua',
+    'Researcher',
+    'Contributed to model training and fine-tuning for the study’s experiments. '
+    'Also coordinated research logistics, including adviser communication, '
+    'document submissions, and printing to support the team’s progress.',
+  ),
+  TeamMember(
+    'Gabriel Diana',
+    'Researcher',
+    'Developed the mobile application and website, bringing the research '
+    'system into an interface users can interact with. Contributed to '
+    'UI design, programming, and the writing and preparation of the thesis paper.',
+  ),
+  TeamMember(
+    'Donjie Libuna',
+    'Researcher',
+    'Conceived the original thesis idea and served as the main programmer '
+    'for the research system. Led its implementation, translating the '
+    'research concept into the software foundation for the study.',
+  ),
   TeamMember('Ralph Dayot', 'Adviser', 'Research adviser for invisAI.'),
 ];
 const glossary = <String, String>{
