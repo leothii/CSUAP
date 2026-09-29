@@ -1,0 +1,14 @@
+.dart_tool/
+.git/
+.idea/
+.tools/
+.vercel-cache/
+build/
+coverage/
+android/
+ios/
+linux/
+macos/
+windows/
+.flutter-plugins-dependencies
+

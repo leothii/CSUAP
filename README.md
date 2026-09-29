@@ -1,89 +1,247 @@
-# CLIP SLIP
+<p align="center">
+  <img src="deployment/web/icon.svg" alt="invisAI pixel icon" width="96" />
+</p>
 
-Flutter research application for applying a bundled context-specific universal adversarial perturbation locally. The interface adapts the supplied VengeanceUI / Codrops staggered-grid reference into native Flutter cards, with hover/focus feedback, touch navigation, staggered entrance motion, and reduced-motion support.
+# CS-UAP · invisAI
 
-## Try it
+**Context-specific universal adversarial perturbations for portrait images, with a local photo-cloaking app.**
 
-```sh
-flutter pub get
-flutter run -d windows
+This repository contains the CS-UAP research pipeline and **invisAI**, its Flutter
+application. The research learns a reusable, bounded RGB perturbation against a
+frozen CLIP image encoder, then evaluates protected images at different
+perturbation strengths. invisAI applies the exported pattern to photos through a
+pixel-art interface with live previews, image-quality measurements, and PNG export.
+
+[Run the app](#run-invisai) · [Research workflow](#research-workflow) ·
+[Evaluation](#evaluation) · [Project structure](#project-structure)
+
+## What is included
+
+| Component | Purpose |
+| --- | --- |
+| Portrait preprocessing | Prepare an MS-COCO portrait subset and caption manifest. |
+| CS-UAP training | Optimize a shared 224 × 224 RGB perturbation against frozen OpenAI CLIP ViT-B/32. |
+| Perturbation application | Export protected images at multiple alpha values with source-to-output mappings and hashes. |
+| Perceptual evaluation | Measure SSIM and PSNR against the matching clean images. |
+| Caption consistency | Compare protected-image ClipCap captions with clean-image captions using BERTScore F1. |
+| LoRA experiments | Prepare captions, fine-tune adapters, generate images, and analyze training logs. |
+| invisAI | Select a photo, preview the cloak, apply it locally, compare image quality, and save or share a PNG. |
+
+## Run invisAI
+
+The app is self-contained in [`deployment/`](deployment/README.md), including its
+trained perturbation asset. No research datasets or Python environment are
+needed to use it.
+
+With **Flutter 3.47.2** on your `PATH`, run these commands from the repository root:
+
+```shell
+cd deployment
+flutter pub get --enforce-lockfile
+flutter run -d web-server --web-port 8080
 ```
 
-Start opens the photo lab. Choose a photo and adjust intensity to see a live preview before applying the cloak. The preview caches at most 400 pixels per side, sampling the photo and tiled pattern at matching original coordinates. Slider updates coalesce into one background job at a time; the preview displays its rendered intensity. Apply cloak generates the full-resolution PNG and measures image quality. Inspect the original and cloaked PNG individually or side by side; zoom to inspect pixels. Save uses a destination picker on desktop, a download on web, and the photo gallery on Android/iOS. Share uses the platform share surface. Camera input is offered on Android/iOS.
+Open **http://localhost:8080**. On Windows, you can instead use
+`flutter run -d edge` to launch Edge automatically.
 
-## Website
+For Windows web development without desktop plugin symlinks, set
+`$env:FLUTTER_WINDOWS = 'false'` in PowerShell before running Flutter. The
+[app setup guide](deployment/README.md#run-on-windows) includes commands for the
+SDK installed in the existing CSUAP workspace.
 
-Run `flutter run -d chrome` for a local browser preview, or build the deployable
-site with `flutter build web --release`. Serve the contents of `build/web` from
-a static host. For a subdirectory, supply `--base-href /your-path/` when building.
+Photos are processed on the device and exported as full-resolution, 8-bit RGB
+PNGs. The app supports still images up to **30 MiB** and **24 megapixels**.
+Primary fonts and the rendering runtime are bundled; Flutter may fetch fallback
+fonts for Unicode symbols. Photos are not uploaded.
 
-Do not open `web/index.html` directly or through Live Server: it is a source
-template, not the compiled app. To preview a release build locally, run
-`python -m http.server 8080 --bind 127.0.0.1 --directory build/web` and open
-`http://127.0.0.1:8080`.
+### Production web build
 
-The home screen pairs the existing menu with a locally rendered low-poly retro
-computer on wide screens and stacks the scene below the menu on narrow screens.
-Move the pointer to tilt it, or use Preview cloak to toggle an illustrative
-pattern. The scene is Flutter geometry, not a downloaded GLB or external viewer;
-it renders immediately across platforms and has no continuous animation.
-Reduced-motion settings keep the camera still. The illustration does not
-demonstrate measured protection. Browser startup and installed-app colors match
-the app palette.
+From `deployment/`:
 
-## Research content
-
-Edit `lib/research_content.dart` to replace the explicitly labeled team placeholders, roles, and portrait asset paths. Register portraits under Flutter assets in `pubspec.yaml`. The repository node links to this project's Git remote. Supply the paper and optional resource URLs at launch/build time:
-
-```sh
-flutter run --dart-define=RESEARCH_PAPER_URL=https://example.org/paper --dart-define=EXTRA_RESOURCE_URL=https://example.org/supplement
+```shell
+flutter build web --release --no-pub --no-web-resources-cdn
 ```
 
-Unconfigured resources show “Link pending”. The Field Guide walks through choosing, cloaking, and inspecting a photo with an illustrated pattern toggle, an intensity slider that explores recorded SSIM/PSNR means, and a quality-versus-protection knowledge check. Technical definitions remain available below the walkthrough. Research uses an animated timeline with isometric pixel platforms to connect the study question, experiment pipeline, interactive SSIM/PSNR results, and source materials. Credits is a character selector: swipe left/right, use arrow buttons or keyboard arrows, or select a name. Researchers Quinjie Benedict Capayan, Ralph Martin Chua, Gabriel Diana, and Donjie Libuna, and adviser Ralph Dayot have illustrative pixel sprites. Both screens respect reduced-motion settings.
+The generated site is written to `deployment/build/web/`. Serve this compiled
+folder over HTTP rather than opening the source `web/index.html` directly.
 
-## What the results mean
+For the prepared Vercel setup:
 
-`lib/lab_processing.dart` normalizes EXIF orientation, applies the fixed 224×224 HWC RGB float32 vector by tiling, and computes quality on the exact full-resolution 8-bit PNG offered for export. Native platforms run this work using Flutter `compute`; on web, compute uses the main event loop and large images may temporarily pause interaction.
+| Setting | Value |
+| --- | --- |
+| Root Directory | `deployment` |
+| Framework Preset | `Other` |
+| Build Command | `bash scripts/vercel-build.sh` |
+| Output Directory | `build/web` |
 
-SSIM is the mean of full-resolution 7×7 uniform sliding windows per RGB channel, using sample covariance, K1=0.01, K2=0.03, and data range 255. PSNR uses full-resolution RGB mean squared error. These follow the [scikit-image metric conventions](https://scikit-image.org/docs/stable/api/skimage.metrics.html). Images smaller than 7 pixels on either side have unavailable SSIM; identical images have infinite PSNR. Targets are SSIM ≥ 0.95 and PSNR ≥ 30 dB. The training script evaluates floating-point images before export quantization, so its values need not exactly match exported-PNG values.
+[`vercel.json`](deployment/vercel.json) supplies the build settings. The build
+script pins Flutter, installs locked dependencies, runs analysis and tests, and
+compiles the web app. See the [deployment guide](deployment/README.md#deploy-to-vercel-later)
+and [verification record](deployment/VERIFICATION.md) for the tested scope.
 
-After generation, **For nerds** shows full-resolution RGB MSE and applied intensity alongside model evaluation details. Fooling rate (changed class predictions / evaluated images × 100), CLIP Score, ClipCap/BERTScore F1, and downstream SDXL Clean/Cloaked LoRA CLIP Score and FID are explicitly unmeasured in the app. There are no bundled semantic/caption evaluation models or evaluation service. Fooling rate requires a specified target model, fixed candidate classes, and a test set. FID needs generated image sets, not a single photo pair. Image-quality success does not imply verified semantic protection.
+Android, iOS, Windows, macOS, and Linux project sources are also included.
+Native builds require the corresponding platform toolchains and device testing;
+Vercel hosts the browser version.
 
-### Recorded perceptual evaluation
+## Research workflow
 
-The Research screen includes the results from [`alpha_summary.csv`](outputs/evaluation/perceptual/alpha_summary.csv), with 30 test images at each intensity:
+Run research commands from the repository root. Python dependencies and model
+downloads are separate from the Flutter application.
 
-| Intensity (α) | Mean SSIM | Mean PSNR (dB) |
+### 1. Set up Python
+
+```shell
+git clone https://github.com/leothii/CSUAP.git
+cd CSUAP
+python -m venv .venv
+```
+
+Activate the environment with `.\.venv\Scripts\Activate.ps1` in PowerShell, or
+`source .venv/bin/activate` on Linux/macOS. Then install the core dependencies:
+
+```shell
+python -m pip install -r requirements.text
+```
+
+The dependency file is named **`requirements.text`**. Evaluation-specific
+dependencies are listed in the corresponding guides below. Training downloads
+the pretrained CLIP weights on first use if they are not cached.
+
+### 2. Place the datasets
+
+```text
+data/
+├── MS-COCO/
+│   ├── train2017/                    # Original COCO training images
+│   ├── annotations/
+│   │   ├── instances_train2017.json
+│   │   ├── person_keypoints_train2017.json
+│   │   └── captions_train2017.json
+│   └── processed_portraits/          # Generated portraits and manifest.json
+└── test/                             # Clean images for evaluation
+```
+
+Obtain the images and annotations separately; a repository clone should not be
+assumed to contain the complete datasets or model weights. Keep evaluation
+images separate from the perturbation-training corpus.
+
+Prepare the training subset:
+
+```shell
+python src/preprocessing/prepare_mscoco_portraits.py
+```
+
+### 3. Train a perturbation
+
+```shell
+python src/training/train_csuap.py --out-dir outputs/uap_run01
+```
+
+The default experiment uses epsilon **0.05**, step size **0.01**, **20 epochs**,
+batch size **32**, and seed **42**. Training writes the perturbation, epoch log,
+checkpoints, and reproducibility manifest to the selected output directory.
+
+Use a fresh directory for each experiment. The
+[training guide](src/training/CSUAP_USAGE.md) explains the objective, preprocessing,
+device selection, and optional training variations.
+
+### 4. Apply it to clean images
+
+```shell
+python src/application/apply_perturbation.py --v-path outputs/uap_run01/cs_uap_v.npy --input-dir data/test --output-dir outputs/cloaked/test_run01
+```
+
+The default strengths are **α = 0.5, 0.6, 0.7, 0.8, 0.9, and 1.0**. Each run
+produces folders such as `alpha_0.50/` and `alpha_1.00/`, plus a `manifest.json`
+mapping protected images to their clean originals. Preserve that manifest for
+paired evaluation.
+
+The existing study uses `outputs/cloaked/test/`. The commands above use separate
+`run01` directories so a new experiment does not replace the recorded outputs.
+
+## Evaluation
+
+| Evaluation | Inputs and interpretation | Guide |
 | --- | --- | --- |
-| 0.5 | 0.9699 | 35.00 |
-| 0.6 | 0.9557 | 33.08 |
-| 0.7 | 0.9428 | 31.84 |
-| 0.8 | 0.9294 | 30.79 |
-| 0.9 | 0.9153 | 29.86 |
-| 1.0 | 0.8967 | 28.75 |
+| SSIM and PSNR | Paired clean/protected pixels; higher values indicate closer image fidelity. | [Perceptual fidelity](src/evaluation/perceptual/README.md) |
+| BERTScore F1 | Protected-image captions compared with clean-image captions from the same ClipCap model; higher values indicate greater semantic consistency. | [Caption consistency](src/evaluation/clipcap/README.md) |
+| LoRA training logs | Clean and protected fine-tuning runs; summarizes recorded loss histories and training settings. | [Fine-tuning analysis](src/evaluation/LORA/models/README_finetuning_analysis.md) |
 
-Both mean quality targets are met at α = 0.5 and 0.6; this does not imply every image passes or demonstrate semantic protection. The CSV also includes medians, standard deviations, and 95% confidence intervals. Per-image results and plots are in [`outputs/evaluation/perceptual/`](outputs/evaluation/perceptual/).
+To evaluate the new perceptual run above:
 
-The [evaluation metadata](outputs/evaluation/perceptual/evaluation_metadata.json) records RGB inputs normalized to [0, 1], no resizing, and Gaussian SSIM weights with σ = 1.5 and population covariance. This differs from the photo lab's uniform 7×7 windows and sample covariance; the SSIM values are not directly comparable. The Research screen is a rounded snapshot in `lib/research_content.dart`; update it when the evaluation artifacts change.
-
-## Project scan
-
-- `lib/`: Flutter UI, local perturbation application, quality metrics, and sharing helpers.
-- `src/preprocessing/`: MS-COCO portrait filtering.
-- `src/training/train_csuap.py`: frozen CLIP ViT-B/32 perturbation training and image-quality evaluation.
-- `src/application/`: Python application and export of perturbation assets.
-- `src/evaluation/perceptual/ssim_psnr_analysis.ipynb`: perceptual evaluation and summary generation.
-- `src/evaluation/LORA/`: downstream fine-tuning and generation notebooks, separate from the app.
-- `assets/` and `outputs/`: bundled vector, NumPy training output, visualization, and metadata.
-- Android, iOS, desktop, and web host projects.
-
-Existing research issue found during the scan: `train_cs_uap_scale_augmented.py` passes `scale_augment` and `scale_augment_min_scale` to `TrainConfig`, which currently does not declare those fields. That experiment needs a separate training implementation fix before use.
-
-## Checks
-
-```sh
-flutter analyze
-flutter test
+```shell
+python -m pip install -r src/evaluation/perceptual/requirements.txt
+python src/evaluation/perceptual/evaluate_perceptual.py --reference-dir data/test --cloaked-dir outputs/cloaked/test_run01 --output-dir outputs/evaluation/perceptual_run01
 ```
 
-Widget tests cover navigation, research nodes, credits selection, and narrow/desktop layouts with enlarged text. Processing tests cover known quality values, identical/small images, dimension validation, and exported PNG perturbation tiling. Gallery, camera, sharing, and save dialogs still require device/platform smoke tests.
+The evaluator writes per-image scores, summary tables, figures, validation
+reports, and method metadata. Running it without arguments evaluates the
+existing `outputs/cloaked/test/` collection.
+
+ClipCap caption generation uses a separately configured pretrained-model
+workspace. This repository's BERTScore evaluator consumes the resulting
+`outputs/evaluation/clipcap/captions.csv`; the
+[caption evaluation guide](src/evaluation/clipcap/README.md) documents its
+dependencies and scoring settings. Clean-image captions are the reference, so
+this comparison measures caption consistency rather than accuracy against human
+annotations.
+
+The [LoRA fine-tuning notebook](src/evaluation/LORA/lora_finetuning.ipynb),
+[generation notebook](src/evaluation/LORA/lora_generation.ipynb), and
+[caption preparation guide](src/evaluation/LORA/CAPTIONS.md) cover the downstream
+experiment. Keep the base model, captions, training settings, and generation
+protocol consistent across clean and protected conditions.
+
+## Project structure
+
+```text
+CSUAP/
+├── deployment/                 # invisAI Flutter app and Vercel configuration
+├── src/
+│   ├── preprocessing/          # Portrait dataset preparation
+│   ├── training/               # CS-UAP optimization
+│   ├── application/            # Apply a saved perturbation
+│   └── evaluation/
+│       ├── perceptual/         # SSIM / PSNR evaluation
+│       ├── clipcap/            # BERTScore caption comparison
+│       └── LORA/               # Fine-tuning, generation, and log analysis
+├── data/                       # Local datasets
+├── outputs/                    # Experiment artifacts, reports, and figures
+├── tests/                      # Python regression tests
+└── requirements.text           # Core research dependencies
+```
+
+## Validation
+
+For the core Python regression tests, from the repository root:
+
+```shell
+python -m unittest discover -s tests -v
+```
+
+For the Flutter app, from `deployment/` after installing its dependencies:
+
+```shell
+flutter analyze --no-pub
+flutter test --no-pub
+```
+
+Evaluation-specific test commands appear in their respective guides. The
+[app verification record](deployment/VERIFICATION.md) documents the completed
+local checks, browser export test, and remaining platform checks.
+
+## Interpreting the results
+
+CS-UAP investigates whether a reusable perturbation can disrupt model behavior
+while retaining image fidelity. SSIM and PSNR describe pixel-level fidelity;
+BERTScore describes caption consistency; LoRA loss describes optimization
+during fine-tuning. These measurements answer different questions and do not,
+individually, establish reliable protection against all models or workflows.
+
+The recorded Python study resizes the perturbation to each image and uses
+Gaussian-window SSIM. invisAI tiles the perturbation at its original scale and
+uses uniform 7 × 7 SSIM windows. Its per-photo measurements should therefore be
+reported separately from the study's aggregate results. Preserve input hashes,
+manifests, model versions, settings, and split definitions when reproducing or
+comparing experiments.
+
