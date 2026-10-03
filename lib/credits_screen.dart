@@ -85,7 +85,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
                           child: child)),
                   child: Panel(
                       key: ValueKey(selected),
-                      color: pixelGold,
+                      color: context.pixelColors.gold,
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

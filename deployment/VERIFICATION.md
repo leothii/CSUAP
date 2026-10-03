@@ -5,7 +5,7 @@ Verified locally using Flutter 3.47.2 / Dart 3.13.2 on Windows.
 | Check | Result |
 | --- | --- |
 | `flutter analyze --no-pub` | No issues |
-| `flutter test --no-pub` | 36 tests passed |
+| `flutter test --no-pub` | 41 tests passed (appearance follow-up) |
 | Release web compilation | Passed, including tree-shaken Material and Cupertino icon fonts |
 | Vercel configuration | Configured fields validated against the published JSON schema |
 | Vercel shell script | Bash syntax and LF line endings verified |
@@ -32,6 +32,15 @@ Startup and portrait-layout follow-up:
   Python websocket-client required). Screenshot: `build/browser-check/portrait.png`.
 
 These checks verify local release builds; they do not verify a public Vercel URL.
+
+Appearance follow-up (2026-10-03): saved Light/Dark/System preferences,
+system-brightness changes, and route preservation are covered by widget tests.
+Both themes and the larger cloaking steps pass narrow-screen and enlarged-text
+checks using the bundled fonts. The root application passed 36 tests; the
+standalone application passed 41. Root Windows release and both web releases
+built successfully. Light desktop step cards and the dark home screen were
+visually inspected in Edge. Additional automated screenshot/reload checks timed
+out, so a complete browser appearance smoke test is not recorded as passed.
 
 Regression tests include EXIF orientation, 16-bit input conversion, invalid
 images, file-size limits, animation rejection, corrupt vectors, intensity bounds,

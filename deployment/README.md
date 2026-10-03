@@ -1,4 +1,4 @@
-# invisAI
+# invisiAI
 
 Flutter photo-cloaking app with the original pixel-art interface. Photos are
 processed locally; there is no upload endpoint, inference server, API key, or
@@ -83,6 +83,17 @@ References: [Flutter web deployment](https://docs.flutter.dev/deployment/web),
   browser's main thread, so large photos can briefly pause interaction despite
   the optimized pipeline. Use smaller photos on memory-constrained phones.
 
+## Appearance
+
+Use the sun/moon **Appearance** button on the home screen or page toolbar to
+choose **Light mode**, **Dark mode**, or **Follow system**. The app remembers the
+choice locally. Switching themes preserves the current screen and photograph;
+the photograph and exported pixels are unaffected. The photo lab presents large
+Step 1–3 cards, stacked on narrow screens and arranged side by side on desktop.
+
+After updating an existing native development session, stop and restart
+`flutter run -d windows` so the local-preferences plugin is registered.
+
 ## Native platforms
 
 Android, iOS, Windows, macOS, and Linux project sources are retained. Vercel
@@ -93,5 +104,5 @@ Camera capture is available on Android/iOS; desktop and web use file selection.
 Saving/sharing permissions and browser Web Share support vary by platform.
 
 The internal Dart package name and native bundle IDs remain `csuap` to preserve
-the existing project; user-facing titles and exported filenames use invisAI.
+the existing project; user-facing titles and exported filenames use invisiAI.
 Set your own bundle IDs and signing credentials before native store releases.

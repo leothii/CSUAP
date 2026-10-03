@@ -1,4 +1,5 @@
-import 'package:google_fonts/google_fonts.dart';
+import 'theme_settings.dart';
+import 'cloaking_steps.dart';
 import 'pixel_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -28,23 +29,22 @@ void main() => runApp(const CsuapApp());
 class CsuapApp extends StatelessWidget {
   const CsuapApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: 'invisAI',
-    theme: pixelTheme(),
+  Widget build(BuildContext context) => AppThemeHost(
     home: IntroScreen(menuBuilder: (_) => const MainMenuScreen()),
   );
 }
 
 void openPage(BuildContext context, Widget page) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
-Widget eyebrow(String text, {Color color = muted}) => Text(
-  text,
-  style: TextStyle(
-    fontSize: 11,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.6,
-    color: color,
+Widget eyebrow(String text, {Color? color}) => Builder(
+  builder: (context) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 1.6,
+      color: color ?? context.pixelColors.muted,
+    ),
   ),
 );
 Widget heading(BuildContext context, String title, String subtitle) => Padding(
@@ -54,7 +54,10 @@ Widget heading(BuildContext context, String title, String subtitle) => Padding(
     children: [
       Text(title, style: Theme.of(context).textTheme.headlineLarge),
       const SizedBox(height: 14),
-      Text(subtitle, style: const TextStyle(color: muted, height: 1.5)),
+      Text(
+        subtitle,
+        style: TextStyle(color: context.pixelColors.muted, height: 1.5),
+      ),
     ],
   ),
 );
@@ -73,15 +76,17 @@ class PageShell extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: Text(
-        'invisAI',
-        style: GoogleFonts.pressStart2p(
+        'invisiAI',
+        style: TextStyle(
+          fontFamily: 'PressStart2P',
           fontSize: 18,
           fontWeight: FontWeight.w800,
           letterSpacing: -1,
-          color: teal,
+          color: context.pixelColors.foreground,
         ),
       ),
       actions: [
+        const ThemeModeButton(),
         if (MediaQuery.sizeOf(context).width >= 450)
           Padding(
             padding: const EdgeInsets.only(right: 20),
@@ -90,7 +95,7 @@ class PageShell extends StatelessWidget {
       ],
     ),
     body: CustomPaint(
-      painter: const PixelDitherPainter(),
+      painter: PixelDitherPainter(color: context.pixelColors.foreground),
       child: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -121,7 +126,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     'Choose a photo and apply a cloak.',
     'Learn the steps, models, and metrics.',
     'Read the paper and explore the code.',
-    'Meet the people behind invisAI',
+    'Meet the people behind invisiAI',
   ];
 
   @override
@@ -151,183 +156,196 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 848;
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 24, vertical: compact ? 16 : 40),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1080),
-                        child: HomeStage(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (!compact)
-                                const PixelIcon(
-                                  Icons.shield_outlined,
-                                  size: 48,
-                                  color: pixelMuted,
-                                ),
-                              SizedBox(height: compact ? 8 : 24),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  'invisAI',
-                                  style: GoogleFonts.pressStart2p(
-                                    fontSize: compact ? 26 : 34,
-                                    height: 1.2,
-                                    color: pixelCream,
-                                  ),
-                                ),
+    appBar: AppBar(toolbarHeight: 48, actions: const [ThemeModeButton()]),
+    body: SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 848;
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: compact ? 16 : 40,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1080),
+                    child: HomeStage(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!compact)
+                            PixelIcon(
+                              Icons.shield_outlined,
+                              size: 48,
+                              color: context.pixelColors.muted,
+                            ),
+                          SizedBox(height: compact ? 8 : 24),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'invisiAI',
+                              style: TextStyle(
+                                fontFamily: 'PressStart2P',
+                                fontSize: compact ? 26 : 34,
+                                height: 1.2,
+                                color: context.pixelColors.foreground,
                               ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'a little privacy for your photos',
-                                style:
-                                    TextStyle(color: pixelMuted, fontSize: 19),
-                                textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'a little privacy for your photos',
+                            style: TextStyle(
+                              color: context.pixelColors.muted,
+                              fontSize: 19,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (compact)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: SizedBox(
+                                width: (constraints.maxHeight * .29).clamp(
+                                  140.0,
+                                  220.0,
+                                ),
+                                child: const RetroComputer(compact: true),
                               ),
-                              if (compact)
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  child: SizedBox(
-                                    width: (constraints.maxHeight * .29)
-                                        .clamp(140.0, 220.0),
-                                    child: const RetroComputer(compact: true),
-                                  ),
-                                )
-                              else
-                                const SizedBox(height: 44),
-                              Focus(
-                                onKeyEvent: (_, event) {
-                                  if (event is KeyDownEvent ||
-                                      event is KeyRepeatEvent) {
-                                    final direction = event.logicalKey ==
-                                            LogicalKeyboardKey.arrowDown
-                                        ? 1
-                                        : event.logicalKey ==
-                                                LogicalKeyboardKey.arrowUp
-                                            ? -1
-                                            : 0;
-                                    if (direction != 0) {
-                                      final index = (selected + direction) %
-                                          labels.length;
-                                      select(index);
-                                      nodes[index].requestFocus();
-                                      return KeyEventResult.handled;
-                                    }
-                                  }
-                                  return KeyEventResult.ignored;
-                                },
-                                child: Column(
-                                  children: [
-                                    for (var i = 0; i < labels.length; i++)
-                                      Semantics(
-                                        selected: selected == i,
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 4),
-                                          child: TextButton(
-                                            focusNode: nodes[i],
-                                            autofocus: i == 0,
-                                            onHover: (hovered) {
-                                              if (hovered) select(i);
-                                            },
-                                            onFocusChange: (focused) {
-                                              if (focused) select(i);
-                                            },
-                                            onPressed: () => enter(i),
-                                            style: TextButton.styleFrom(
-                                              backgroundColor: selected == i
-                                                  ? const Color(0xFFFFF3D9)
-                                                  : Colors.transparent,
-                                              foregroundColor: pixelCream,
-                                              minimumSize: Size(double.infinity,
-                                                  compact ? 48 : 52),
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                  vertical: compact ? 10 : 16),
-                                              shape:
-                                                  const BeveledRectangleBorder(),
-                                              textStyle:
-                                                  GoogleFonts.pressStart2p(
-                                                fontSize: 12,
-                                                height: 1.6,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: 20,
-                                                  height: 16,
-                                                  child: selected == i
-                                                      ? const CustomPaint(
-                                                          painter:
-                                                              _MenuArrowPainter(),
-                                                        )
-                                                      : null,
-                                                ),
-                                                const SizedBox(width: 16),
-                                                Expanded(
-                                                    child: Text(labels[i])),
-                                              ],
-                                            ),
+                            )
+                          else
+                            const SizedBox(height: 44),
+                          Focus(
+                            onKeyEvent: (_, event) {
+                              if (event is KeyDownEvent ||
+                                  event is KeyRepeatEvent) {
+                                final direction =
+                                    event.logicalKey ==
+                                        LogicalKeyboardKey.arrowDown
+                                    ? 1
+                                    : event.logicalKey ==
+                                          LogicalKeyboardKey.arrowUp
+                                    ? -1
+                                    : 0;
+                                if (direction != 0) {
+                                  final index =
+                                      (selected + direction) % labels.length;
+                                  select(index);
+                                  nodes[index].requestFocus();
+                                  return KeyEventResult.handled;
+                                }
+                              }
+                              return KeyEventResult.ignored;
+                            },
+                            child: Column(
+                              children: [
+                                for (var i = 0; i < labels.length; i++)
+                                  Semantics(
+                                    selected: selected == i,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: TextButton(
+                                        focusNode: nodes[i],
+                                        autofocus: i == 0,
+                                        onHover: (hovered) {
+                                          if (hovered) select(i);
+                                        },
+                                        onFocusChange: (focused) {
+                                          if (focused) select(i);
+                                        },
+                                        onPressed: () => enter(i),
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: selected == i
+                                              ? context.pixelColors.gold
+                                              : Colors.transparent,
+                                          foregroundColor:
+                                              context.pixelColors.foreground,
+                                          minimumSize: Size(
+                                            double.infinity,
+                                            compact ? 48 : 52,
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: compact ? 10 : 16,
+                                          ),
+                                          shape: const BeveledRectangleBorder(),
+                                          textStyle: TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 12,
+                                            height: 1.6,
                                           ),
                                         ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 20,
+                                              height: 16,
+                                              child: selected == i
+                                                  ? CustomPaint(
+                                                      painter:
+                                                          _MenuArrowPainter(
+                                                            context
+                                                                .pixelColors
+                                                                .foreground,
+                                                          ),
+                                                    )
+                                                  : null,
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(child: Text(labels[i])),
+                                          ],
+                                        ),
                                       ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: compact ? 8 : 24),
-                              ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(minHeight: 54),
-                                child: Text(
-                                  descriptions[selected],
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: pixelMuted,
-                                    fontSize: 20,
+                                    ),
                                   ),
-                                ),
-                              ),
-                              SizedBox(height: compact ? 8 : 40),
-                              const Text(
-                                'ON-DEVICE PROCESSING · CS-UAP',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: pixelMuted,
-                                  letterSpacing: .8,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                          SizedBox(height: compact ? 8 : 24),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 54),
+                            child: Text(
+                              descriptions[selected],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: context.pixelColors.muted,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: compact ? 8 : 40),
+                          Text(
+                            'ON-DEVICE PROCESSING · CS-UAP',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: context.pixelColors.muted,
+                              letterSpacing: .8,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              );
-            },
-          ),
-        ),
-      );
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 class _MenuArrowPainter extends CustomPainter {
-  const _MenuArrowPainter();
+  const _MenuArrowPainter(this.color);
+  final Color color;
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = const Color(0xFF946C20)
+      ..color = color
       ..isAntiAlias = false;
     for (var row = 0; row < 7; row++) {
       final width = (row <= 3 ? row + 1 : 7 - row) * 2.0;
@@ -336,7 +354,8 @@ class _MenuArrowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MenuArrowPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MenuArrowPainter oldDelegate) =>
+      color != oldDelegate.color;
 }
 
 class SignalPainter extends CustomPainter {
@@ -410,7 +429,7 @@ class _GuideScreenState extends State<GuideScreen> {
         ),
         const SizedBox(height: 20),
         Panel(
-          color: pixelGreen,
+          color: context.pixelColors.green,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -695,7 +714,7 @@ class _PhotoComparisonState extends State<PhotoComparison> {
   Widget build(BuildContext context) => Column(
     children: [
       Container(
-        color: pixelSurface,
+        color: context.pixelColors.surface,
         height: 320,
         child: LayoutBuilder(
           builder: (context, box) {
@@ -726,7 +745,10 @@ class _PhotoComparisonState extends State<PhotoComparison> {
                     left: (box.maxWidth - 2) * position,
                     top: 0,
                     bottom: 0,
-                    child: Container(width: 2, color: pixelCream),
+                    child: Container(
+                      width: 2,
+                      color: context.pixelColors.foreground,
+                    ),
                   ),
                   Positioned(
                     left: (box.maxWidth - 36) * position,
@@ -734,7 +756,7 @@ class _PhotoComparisonState extends State<PhotoComparison> {
                     child: Container(
                       width: 36,
                       height: 36,
-                      color: pixelGold,
+                      color: context.pixelColors.gold,
                       child: const Icon(
                         Icons.swap_horiz,
                         textDirection: TextDirection.ltr,
@@ -756,15 +778,15 @@ class _PhotoComparisonState extends State<PhotoComparison> {
           onChanged: (value) => setState(() => position = value),
         ),
       ),
-      const Text(
+      Text(
         'Drag to compare • Original / Cloaked',
-        style: TextStyle(color: muted, fontSize: 16),
+        style: TextStyle(color: context.pixelColors.muted, fontSize: 16),
       ),
     ],
   );
 
   Widget _tag(String label) => Container(
-    color: pixelBackground,
+    color: context.pixelColors.background,
     padding: const EdgeInsets.all(6),
     child: Text(label, style: const TextStyle(fontSize: 14)),
   );
@@ -987,7 +1009,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               defaultTargetPlatform == TargetPlatform.iOS)) {
         await Gal.putImageBytes(
           output.output,
-          name: 'invisai_${DateTime.now().millisecondsSinceEpoch}',
+          name: 'invisiai_${DateTime.now().millisecondsSinceEpoch}',
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -995,7 +1017,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           );
         }
       } else {
-        final name = 'invisai_${DateTime.now().millisecondsSinceEpoch}.png';
+        final name = 'invisiai_${DateTime.now().millisecondsSinceEpoch}.png';
         final file = XFile.fromData(
           output.output,
           mimeType: 'image/png',
@@ -1043,44 +1065,19 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         style: Theme.of(context).textTheme.headlineLarge,
       ),
       const SizedBox(height: 12),
-      const Text(
+      Text(
         'Choose a photo. Tune the cloak. Compare the pixels.',
-        style: TextStyle(color: muted),
+        style: TextStyle(color: context.pixelColors.muted),
       ),
       const SizedBox(height: 24),
-      Row(
-        children: [
-          for (var i = 0; i < 3; i++)
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 6,
-                ),
-                decoration: BoxDecoration(
-                  color:
-                      (result != null
-                              ? 2
-                              : source != null
-                              ? 1
-                              : 0) ==
-                          i
-                      ? pixelGreen
-                      : pixelSurface,
-                  border: const Border(
-                    bottom: BorderSide(color: pixelEdge, width: 2),
-                  ),
-                ),
-                child: Text(
-                  ['01 / ADD', '02 / CLOAK', '03 / KEEP'][i],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-        ],
+      CloakingSteps(
+        currentStep: result != null
+            ? 2
+            : source != null
+            ? 1
+            : 0,
       ),
-      const SizedBox(height: 18),
+      const SizedBox(height: 24),
       if (loading) const LinearProgressIndicator(),
       if (!loading && vector == null)
         TextButton(
@@ -1093,14 +1090,14 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       if (source == null)
         Container(
           decoration: BoxDecoration(
-            color: pixelSurface,
-            border: Border.all(color: pixelEdge),
+            color: context.pixelColors.surface,
+            border: Border.all(color: context.pixelColors.edge),
           ),
           child: Column(
             children: [
               Container(
                 width: double.infinity,
-                color: pixelGreen,
+                color: context.pixelColors.green,
                 padding: const EdgeInsets.all(12),
                 child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
               ),
@@ -1109,17 +1106,23 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                 width: 112,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: pixelBackground,
-                  border: Border.all(color: pixelCream, width: 4),
-                  boxShadow: const [
-                    BoxShadow(color: pixelGold, offset: Offset(8, 8)),
+                  color: context.pixelColors.background,
+                  border: Border.all(
+                    color: context.pixelColors.foreground,
+                    width: 4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.pixelColors.gold,
+                      offset: const Offset(8, 8),
+                    ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: PixelIcon(
                     Icons.add_photo_alternate_outlined,
                     size: 64,
-                    color: pixelMuted,
+                    color: context.pixelColors.muted,
                   ),
                 ),
               ),
@@ -1127,16 +1130,22 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               const Text(
                 'Start with something worth keeping.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               photoButtons(),
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Text(
                   'Processed on your device. Original stays untouched.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: muted, fontSize: 16),
+                  style: TextStyle(
+                    color: context.pixelColors.muted,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],
@@ -1144,7 +1153,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         )
       else ...[
         Container(
-          color: pixelSurface,
+          color: context.pixelColors.surface,
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
@@ -1172,7 +1181,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           PhotoComparison(clean: result!.clean, output: result!.output)
         else
           Container(
-            color: pixelSurface,
+            color: context.pixelColors.surface,
             height: 320,
             width: double.infinity,
             child: Image.memory(
@@ -1192,13 +1201,13 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                   (previewAlpha == null
                       ? 'Preparing live preview…'
                       : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
-              style: const TextStyle(color: muted, fontSize: 16),
+              style: TextStyle(color: context.pixelColors.muted, fontSize: 16),
             ),
           ),
         if (busy)
           Container(
             padding: const EdgeInsets.all(18),
-            color: pixelGreen,
+            color: context.pixelColors.green,
             child: Semantics(
               liveRegion: true,
               child: Column(
@@ -1209,7 +1218,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                   LinearProgressIndicator(
                     value: completedStages / 3,
                     minHeight: 8,
-                    color: pixelCream,
+                    color: context.pixelColors.foreground,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -1256,9 +1265,12 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                 children: [Text('Subtle'), Text('Full vector')],
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
-                style: TextStyle(fontSize: 16, color: muted),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: context.pixelColors.muted,
+                ),
               ),
               const SizedBox(height: 18),
               SizedBox(
@@ -1356,9 +1368,9 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         ],
       ),
       const SizedBox(height: 12),
-      const Text(
+      Text(
         'Full-resolution RGB comparison against the original. SSIM uses 7 × 7 sliding windows; PSNR uses pixel error. Passing these targets indicates image quality, not proven semantic protection.',
-        style: TextStyle(color: muted, fontSize: 13),
+        style: TextStyle(color: context.pixelColors.muted, fontSize: 13),
       ),
       if (r.ssim == null)
         const Text('SSIM requires an image at least 7 × 7 pixels.'),
@@ -1433,12 +1445,12 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   Widget imagePanel(Uint8List bytes, String label) => ClipRRect(
     borderRadius: BorderRadius.zero,
     child: Container(
-      color: ink,
+      color: context.pixelColors.background,
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: eyebrow(label, color: paper),
+            child: eyebrow(label, color: context.pixelColors.foreground),
           ),
           SizedBox(
             height: 300,
@@ -1449,11 +1461,14 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               child: Image.memory(bytes, fit: BoxFit.contain),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(10),
+          Padding(
+            padding: const EdgeInsets.all(10),
             child: Text(
               'Pinch or scroll to inspect',
-              style: TextStyle(color: paper, fontSize: 11),
+              style: TextStyle(
+                color: context.pixelColors.foreground,
+                fontSize: 11,
+              ),
             ),
           ),
         ],
@@ -1486,7 +1501,11 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                     : 'Below target',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: passes == true ? const Color(0xFF377254) : pixelCoral,
+                  color: passes == true
+                      ? Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF9CDAB4)
+                            : const Color(0xFF377254)
+                      : context.pixelColors.coral,
                 ),
               ),
             ],

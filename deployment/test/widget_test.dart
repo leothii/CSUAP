@@ -87,16 +87,28 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(card, const Offset(-200, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Ralph Martin Chua'), findsNWidgets(2));
+    expect(
+      find.descendant(of: card, matching: find.text('Ralph Martin Chua')),
+      findsOneWidget,
+    );
     await tester.drag(card, const Offset(200, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Quinjie Benedict Capayan'), findsNWidgets(2));
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.text('Quinjie Benedict Capayan'),
+      ),
+      findsOneWidget,
+    );
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
-    expect(find.text('ADVISER'), findsOneWidget);
+    expect(find.text('RESEARCH ADVISER'), findsOneWidget);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.pumpAndSettle();
-    expect(find.text('Donjie Libuna'), findsNWidgets(2));
+    expect(
+      find.descendant(of: card, matching: find.text('Donjie Libuna')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
   testWidgets('guide explores intensity, explains quality, and opens lab', (
@@ -230,11 +242,11 @@ void main() {
   testWidgets('team supports tap selection', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: CreditsScreen()));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Ralph Dayot'), 200);
+    await tester.scrollUntilVisible(find.text('Dr. Ralph Dayot'), 200);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ralph Dayot'));
+    await tester.tap(find.text('Dr. Ralph Dayot'));
     await tester.pumpAndSettle();
-    expect(find.text('ADVISER'), findsOneWidget);
+    expect(find.text('RESEARCH ADVISER'), findsOneWidget);
     expect(find.text('PORTRAIT TO COME'), findsOneWidget);
   });
 

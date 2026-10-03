@@ -6,6 +6,6 @@ Future<XFile> createShareImageFile(Uint8List bytes) async {
   return XFile.fromData(
     bytes,
     mimeType: 'image/png',
-    name: 'clip_slip_protected.png',
+    name: 'invisiai_protected.png',
   );
 }

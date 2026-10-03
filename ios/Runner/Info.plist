@@ -5,15 +5,15 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Choose a camera photo to apply a cloak locally on your device.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>CLIP SLIP needs access to save protected photos to your photo library.</string>
+	<string>invisiAI needs access to save protected photos to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>CLIP SLIP needs photo library access to save protected photos.</string>
+	<string>invisiAI needs photo library access to save protected photos.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>CLIP SLIP</string>
+	<string>invisiAI</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -21,7 +21,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>CLIP SLIP</string>
+	<string>invisiAI</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

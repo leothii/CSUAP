@@ -1,11 +1,11 @@
 {
-    "name": "invisAI",
-    "short_name": "invisAI",
+    "name": "invisiAI",
+    "short_name": "invisiAI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#CBE4D7",
-    "description": "On-device photo cloaking with invisAI.",
+    "description": "On-device photo cloaking with invisiAI.",
     "orientation": "any",
     "prefer_related_applications": false,
     "icons": [

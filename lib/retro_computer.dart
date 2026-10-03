@@ -20,9 +20,11 @@ class _RetroComputerState extends State<RetroComputer> {
     final reduced = MediaQuery.disableAnimationsOf(context);
     return Column(mainAxisSize: MainAxisSize.min, children: [
       if (!widget.compact)
-        const Text('THE LITTLE PRIVACY LAB',
-            style:
-                TextStyle(color: pixelMuted, letterSpacing: 2, fontSize: 14)),
+        Text('THE LITTLE PRIVACY LAB',
+            style: TextStyle(
+                color: context.pixelColors.muted,
+                letterSpacing: 2,
+                fontSize: 14)),
       AspectRatio(
         aspectRatio: 1.25,
         child: LayoutBuilder(builder: (context, bounds) {
@@ -38,8 +40,7 @@ class _RetroComputerState extends State<RetroComputer> {
             onExit: (_) => setState(() => tilt = Offset.zero),
             child: TweenAnimationBuilder<Offset>(
               tween: Tween(end: reduced ? Offset.zero : tilt),
-              duration:
-                  reduced ? Duration.zero : const Duration(milliseconds: 180),
+              duration: reduced ? Duration.zero : const Duration(milliseconds: 180),
               builder: (context, value, _) => Semantics(
                 image: true,
                 label:
@@ -62,9 +63,9 @@ class _RetroComputerState extends State<RetroComputer> {
       ),
       if (!widget.compact) const SizedBox(height: 12),
       if (!widget.compact)
-        const Text('A playful illustration of the process.',
+        Text('A playful illustration of the process.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: pixelMuted, fontSize: 16)),
+            style: TextStyle(color: context.pixelColors.muted, fontSize: 16)),
     ]);
   }
 }

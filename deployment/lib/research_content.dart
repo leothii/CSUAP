@@ -36,31 +36,38 @@ const team = [
     'Quinjie Benedict Capayan',
     'Researcher',
     'Contributed extensively to model training and backend development. '
-    'Fine-tuned LoRA models and helped implement the training workflows '
-    'used in the study’s experiments.',
+        'Fine-tuned LoRA models and helped implement the training workflows '
+        'used in the study’s experiments.',
   ),
   TeamMember(
     'Ralph Martin Chua',
     'Researcher',
     'Contributed to model training and fine-tuning for the study’s experiments. '
-    'Also coordinated research logistics, including adviser communication, '
-    'document submissions, and printing to support the team’s progress.',
+        'Also coordinated research logistics, including adviser communication, '
+        'document submissions, and printing to support the team’s progress.',
   ),
   TeamMember(
     'Gabriel Diana',
     'Researcher',
     'Developed the mobile application and website, bringing the research '
-    'system into an interface users can interact with. Contributed to '
-    'UI design, programming, and the writing and preparation of the thesis paper.',
+        'system into an interface users can interact with. Contributed to '
+        'UI design, programming, and the writing and preparation of the thesis paper.',
   ),
   TeamMember(
     'Donjie Libuna',
     'Researcher',
     'Conceived the original thesis idea and served as the main programmer '
-    'for the research system. Led its implementation, translating the '
-    'research concept into the software foundation for the study.',
+        'for the research system. Led its implementation, translating the '
+        'research concept into the software foundation for the study.',
   ),
-  TeamMember('Ralph Dayot', 'Adviser', 'Research adviser for invisAI.'),
+  TeamMember(
+    'Dr. Ralph Dayot',
+    'Research Adviser',
+    'Guided the team throughout the study, providing academic direction '
+        'and constructive feedback on the research and thesis. His mentorship '
+        'helped the researchers refine their ideas, strengthen their work, '
+        'and communicate the study’s findings clearly.',
+  ),
 ];
 const glossary = <String, String>{
   'CS-UAP':

@@ -4,7 +4,6 @@ C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/file_selec
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/gal_plugin.dll
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/share_plus_plugin.dll
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/url_launcher_windows_plugin.dll
-C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/native_assets.json
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.bin
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/cs_uap_v_f32_hwc.bin
 C:/Users/Acer/Documents/Programs/CSUAP/build/windows/x64/runner/Debug/data/flutter_assets/assets/fonts/PressStart2P-OFL.txt

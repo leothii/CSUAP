@@ -1,4 +1,5 @@
-import 'package:google_fonts/google_fonts.dart';
+import 'theme_settings.dart';
+import 'cloaking_steps.dart';
 import 'pixel_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -27,27 +28,26 @@ void main() => runApp(const CsuapApp());
 class CsuapApp extends StatelessWidget {
   const CsuapApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'CLIP SLIP',
-      theme: pixelTheme(),
+  Widget build(BuildContext context) => AppThemeHost(
       home: IntroScreen(menuBuilder: (_) => const MainMenuScreen()));
 }
 
 void openPage(BuildContext context, Widget page) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
-Widget eyebrow(String text, {Color color = muted}) => Text(text,
-    style: TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.6,
-        color: color));
+Widget eyebrow(String text, {Color? color}) => Builder(
+    builder: (context) => Text(text,
+        style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.6,
+            color: color ?? context.pixelColors.muted)));
 Widget heading(BuildContext context, String title, String subtitle) => Padding(
     padding: const EdgeInsets.only(bottom: 28),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(title, style: Theme.of(context).textTheme.headlineLarge),
       const SizedBox(height: 14),
-      Text(subtitle, style: const TextStyle(color: muted, height: 1.5)),
+      Text(subtitle,
+          style: TextStyle(color: context.pixelColors.muted, height: 1.5)),
     ]));
 
 class PageShell extends StatelessWidget {
@@ -62,20 +62,22 @@ class PageShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-          title: Text('CLIP SLIP',
-              style: GoogleFonts.pressStart2p(
+          title: Text('invisiAI',
+              style: TextStyle(
+                  fontFamily: 'PressStart2P',
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -1,
-                  color: teal)),
+                  color: context.pixelColors.foreground)),
           actions: [
+            const ThemeModeButton(),
             if (MediaQuery.sizeOf(context).width >= 450)
               Padding(
                   padding: const EdgeInsets.only(right: 20),
                   child: eyebrow(label))
           ]),
       body: CustomPaint(
-          painter: const PixelDitherPainter(),
+          painter: PixelDitherPainter(color: context.pixelColors.foreground),
           child: SafeArea(
               child: Center(
                   child: ConstrainedBox(
@@ -100,7 +102,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     'Choose a photo and apply a cloak.',
     'Learn the steps, models, and metrics.',
     'Read the paper and explore the code.',
-    'Meet the people behind CLIP SLIP',
+    'Meet the people behind invisiAI',
   ];
 
   @override
@@ -130,6 +132,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(toolbarHeight: 48, actions: const [ThemeModeButton()]),
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -148,28 +151,30 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (!compact)
-                                const PixelIcon(
+                                PixelIcon(
                                   Icons.shield_outlined,
                                   size: 48,
-                                  color: pixelMuted,
+                                  color: context.pixelColors.muted,
                                 ),
                               SizedBox(height: compact ? 8 : 24),
                               FittedBox(
                                 fit: BoxFit.scaleDown,
                                 child: Text(
-                                  'CLIP SLIP',
-                                  style: GoogleFonts.pressStart2p(
+                                  'invisiAI',
+                                  style: TextStyle(
+                                    fontFamily: 'PressStart2P',
                                     fontSize: compact ? 26 : 34,
                                     height: 1.2,
-                                    color: pixelCream,
+                                    color: context.pixelColors.foreground,
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              const Text(
+                              Text(
                                 'a little privacy for your photos',
-                                style:
-                                    TextStyle(color: pixelMuted, fontSize: 19),
+                                style: TextStyle(
+                                    color: context.pixelColors.muted,
+                                    fontSize: 19),
                                 textAlign: TextAlign.center,
                               ),
                               if (compact)
@@ -225,9 +230,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                             onPressed: () => enter(i),
                                             style: TextButton.styleFrom(
                                               backgroundColor: selected == i
-                                                  ? const Color(0xFFFFF3D9)
+                                                  ? context.pixelColors.gold
                                                   : Colors.transparent,
-                                              foregroundColor: pixelCream,
+                                              foregroundColor: context
+                                                  .pixelColors.foreground,
                                               minimumSize: Size(double.infinity,
                                                   compact ? 48 : 52),
                                               padding: EdgeInsets.symmetric(
@@ -235,8 +241,8 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                                   vertical: compact ? 10 : 16),
                                               shape:
                                                   const BeveledRectangleBorder(),
-                                              textStyle:
-                                                  GoogleFonts.pressStart2p(
+                                              textStyle: TextStyle(
+                                                fontFamily: 'PressStart2P',
                                                 fontSize: 12,
                                                 height: 1.6,
                                               ),
@@ -247,9 +253,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                                   width: 20,
                                                   height: 16,
                                                   child: selected == i
-                                                      ? const CustomPaint(
-                                                          painter:
-                                                              _MenuArrowPainter(),
+                                                      ? CustomPaint(
+                                                          painter: _MenuArrowPainter(
+                                                              context
+                                                                  .pixelColors
+                                                                  .foreground),
                                                         )
                                                       : null,
                                                 ),
@@ -271,19 +279,19 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                 child: Text(
                                   descriptions[selected],
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: pixelMuted,
+                                  style: TextStyle(
+                                    color: context.pixelColors.muted,
                                     fontSize: 20,
                                   ),
                                 ),
                               ),
                               SizedBox(height: compact ? 8 : 40),
-                              const Text(
+                              Text(
                                 'ON-DEVICE PROCESSING · CS-UAP',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: pixelMuted,
+                                  color: context.pixelColors.muted,
                                   letterSpacing: .8,
                                 ),
                               ),
@@ -302,11 +310,12 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 }
 
 class _MenuArrowPainter extends CustomPainter {
-  const _MenuArrowPainter();
+  const _MenuArrowPainter(this.color);
+  final Color color;
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = const Color(0xFF946C20)
+      ..color = color
       ..isAntiAlias = false;
     for (var row = 0; row < 7; row++) {
       final width = (row <= 3 ? row + 1 : 7 - row) * 2.0;
@@ -315,7 +324,8 @@ class _MenuArrowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MenuArrowPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MenuArrowPainter oldDelegate) =>
+      color != oldDelegate.color;
 }
 
 class SignalPainter extends CustomPainter {
@@ -378,7 +388,7 @@ class _GuideScreenState extends State<GuideScreen> {
               semanticsLabel: 'Walkthrough step ${step + 1} of 3'),
           const SizedBox(height: 20),
           Panel(
-              color: pixelGreen,
+              color: context.pixelColors.green,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -459,7 +469,8 @@ class _GuideScreenState extends State<GuideScreen> {
                           'Higher intensity does not prove stronger protection.'),
                       const ExpansionTile(
                           tilePadding: EdgeInsets.zero,
-                          title: Text('Where do these numbers come from?'),
+                          title:
+                              Text('Where do these numbers come from?'),
                           children: [
                             Text(perceptualResultsMethod),
                             SizedBox(height: 8),
@@ -609,7 +620,7 @@ class _PhotoComparisonState extends State<PhotoComparison> {
   @override
   Widget build(BuildContext context) => Column(children: [
         Container(
-          color: pixelSurface,
+          color: context.pixelColors.surface,
           height: 320,
           child: LayoutBuilder(builder: (context, box) {
             void move(double x) =>
@@ -631,14 +642,15 @@ class _PhotoComparisonState extends State<PhotoComparison> {
                     left: (box.maxWidth - 2) * position,
                     top: 0,
                     bottom: 0,
-                    child: Container(width: 2, color: pixelCream)),
+                    child: Container(
+                        width: 2, color: context.pixelColors.foreground)),
                 Positioned(
                     left: (box.maxWidth - 36) * position,
                     top: 142,
                     child: Container(
                       width: 36,
                       height: 36,
-                      color: pixelGold,
+                      color: context.pixelColors.gold,
                       child: const Icon(Icons.swap_horiz,
                           textDirection: TextDirection.ltr),
                     )),
@@ -654,12 +666,12 @@ class _PhotoComparisonState extends State<PhotoComparison> {
                   '${(value * 100).round()} percent original visible',
               onChanged: (value) => setState(() => position = value),
             )),
-        const Text('Drag to compare • Original / Cloaked',
-            style: TextStyle(color: muted, fontSize: 16)),
+        Text('Drag to compare • Original / Cloaked',
+            style: TextStyle(color: context.pixelColors.muted, fontSize: 16)),
       ]);
 
   Widget _tag(String label) => Container(
-      color: pixelBackground,
+      color: context.pixelColors.background,
       padding: const EdgeInsets.all(6),
       child: Text(label, style: const TextStyle(fontSize: 14)));
 }
@@ -849,13 +861,13 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           (defaultTargetPlatform == TargetPlatform.android ||
               defaultTargetPlatform == TargetPlatform.iOS)) {
         await Gal.putImageBytes(output.output,
-            name: 'clip_slip_${DateTime.now().millisecondsSinceEpoch}');
+            name: 'invisiai_${DateTime.now().millisecondsSinceEpoch}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Cloaked PNG saved to your gallery.')));
         }
       } else {
-        final name = 'clip_slip_${DateTime.now().millisecondsSinceEpoch}.png';
+        final name = 'invisiai_${DateTime.now().millisecondsSinceEpoch}.png';
         final file =
             XFile.fromData(output.output, mimeType: 'image/png', name: name);
         if (kIsWeb) {
@@ -892,32 +904,16 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         Text('A little less readable.\nStill entirely you.',
             style: Theme.of(context).textTheme.headlineLarge),
         const SizedBox(height: 12),
-        const Text('Choose a photo. Tune the cloak. Compare the pixels.',
-            style: TextStyle(color: muted)),
+        Text('Choose a photo. Tune the cloak. Compare the pixels.',
+            style: TextStyle(color: context.pixelColors.muted)),
         const SizedBox(height: 24),
-        Row(children: [
-          for (var i = 0; i < 3; i++)
-            Expanded(
-                child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-              decoration: BoxDecoration(
-                color: (result != null
-                            ? 2
-                            : source != null
-                                ? 1
-                                : 0) ==
-                        i
-                    ? pixelGreen
-                    : pixelSurface,
-                border: const Border(
-                    bottom: BorderSide(color: pixelEdge, width: 2)),
-              ),
-              child: Text(['01 / ADD', '02 / CLOAK', '03 / KEEP'][i],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16)),
-            )),
-        ]),
-        const SizedBox(height: 18),
+        CloakingSteps(
+            currentStep: result != null
+                ? 2
+                : source != null
+                    ? 1
+                    : 0),
+        const SizedBox(height: 24),
         if (loading) const LinearProgressIndicator(),
         if (!loading && vector == null)
           TextButton(
@@ -927,13 +923,13 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         if (source == null)
           Container(
             decoration: BoxDecoration(
-              color: pixelSurface,
-              border: Border.all(color: pixelEdge),
+              color: context.pixelColors.surface,
+              border: Border.all(color: context.pixelColors.edge),
             ),
             child: Column(children: [
               Container(
                 width: double.infinity,
-                color: pixelGreen,
+                color: context.pixelColors.green,
                 padding: const EdgeInsets.all(12),
                 child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
               ),
@@ -942,34 +938,39 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                 width: 112,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: pixelBackground,
-                  border: Border.all(color: pixelCream, width: 4),
-                  boxShadow: const [
-                    BoxShadow(color: pixelGold, offset: Offset(8, 8))
+                  color: context.pixelColors.background,
+                  border: Border.all(
+                      color: context.pixelColors.foreground, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                        color: context.pixelColors.gold,
+                        offset: const Offset(8, 8))
                   ],
                 ),
-                child: const Center(
+                child: Center(
                     child: PixelIcon(Icons.add_photo_alternate_outlined,
-                        size: 64, color: pixelMuted)),
+                        size: 64, color: context.pixelColors.muted)),
               ),
               const SizedBox(height: 30),
               const Text('Start with something worth keeping.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      fontSize: 25, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               photoButtons(),
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Text(
                     'Processed on your device. Original stays untouched.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: muted, fontSize: 16)),
+                    style: TextStyle(
+                        color: context.pixelColors.muted, fontSize: 16)),
               ),
             ]),
           )
         else ...[
           Container(
-            color: pixelSurface,
+            color: context.pixelColors.surface,
             padding: const EdgeInsets.all(12),
             child: Row(children: [
               const Icon(Icons.image_outlined, size: 20),
@@ -989,14 +990,15 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
             PhotoComparison(clean: result!.clean, output: result!.output)
           else
             Container(
-              color: pixelSurface,
+              color: context.pixelColors.surface,
               height: 320,
               width: double.infinity,
               child: Image.memory(previewBytes ?? source!,
                   gaplessPlayback: true,
                   fit: BoxFit.contain,
                   errorBuilder: (_, e, s) => const Center(
-                      child: Text('Preview unavailable. Try a PNG or JPEG.'))),
+                      child: Text(
+                          'Preview unavailable. Try a PNG or JPEG.'))),
             ),
           if (result == null && !busy)
             Padding(
@@ -1006,12 +1008,13 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                       (previewAlpha == null
                           ? 'Preparing live preview…'
                           : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
-                  style: const TextStyle(color: muted, fontSize: 16)),
+                  style: TextStyle(
+                      color: context.pixelColors.muted, fontSize: 16)),
             ),
           if (busy)
             Container(
               padding: const EdgeInsets.all(18),
-              color: pixelGreen,
+              color: context.pixelColors.green,
               child: Semantics(
                   liveRegion: true,
                   child: Column(
@@ -1022,7 +1025,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                       LinearProgressIndicator(
                           value: completedStages / 3,
                           minHeight: 8,
-                          color: pixelCream),
+                          color: context.pixelColors.foreground),
                       const SizedBox(height: 8),
                       Text(
                           '$completedStages of 3 stages complete / Processing on device',
@@ -1061,9 +1064,10 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [Text('Subtle'), Text('Full vector')]),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                   'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
-                  style: TextStyle(fontSize: 16, color: muted)),
+                  style: TextStyle(
+                      fontSize: 16, color: context.pixelColors.muted)),
               const SizedBox(height: 18),
               SizedBox(
                   width: double.infinity,
@@ -1137,9 +1141,9 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
             r.psnr >= 30)
       ]),
       const SizedBox(height: 12),
-      const Text(
+      Text(
           'Full-resolution RGB comparison against the original. SSIM uses 7 × 7 sliding windows; PSNR uses pixel error. Passing these targets indicates image quality, not proven semantic protection.',
-          style: TextStyle(color: muted, fontSize: 13)),
+          style: TextStyle(color: context.pixelColors.muted, fontSize: 13)),
       if (r.ssim == null)
         const Text('SSIM requires an image at least 7 × 7 pixels.'),
       const SizedBox(height: 22),
@@ -1203,11 +1207,11 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   Widget imagePanel(Uint8List bytes, String label) => ClipRRect(
       borderRadius: BorderRadius.zero,
       child: Container(
-          color: ink,
+          color: context.pixelColors.background,
           child: Column(children: [
             Padding(
                 padding: const EdgeInsets.all(12),
-                child: eyebrow(label, color: paper)),
+                child: eyebrow(label, color: context.pixelColors.foreground)),
             SizedBox(
                 height: 300,
                 width: double.infinity,
@@ -1215,10 +1219,11 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                     minScale: 1,
                     maxScale: 5,
                     child: Image.memory(bytes, fit: BoxFit.contain))),
-            const Padding(
-                padding: EdgeInsets.all(10),
+            Padding(
+                padding: const EdgeInsets.all(10),
                 child: Text('Pinch or scroll to inspect',
-                    style: TextStyle(color: paper, fontSize: 11)))
+                    style: TextStyle(
+                        color: context.pixelColors.foreground, fontSize: 11)))
           ])));
   Widget metric(String title, String value, String target, bool? passes) =>
       SizedBox(
@@ -1243,7 +1248,9 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: passes == true
-                            ? const Color(0xFF377254)
-                            : pixelCoral))
+                            ? Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF9CDAB4)
+                                : const Color(0xFF377254)
+                            : context.pixelColors.coral))
               ])));
 }

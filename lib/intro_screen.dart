@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'pixel_theme.dart';
 
@@ -50,9 +49,11 @@ class _IntroScreenState extends State<IntroScreen> {
     final content = SizedBox.expand(
       child: Stack(
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: RepaintBoundary(
-              child: CustomPaint(painter: PixelDitherPainter()),
+              child: CustomPaint(
+                  painter: PixelDitherPainter(
+                      color: context.pixelColors.foreground)),
             ),
           ),
           SafeArea(
@@ -65,13 +66,14 @@ class _IntroScreenState extends State<IntroScreen> {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        'CLIP SLIP',
-                        style: GoogleFonts.pressStart2p(
+                        'invisiAI',
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
                           fontSize: 88,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -2,
                           height: 1,
-                          color: pixelCream,
+                          color: context.pixelColors.foreground,
                         ),
                       ),
                     ).animate(autoPlay: !_reducedMotion).custom(
@@ -86,10 +88,11 @@ class _IntroScreenState extends State<IntroScreen> {
                     Text(
                       'A PRIVACY EXPERIMENT',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.vt323(
+                      style: TextStyle(
+                        fontFamily: 'VT323',
                         fontSize: 14,
                         letterSpacing: 2,
-                        color: pixelCream,
+                        color: context.pixelColors.foreground,
                       ),
                     )
                         .animate(autoPlay: !_reducedMotion)
@@ -106,8 +109,9 @@ class _IntroScreenState extends State<IntroScreen> {
                 padding: const EdgeInsets.all(28),
                 child: Text(
                   'TAP TO SKIP',
-                  style: GoogleFonts.vt323(
-                    color: pixelMuted,
+                  style: TextStyle(
+                    fontFamily: 'VT323',
+                    color: context.pixelColors.muted,
                     fontSize: 12,
                     letterSpacing: 2,
                   ),
@@ -120,7 +124,7 @@ class _IntroScreenState extends State<IntroScreen> {
     );
 
     return Scaffold(
-      backgroundColor: pixelBackground,
+      backgroundColor: context.pixelColors.background,
       body: CallbackShortcuts(
         bindings: {
           const SingleActivator(LogicalKeyboardKey.enter): () =>

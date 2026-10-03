@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="deployment/web/icon.svg" alt="invisAI pixel icon" width="96" />
+  <img src="deployment/web/icon.svg" alt="invisiAI pixel icon" width="96" />
 </p>
 
-# CS-UAP · invisAI
+# CS-UAP · invisiAI
 
 **Context-specific universal adversarial perturbations for portrait images, with a local photo-cloaking app.**
 
-This repository contains the CS-UAP research pipeline and **invisAI**, its Flutter
+This repository contains the CS-UAP research pipeline and **invisiAI**, its Flutter
 application. The research learns a reusable, bounded RGB perturbation against a
 frozen CLIP image encoder, then evaluates protected images at different
-perturbation strengths. invisAI applies the exported pattern to photos through a
+perturbation strengths. invisiAI applies the exported pattern to photos through a
 pixel-art interface with live previews, image-quality measurements, and PNG export.
 
-[Run the app](#run-invisai) · [Research workflow](#research-workflow) ·
+[Run the app](#run-invisiai) · [Research workflow](#research-workflow) ·
 [Evaluation](#evaluation) · [Project structure](#project-structure)
 
 ## What is included
@@ -25,9 +25,9 @@ pixel-art interface with live previews, image-quality measurements, and PNG expo
 | Perceptual evaluation | Measure SSIM and PSNR against the matching clean images. |
 | Caption consistency | Compare protected-image ClipCap captions with clean-image captions using BERTScore F1. |
 | LoRA experiments | Prepare captions, fine-tune adapters, generate images, and analyze training logs. |
-| invisAI | Select a photo, preview the cloak, apply it locally, compare image quality, and save or share a PNG. |
+| invisiAI | Select a photo, preview the cloak, apply it locally, compare image quality, and save or share a PNG. |
 
-## Run invisAI
+## Run invisiAI
 
 The app is self-contained in [`deployment/`](deployment/README.md), including its
 trained perturbation asset. No research datasets or Python environment are
@@ -55,6 +55,11 @@ Primary fonts and the rendering runtime are bundled; Flutter may fetch fallback
 fonts for Unicode symbols. Photos are not uploaded.
 
 ### Production web build
+
+The sun/moon **Appearance** button offers Light, Dark, and Follow system modes.
+Your choice is saved locally and applies across screens without changing photos
+or exported images. The cloaking workflow uses large Step 1–3 cards that stack
+on phones and sit side by side on desktop.
 
 For VS Code Live Server in this repository workspace, `.vscode/settings.json`
 sets the server root to `build/web`, the compiled root app. After changing this
@@ -204,7 +209,7 @@ protocol consistent across clean and protected conditions.
 
 ```text
 CSUAP/
-├── deployment/                 # invisAI Flutter app and Vercel configuration
+├── deployment/                 # invisiAI Flutter app and Vercel configuration
 ├── src/
 │   ├── preprocessing/          # Portrait dataset preparation
 │   ├── training/               # CS-UAP optimization
@@ -247,7 +252,7 @@ during fine-tuning. These measurements answer different questions and do not,
 individually, establish reliable protection against all models or workflows.
 
 The recorded Python study resizes the perturbation to each image and uses
-Gaussian-window SSIM. invisAI tiles the perturbation at its original scale and
+Gaussian-window SSIM. invisiAI tiles the perturbation at its original scale and
 uses uniform 7 × 7 SSIM windows. Its per-photo measurements should therefore be
 reported separately from the study's aggregate results. Preserve input hashes,
 manifests, model versions, settings, and split definitions when reproducing or

@@ -84,7 +84,7 @@ class _DocsScreenState extends State<DocsScreen> {
             const SizedBox(height: 20),
             if (section == 0) ...[
               Panel(
-                  color: pixelGreen,
+                  color: context.pixelColors.green,
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -136,7 +136,7 @@ class _DocsScreenState extends State<DocsScreen> {
               ]),
               const SizedBox(height: 16),
               Panel(
-                  color: pixelGreen,
+                  color: context.pixelColors.green,
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -152,8 +152,7 @@ class _DocsScreenState extends State<DocsScreen> {
                         Text(stages[stage].$3),
                         const SizedBox(height: 24),
                         FilledButton(
-                            onPressed: () =>
-                                openPage(context, const GuideScreen()),
+                            onPressed: () => openPage(context, const GuideScreen()),
                             child: const Text('Try the field guide')),
                       ])),
             ],
@@ -183,8 +182,9 @@ class _DocsScreenState extends State<DocsScreen> {
                       child: OutlinedButton(
                         key: ValueKey('research-alpha-$i'),
                         style: OutlinedButton.styleFrom(
-                            backgroundColor:
-                                selectedAlpha == i ? pixelGreen : pixelSurface,
+                            backgroundColor: selectedAlpha == i
+                                ? context.pixelColors.green
+                                : context.pixelColors.surface,
                             padding: const EdgeInsets.all(14)),
                         onPressed: () => setState(() => selectedAlpha = i),
                         child: Column(
@@ -204,15 +204,19 @@ class _DocsScreenState extends State<DocsScreen> {
                                                     : perceptualResults[i]
                                                         .psnr) /
                                                 (ssim ? 1 : 40),
-                                            color: pixelCream,
-                                            backgroundColor: pixelBackground),
+                                            color:
+                                                context.pixelColors.foreground,
+                                            backgroundColor:
+                                                context.pixelColors.background),
                                         Positioned(
                                             left: (box.maxWidth - 2) *
                                                 (ssim ? .95 : .75),
                                             top: 0,
                                             bottom: 0,
                                             child: Container(
-                                                width: 2, color: pixelCoral)),
+                                                width: 2,
+                                                color:
+                                                    context.pixelColors.coral)),
                                       ])),
                             ]),
                       ),

@@ -19,6 +19,7 @@ dependencies:
   image_picker: ^1.1.2
   path_provider: ^2.1.5
   share_plus: ^10.1.4
+  shared_preferences: ^2.5.5
   url_launcher: ^6.3.2
 
 dev_dependencies:
@@ -35,3 +36,6 @@ flutter:
     - family: VT323
       fonts:
         - asset: assets/fonts/VT323-Regular.ttf
+    - family: PressStart2P
+      fonts:
+        - asset: assets/fonts/PressStart2P-Regular.ttf

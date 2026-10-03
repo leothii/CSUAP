@@ -46,10 +46,16 @@ class ResearchTimeline extends StatelessWidget {
                           height: 18,
                           margin: const EdgeInsets.only(top: 14),
                           decoration: BoxDecoration(
-                              color: selected == i ? pixelGold : pixelGreen,
-                              border: Border.all(color: pixelCream, width: 2))),
+                              color: selected == i
+                                  ? context.pixelColors.gold
+                                  : context.pixelColors.green,
+                              border: Border.all(
+                                  color: context.pixelColors.foreground,
+                                  width: 2))),
                       if (i < titles.length - 1)
-                        Expanded(child: Container(width: 2, color: pixelEdge)),
+                        Expanded(
+                            child: Container(
+                                width: 2, color: context.pixelColors.edge)),
                     ])),
                 Expanded(
                     child: Padding(
@@ -58,8 +64,9 @@ class ResearchTimeline extends StatelessWidget {
                     key: ValueKey('research-section-$i'),
                     style: OutlinedButton.styleFrom(
                         alignment: Alignment.centerLeft,
-                        backgroundColor:
-                            selected == i ? pixelGold : pixelSurface),
+                        backgroundColor: selected == i
+                            ? context.pixelColors.gold
+                            : context.pixelColors.surface),
                     onPressed: () => onSelect(i),
                     child: Semantics(
                         selected: selected == i, child: Text(titles[i])),

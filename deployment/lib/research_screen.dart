@@ -89,7 +89,7 @@ class _DocsScreenState extends State<DocsScreen> {
       const SizedBox(height: 20),
       if (section == 0) ...[
         Panel(
-          color: pixelGreen,
+          color: context.pixelColors.green,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -157,7 +157,7 @@ class _DocsScreenState extends State<DocsScreen> {
         ),
         const SizedBox(height: 16),
         Panel(
-          color: pixelGreen,
+          color: context.pixelColors.green,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -220,8 +220,8 @@ class _DocsScreenState extends State<DocsScreen> {
                 key: ValueKey('research-alpha-$i'),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: selectedAlpha == i
-                      ? pixelGreen
-                      : pixelSurface,
+                      ? context.pixelColors.green
+                      : context.pixelColors.surface,
                   padding: const EdgeInsets.all(14),
                 ),
                 onPressed: () => setState(() => selectedAlpha = i),
@@ -245,14 +245,17 @@ class _DocsScreenState extends State<DocsScreen> {
                                       : perceptualResults[i].psnr,
                                 ) /
                                 (ssim ? 1 : 40),
-                            color: pixelCream,
-                            backgroundColor: pixelBackground,
+                            color: context.pixelColors.foreground,
+                            backgroundColor: context.pixelColors.background,
                           ),
                           Positioned(
                             left: (box.maxWidth - 2) * (ssim ? .95 : .75),
                             top: 0,
                             bottom: 0,
-                            child: Container(width: 2, color: pixelCoral),
+                            child: Container(
+                              width: 2,
+                              color: context.pixelColors.coral,
+                            ),
                           ),
                         ],
                       ),

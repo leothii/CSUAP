@@ -9,6 +9,37 @@ const pixelCream = Color(0xFF303831);
 const pixelMuted = Color(0xFF657068);
 const pixelEdge = Color(0xFFBCC7BF);
 
+/// Semantic interface colors. Illustration and photograph pixels stay unchanged.
+class PixelPalette {
+  const PixelPalette(this.brightness);
+  final Brightness brightness;
+  bool get dark => brightness == Brightness.dark;
+  Color get background => dark ? const Color(0xFF141C18) : pixelBackground;
+  Color get surface => dark ? const Color(0xFF202B25) : pixelSurface;
+  Color get foreground => dark ? const Color(0xFFF0F3EA) : pixelCream;
+  Color get muted => dark ? const Color(0xFFB1C4B8) : pixelMuted;
+  Color get gold => dark ? const Color(0xFF53472C) : pixelGold;
+  Color get green => dark ? const Color(0xFF294B3B) : pixelGreen;
+  Color get coral => dark ? const Color(0xFFFF9B99) : pixelCoral;
+  Color get edge => dark ? const Color(0xFF52665A) : pixelEdge;
+  Color resolve(Color color) =>
+      {
+        pixelBackground: background,
+        pixelSurface: surface,
+        pixelCream: foreground,
+        pixelMuted: muted,
+        pixelGold: gold,
+        pixelGreen: green,
+        pixelCoral: coral,
+        pixelEdge: edge,
+      }[color] ??
+      color;
+}
+
+extension PixelColors on BuildContext {
+  PixelPalette get pixelColors => PixelPalette(Theme.of(this).brightness);
+}
+
 /// Paints inside the existing bounds without adding padding or changing layout.
 class PixelBevelPanel extends StatelessWidget {
   const PixelBevelPanel({
@@ -21,14 +52,22 @@ class PixelBevelPanel extends StatelessWidget {
   final Color fill, accent;
   @override
   Widget build(BuildContext context) => CustomPaint(
-    painter: PixelBevelPainter(fill: fill, accent: accent),
+    painter: PixelBevelPainter(
+      fill: context.pixelColors.resolve(fill),
+      accent: context.pixelColors.resolve(accent),
+      edge: context.pixelColors.edge,
+    ),
     child: child,
   );
 }
 
 class PixelBevelPainter extends CustomPainter {
-  const PixelBevelPainter({this.fill = pixelSurface, this.accent = pixelGold});
-  final Color fill, accent;
+  const PixelBevelPainter({
+    this.fill = pixelSurface,
+    this.accent = pixelGold,
+    this.edge = pixelEdge,
+  });
+  final Color fill, accent, edge;
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()..isAntiAlias = false;
@@ -37,23 +76,26 @@ class PixelBevelPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, 1, size.height), p);
     canvas.drawRect(
       Rect.fromLTWH(0, size.height - 2, size.width, 2),
-      p..color = pixelEdge,
+      p..color = edge,
     );
     canvas.drawRect(Rect.fromLTWH(size.width - 2, 0, 2, size.height), p);
   }
 
   @override
   bool shouldRepaint(covariant PixelBevelPainter oldDelegate) =>
-      fill != oldDelegate.fill || accent != oldDelegate.accent;
+      fill != oldDelegate.fill ||
+      accent != oldDelegate.accent ||
+      edge != oldDelegate.edge;
 }
 
 class PixelDitherPainter extends CustomPainter {
-  const PixelDitherPainter();
+  const PixelDitherPainter({this.color = pixelCream});
+  final Color color;
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
       ..isAntiAlias = false
-      ..color = pixelCream.withValues(alpha: .025);
+      ..color = color.withValues(alpha: .025);
     for (double y = 0; y < size.height; y += 16) {
       for (double x = (y ~/ 16).isEven ? 0 : 8; x < size.width; x += 16) {
         canvas.drawRect(Rect.fromLTWH(x, y, 2, 2), p);
@@ -62,7 +104,8 @@ class PixelDitherPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant PixelDitherPainter oldDelegate) => false;
+  bool shouldRepaint(covariant PixelDitherPainter oldDelegate) =>
+      color != oldDelegate.color;
 }
 
 /// Placeholder sprites on a 16x16 grid. Keeps the original Icon's footprint.
@@ -77,7 +120,10 @@ class PixelIcon extends StatelessWidget {
     return SizedBox.square(
       dimension: size ?? theme.size ?? 24,
       child: CustomPaint(
-        painter: PixelIconPainter(icon, color ?? theme.color ?? pixelGold),
+        painter: PixelIconPainter(
+          icon,
+          context.pixelColors.resolve(color ?? theme.color ?? pixelCream),
+        ),
       ),
     );
   }

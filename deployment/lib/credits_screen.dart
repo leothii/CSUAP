@@ -24,8 +24,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
   @override
   Widget build(BuildContext context) => CallbackShortcuts(
     bindings: {
-      const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
-          select(selected - 1),
+      const SingleActivator(LogicalKeyboardKey.arrowLeft): () => select(selected - 1),
       const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
           select(selected + 1),
     },
@@ -107,7 +106,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
               ),
               child: Panel(
                 key: ValueKey(selected),
-                color: pixelGold,
+                color: context.pixelColors.gold,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
