@@ -20,6 +20,7 @@ class CloakingProgress extends StatelessWidget {
     ][completed];
     return Semantics(
       liveRegion: true,
+      excludeSemantics: true,
       label: '$stage. $percent percent. $completed of 3 stages complete.',
       child: Container(
         width: double.infinity,
@@ -32,6 +33,8 @@ class CloakingProgress extends StatelessWidget {
           Row(children: [
             if (done)
               const Icon(Icons.check_circle_outline, size: 22)
+            else if (MediaQuery.disableAnimationsOf(context))
+              const Icon(Icons.hourglass_top, size: 22)
             else
               SizedBox(
                 width: 20,

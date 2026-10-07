@@ -979,8 +979,13 @@ file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/intro_screen.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/lab_processing.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/main.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/perturbation_protection.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/photo_processing_cancelled.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/photo_processor.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/photo_processor_web.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/photo_terms.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/photo_worker_protocol.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/pixel_art.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/pixel_histogram.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/pixel_theme.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/research_content.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/research_screen.dart
@@ -990,6 +995,8 @@ file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/retro_computer.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/share_image_file.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/share_image_file_web.dart
 file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/theme_settings.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/unsaved_page_guard.dart
+file:///C:/Users/Acer/Documents/Programs/CSUAP/lib/unsaved_page_guard_web.dart
 file:///C:/Users/Acer/Downloads/flutter/bin/cache/dart-sdk/lib/libraries.json
 file:///C:/Users/Acer/Downloads/flutter/bin/cache/flutter_web_sdk/kernel/dart2js_platform.dill
 file:///C:/Users/Acer/Downloads/flutter/packages/flutter/lib/animation.dart

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'pixel_art.dart';
 export 'pixel_art.dart';
 
-ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
+ThemeData pixelTheme(
+    [Brightness brightness = Brightness.light, bool readableText = false]) {
+  final bodyFont = readableText ? 'Rajdhani' : 'VT323';
   final palette = PixelPalette(brightness);
   final pixelBackground = palette.background,
       pixelSurface = palette.surface,
@@ -14,17 +16,22 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
       pixelEdge = palette.edge;
   final base = ThemeData(brightness: brightness, useMaterial3: true);
   final body = base.textTheme
-      .apply(fontFamily: 'VT323')
+      .apply(fontFamily: bodyFont)
       .apply(bodyColor: pixelCream, displayColor: pixelCream);
   final shortText = TextStyle(
-      fontFamily: 'PressStart2P', fontSize: 10, height: 1.5, color: pixelCream);
+      fontFamily: readableText ? bodyFont : 'PressStart2P',
+      fontSize: readableText ? 16 : 10,
+      fontWeight: readableText ? FontWeight.w600 : FontWeight.normal,
+      height: 1.5,
+      color: pixelCream);
   final button = ButtonStyle(
+    minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
     backgroundColor: WidgetStateProperty.resolveWith((states) =>
         states.contains(WidgetState.disabled) ? pixelSurface : pixelGold),
     foregroundColor: WidgetStateProperty.resolveWith((states) =>
         states.contains(WidgetState.disabled) ? pixelMuted : pixelCream),
     side: WidgetStateProperty.resolveWith((states) => BorderSide(
-        width: 1,
+        width: states.contains(WidgetState.focused) ? 3 : 1,
         color: states.contains(WidgetState.focused) ||
                 states.contains(WidgetState.hovered)
             ? pixelCream
@@ -38,6 +45,18 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
   return base.copyWith(
     scaffoldBackgroundColor: pixelBackground,
     splashFactory: NoSplash.splashFactory,
+    focusColor: pixelCream.withValues(alpha: .2),
+    iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+      foregroundColor: WidgetStatePropertyAll(pixelCream),
+      side: WidgetStateProperty.resolveWith((states) => BorderSide(
+            color: states.contains(WidgetState.focused)
+                ? pixelCream
+                : Colors.transparent,
+            width: 2,
+          )),
+    )),
     colorScheme: ColorScheme(
         brightness: brightness,
         primary: pixelGold,
@@ -63,7 +82,11 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
       headlineSmall: TextStyle(
           fontFamily: 'PressStart2P', fontSize: 16, color: pixelCream),
       bodyMedium: TextStyle(
-          fontFamily: 'VT323', fontSize: 20, height: 1.125, color: pixelCream),
+          fontFamily: bodyFont,
+          fontSize: 20,
+          fontWeight: readableText ? FontWeight.w500 : FontWeight.normal,
+          height: readableText ? 1.4 : 1.125,
+          color: pixelCream),
     ),
     appBarTheme: AppBarTheme(
         backgroundColor: pixelBackground,
@@ -80,9 +103,11 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
     outlinedButtonTheme: OutlinedButtonThemeData(style: button),
     textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-            foregroundColor: pixelCream,
-            shape: const BeveledRectangleBorder(),
-            textStyle: shortText)),
+                minimumSize: const Size(48, 48),
+                foregroundColor: pixelCream,
+                shape: const BeveledRectangleBorder(),
+                textStyle: shortText)
+            .copyWith(side: button.side)),
     iconTheme: IconThemeData(color: pixelCream),
     dividerTheme: DividerThemeData(color: pixelGreen, thickness: 2),
     chipTheme: base.chipTheme.copyWith(
@@ -93,29 +118,30 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
         side: BorderSide(color: pixelEdge, width: 1),
         checkmarkColor: pixelCream,
         labelStyle:
-            TextStyle(fontFamily: 'VT323', fontSize: 16, color: pixelCream),
+            TextStyle(fontFamily: bodyFont, fontSize: 16, color: pixelCream),
         elevation: 0,
         pressElevation: 0,
         shadowColor: Colors.transparent,
         secondaryLabelStyle:
-            TextStyle(fontFamily: 'VT323', fontSize: 16, color: pixelCream)),
+            TextStyle(fontFamily: bodyFont, fontSize: 16, color: pixelCream)),
     expansionTileTheme: ExpansionTileThemeData(
         iconColor: pixelCream,
         collapsedIconColor: pixelMuted,
         textColor: pixelCream,
         collapsedTextColor: pixelCream),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: pixelGreen,
+        color: palette.chartGreen,
         linearTrackColor: pixelEdge,
         borderRadius: BorderRadius.zero),
     sliderTheme: base.sliderTheme.copyWith(
         trackHeight: 8,
-        activeTrackColor: pixelGold,
+        activeTrackColor: palette.chartGold,
         inactiveTrackColor: pixelEdge,
-        thumbColor: pixelGreen,
+        thumbColor: palette.chartGreen,
         trackShape: const RectangularSliderTrackShape(),
         thumbShape: const PixelThumbShape(),
-        overlayShape: SliderComponentShape.noOverlay,
+        overlayColor: pixelCream.withValues(alpha: .2),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
         valueIndicatorColor: pixelSurface,
         valueIndicatorTextStyle:
             TextStyle(fontFamily: 'VT323', color: pixelCream),

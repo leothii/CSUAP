@@ -57,7 +57,7 @@ void main() {
     expect(accepted, true);
   });
 
-  testWidgets('mobile insights support swipes and arrows without overflow',
+  testWidgets('readable mobile insights support swipes and arrows without overflow',
       (tester) async {
     tester.view.physicalSize = const Size(360, 850);
     tester.view.devicePixelRatio = 1;
@@ -66,7 +66,7 @@ void main() {
     final bytes =
         Uint8List.fromList(img.encodePng(img.Image(width: 8, height: 8)));
     await tester.pumpWidget(MaterialApp(
-        theme: pixelTheme(Brightness.dark),
+        theme: pixelTheme(Brightness.dark, true),
         home: Scaffold(
             body: SingleChildScrollView(
                 child: ResultInsights(

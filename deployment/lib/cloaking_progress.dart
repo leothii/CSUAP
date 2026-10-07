@@ -20,6 +20,7 @@ class CloakingProgress extends StatelessWidget {
     ][completed];
     return Semantics(
       liveRegion: true,
+      excludeSemantics: true,
       label: '$stage. $percent percent. $completed of 3 stages complete.',
       child: Container(
         width: double.infinity,
@@ -28,58 +29,46 @@ class CloakingProgress extends StatelessWidget {
           color: context.pixelColors.surface,
           border: Border.all(color: context.pixelColors.edge),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (done)
-                  const Icon(Icons.check_circle_outline, size: 22)
-                else
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: context.pixelColors.foreground,
-                    ),
-                  ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(stage, style: const TextStyle(fontSize: 22)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            if (done)
+              const Icon(Icons.check_circle_outline, size: 22)
+            else if (MediaQuery.disableAnimationsOf(context))
+              const Icon(Icons.hourglass_top, size: 22)
+            else
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: context.pixelColors.foreground,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '$percent%',
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-              color: context.pixelColors.foreground,
-              semanticsLabel: 'Cloaking progress',
-              semanticsValue: '$percent%',
-            ),
-            const SizedBox(height: 10),
-            Text(
-              done
-                  ? 'Your photo is ready. Explore your results below.'
-                  : '$completed of 3 stages complete. Processing on your device.',
-            ),
-            if (!done) ...[
-              const SizedBox(height: 6),
-              const Text(
-                'Progress updates after each stage. Large photos can take longer.',
               ),
-            ],
+            const SizedBox(width: 12),
+            Expanded(child: Text(stage, style: const TextStyle(fontSize: 22))),
+            const SizedBox(width: 8),
+            Text('$percent%',
+                style:
+                    const TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+          ]),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 10,
+            color: context.pixelColors.foreground,
+            semanticsLabel: 'Cloaking progress',
+            semanticsValue: '$percent%',
+          ),
+          const SizedBox(height: 10),
+          Text(done
+              ? 'Your photo is ready. Explore your results below.'
+              : '$completed of 3 stages complete. Processing on your device.'),
+          if (!done) ...[
+            const SizedBox(height: 6),
+            const Text(
+                'Progress updates after each stage. Large photos can take longer.'),
           ],
-        ),
+        ]),
       ),
     );
   }

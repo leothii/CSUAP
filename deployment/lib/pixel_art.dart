@@ -22,6 +22,11 @@ class PixelPalette {
   Color get green => dark ? const Color(0xFF294B3B) : pixelGreen;
   Color get coral => dark ? const Color(0xFFFF9B99) : pixelCoral;
   Color get edge => dark ? const Color(0xFF52665A) : pixelEdge;
+  // Stronger colors for data marks and controls against the surface.
+  Color get chartGreen =>
+      dark ? const Color(0xFF8CC7A5) : const Color(0xFF397653);
+  Color get chartGold =>
+      dark ? const Color(0xFFE5BC65) : const Color(0xFF916A16);
   Color resolve(Color color) =>
       {
         pixelBackground: background,
@@ -42,31 +47,28 @@ extension PixelColors on BuildContext {
 
 /// Paints inside the existing bounds without adding padding or changing layout.
 class PixelBevelPanel extends StatelessWidget {
-  const PixelBevelPanel({
-    super.key,
-    required this.child,
-    this.fill = pixelSurface,
-    this.accent = pixelGold,
-  });
+  const PixelBevelPanel(
+      {super.key,
+      required this.child,
+      this.fill = pixelSurface,
+      this.accent = pixelGold});
   final Widget child;
   final Color fill, accent;
   @override
   Widget build(BuildContext context) => CustomPaint(
-    painter: PixelBevelPainter(
-      fill: context.pixelColors.resolve(fill),
-      accent: context.pixelColors.resolve(accent),
-      edge: context.pixelColors.edge,
-    ),
-    child: child,
-  );
+        painter: PixelBevelPainter(
+            fill: context.pixelColors.resolve(fill),
+            accent: context.pixelColors.resolve(accent),
+            edge: context.pixelColors.edge),
+        child: child,
+      );
 }
 
 class PixelBevelPainter extends CustomPainter {
-  const PixelBevelPainter({
-    this.fill = pixelSurface,
-    this.accent = pixelGold,
-    this.edge = pixelEdge,
-  });
+  const PixelBevelPainter(
+      {this.fill = pixelSurface,
+      this.accent = pixelGold,
+      this.edge = pixelEdge});
   final Color fill, accent, edge;
   @override
   void paint(Canvas canvas, Size size) {
@@ -75,9 +77,7 @@ class PixelBevelPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 1), p..color = accent);
     canvas.drawRect(Rect.fromLTWH(0, 0, 1, size.height), p);
     canvas.drawRect(
-      Rect.fromLTWH(0, size.height - 2, size.width, 2),
-      p..color = edge,
-    );
+        Rect.fromLTWH(0, size.height - 2, size.width, 2), p..color = edge);
     canvas.drawRect(Rect.fromLTWH(size.width - 2, 0, 2, size.height), p);
   }
 
@@ -118,14 +118,12 @@ class PixelIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = IconTheme.of(context);
     return SizedBox.square(
-      dimension: size ?? theme.size ?? 24,
-      child: CustomPaint(
-        painter: PixelIconPainter(
-          icon,
-          context.pixelColors.resolve(color ?? theme.color ?? pixelCream),
-        ),
-      ),
-    );
+        dimension: size ?? theme.size ?? 24,
+        child: CustomPaint(
+            painter: PixelIconPainter(
+                icon,
+                context.pixelColors
+                    .resolve(color ?? theme.color ?? pixelCream))));
   }
 }
 
@@ -135,15 +133,11 @@ class PixelIconPainter extends CustomPainter {
   final Color color;
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = (size.shortestSide / 16).floorToDouble().clamp(
-      1.0,
-      double.infinity,
-    );
+    final scale =
+        (size.shortestSide / 16).floorToDouble().clamp(1.0, double.infinity);
     canvas.save();
     canvas.translate(
-      (size.width - 16 * scale) / 2,
-      (size.height - 16 * scale) / 2,
-    );
+        (size.width - 16 * scale) / 2, (size.height - 16 * scale) / 2);
     canvas.scale(scale);
     final p = Paint()
       ..color = color

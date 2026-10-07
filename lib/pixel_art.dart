@@ -22,6 +22,11 @@ class PixelPalette {
   Color get green => dark ? const Color(0xFF294B3B) : pixelGreen;
   Color get coral => dark ? const Color(0xFFFF9B99) : pixelCoral;
   Color get edge => dark ? const Color(0xFF52665A) : pixelEdge;
+  // Stronger colors for data marks and controls against the surface.
+  Color get chartGreen =>
+      dark ? const Color(0xFF8CC7A5) : const Color(0xFF397653);
+  Color get chartGold =>
+      dark ? const Color(0xFFE5BC65) : const Color(0xFF916A16);
   Color resolve(Color color) =>
       {
         pixelBackground: background,

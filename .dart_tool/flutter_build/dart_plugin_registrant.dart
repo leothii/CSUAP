@@ -3,7 +3,7 @@
 // This file is generated from template in file `flutter_tools/lib/src/flutter_plugins.dart`.
 //
 
-// @dart = 3.0
+// @dart = 3.4
 
 import 'dart:io'; // flutter_ignore: dart_io_import.
 import 'package:file_selector_android/file_selector_android.dart' as file_selector_android;

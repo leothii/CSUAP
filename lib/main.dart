@@ -1,3 +1,6 @@
+import 'dart:ui' show AppExitResponse;
+import 'unsaved_page_guard.dart';
+import 'photo_processor.dart';
 import 'cloaking_progress.dart';
 import 'photo_terms.dart';
 import 'result_insights.dart';
@@ -690,13 +693,130 @@ class _ComparisonClipper extends CustomClipper<Rect> {
 }
 
 class ProtectionScreen extends StatefulWidget {
-  const ProtectionScreen({super.key, this.photoPicker});
+  const ProtectionScreen({super.key, this.photoPicker, this.photoProcessor});
   final Future<XFile?> Function(ImageSource source)? photoPicker;
+  final PhotoProcessor? photoProcessor;
   @override
   State<ProtectionScreen> createState() => _ProtectionScreenState();
 }
 
-class _ProtectionScreenState extends State<ProtectionScreen> {
+class _ProtectionScreenState extends State<ProtectionScreen>
+    with WidgetsBindingObserver {
+  late final processor = widget.photoProcessor ?? PhotoProcessor();
+  final pageGuard = UnsavedPageGuard();
+  bool resultSaved = false, downloadStarted = false;
+  bool confirming = false, allowLeave = false;
+  int generation = 0;
+  bool get hasUnsavedResult => result != null && !resultSaved;
+
+  Future<bool> confirmAction(
+      String title, String message, String action) async {
+    if (confirming || !mounted) return false;
+    setState(() => confirming = true);
+    try {
+      return await showDialog<bool>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                    title: Text(title),
+                    scrollable: true,
+                    content: Text(message),
+                    actions: [
+                      TextButton(
+                          autofocus: true,
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          child: const Text('Keep working')),
+                      FilledButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          child: Text(action)),
+                    ],
+                  )) ??
+          false;
+    } finally {
+      if (mounted) setState(() => confirming = false);
+    }
+  }
+
+  Future<bool> confirmDiscard(String action) async =>
+      !hasUnsavedResult ||
+      await confirmAction(
+          'Discard unsaved result?',
+          '$action will discard this result. Save your PNG first if you want to keep it.',
+          'Discard result');
+
+  Future<bool> confirmLeave() async {
+    if (exporting || picking || confirming) {
+      if (mounted && !confirming) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Please finish the current photo action before leaving.')));
+      }
+      return false;
+    }
+    if (busy) {
+      final leave = await confirmAction(
+          'Stop cloaking and leave?',
+          'This run will stop and its result will be discarded. Your original photo stays unchanged.',
+          'Stop & leave');
+      if (leave && mounted) cancelCloaking(notify: false);
+      return leave;
+    }
+    return confirmDiscard('Leaving the photo lab');
+  }
+
+  Future<void> requestLeave() async {
+    if (!await confirmLeave() || !mounted) return;
+    setState(() => allowLeave = true);
+    pageGuard.setActive(false);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Future<AppExitResponse> didRequestAppExit() async {
+    if (!await confirmLeave() || !mounted) return AppExitResponse.cancel;
+    pageGuard.setActive(false);
+    return AppExitResponse.exit;
+  }
+
+  void cancelCloaking({bool notify = true}) {
+    if (!busy) return;
+    generation++;
+    processor.cancelGeneration();
+    setState(() {
+      busy = false;
+      completedStages = 0;
+      error = null;
+    });
+    if (notify) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Cloaking cancelled. Your original photo is ready to try again.')));
+    }
+  }
+
+  Future<void> changeIntensity(double value) async {
+    if (locked || value == alpha) return;
+    if (!await confirmDiscard('Changing the intensity') || !mounted || locked) {
+      return;
+    }
+    setState(() {
+      alpha = value;
+      result = null;
+      resultSaved = false;
+      downloadStarted = false;
+    });
+    refreshPreview();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    pageGuard.dispose();
+    generation++;
+    processor.dispose();
+    super.dispose();
+  }
+
   Float32List? vector;
   Uint8List? source;
   LabResult? result;
@@ -714,6 +834,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     loadVector();
   }
 
@@ -743,6 +864,10 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   }
 
   Future<void> pick(ImageSource from) async {
+    if (locked || vector == null) return;
+    if (!await confirmDiscard('Choosing another photo') || !mounted || locked) {
+      return;
+    }
     setState(() {
       picking = true;
       error = null;
@@ -754,14 +879,15 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           ImagePicker().pickImage(source: from));
       if (photo == null) return;
       final bytes = await photo.readAsBytes();
-      final prepared = vector == null
-          ? null
-          : await compute(prepareCloakPreview, (bytes: bytes, vector: vector!));
+      final prepared =
+          vector == null ? null : await processor.prepare(bytes, vector!);
       if (mounted) {
         setState(() {
           source = bytes;
           filename = photo.name;
           result = null;
+          resultSaved = false;
+          downloadStarted = false;
           preview = prepared;
           previewBytes = null;
           previewAlpha = null;
@@ -769,6 +895,8 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
         });
         refreshPreview();
       }
+    } on FormatException catch (exception) {
+      if (mounted) setState(() => error = exception.message);
     } catch (_) {
       if (mounted) {
         setState(() => error =
@@ -810,47 +938,45 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   }
 
   Future<void> generate() async {
-    if (source == null || vector == null) return;
+    if (source == null || vector == null || locked) return;
+    if (!await confirmDiscard('Applying another cloak') || !mounted || locked) {
+      return;
+    }
+    final job = ++generation;
+    final bytes = source!;
+    final perturbation = vector!;
+    final intensity = alpha;
     setState(() {
       busy = true;
       completedStages = 0;
-
       error = null;
       result = null;
+      resultSaved = false;
+      downloadStarted = false;
     });
     try {
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-      final clean = await compute(preparePhoto, source!);
-      if (!mounted) return;
-      setState(() {
-        completedStages = 1;
+      final output = await processor.generate(bytes, perturbation, intensity,
+          onStage: (stage) {
+        if (mounted && job == generation) {
+          setState(() => completedStages = stage);
+        }
       });
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-      final cloaked = await compute(
-          cloakPhoto, (bytes: clean, vector: vector!, alpha: alpha));
-      if (!mounted) return;
-      setState(() {
-        completedStages = 2;
-      });
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-      final output =
-          await compute(inspectPhoto, (clean: clean, output: cloaked));
-      if (mounted) {
+      if (mounted && job == generation) {
         setState(() {
           result = output;
           completedStages = 3;
         });
       }
-    } catch (_) {
-      if (mounted) {
-        setState(() =>
-            error = 'Could not process this image. Try a smaller PNG or JPEG.');
+    } on PhotoProcessingCancelled {
+      // Cancellation is expected; late results cannot replace a newer run.
+    } catch (failure) {
+      if (mounted && job == generation) {
+        setState(() => error = failure is FormatException
+            ? failure.message
+            : 'Could not process this image. Try a smaller PNG or JPEG.');
       }
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (mounted && job == generation) setState(() => busy = false);
     }
   }
 
@@ -860,7 +986,10 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     final box = buttonContext.findRenderObject() as RenderBox?;
     final origin =
         box == null ? null : box.localToGlobal(Offset.zero) & box.size;
-    setState(() => exporting = true);
+    setState(() {
+      exporting = true;
+      error = null;
+    });
     try {
       if (share) {
         await Share.shareXFiles([await createShareImageFile(output.output)],
@@ -889,9 +1018,17 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
           await file.saveTo(destination.path);
         }
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Cloaked PNG exported.')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(kIsWeb
+                  ? 'Download started. Confirm once your PNG is saved.'
+                  : 'Cloaked PNG exported.')));
         }
+      }
+      if (!share && mounted && identical(result, output)) {
+        setState(() {
+          resultSaved = !kIsWeb;
+          downloadStarted = kIsWeb;
+        });
       }
     } catch (_) {
       if (mounted) {
@@ -903,188 +1040,203 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     }
   }
 
-  bool get locked => busy || exporting || picking;
+  bool get locked => busy || exporting || picking || confirming;
   @override
-  Widget build(BuildContext context) =>
-      PageShell(label: '01 / PHOTO LAB', children: [
-        eyebrow('YOUR PHOTO. YOUR SIGNAL.'),
-        const SizedBox(height: 10),
-        Text('A little less readable.\nStill entirely you.',
-            style: Theme.of(context).textTheme.headlineLarge),
-        const SizedBox(height: 12),
-        Text('Choose a photo. Tune the cloak. Compare the pixels.',
-            style: TextStyle(color: context.pixelColors.muted)),
-        const SizedBox(height: 24),
-        CloakingSteps(
-            currentStep: result != null
-                ? 2
-                : source != null
-                    ? 1
-                    : 0),
-        const SizedBox(height: 24),
-        if (loading) const LinearProgressIndicator(),
-        if (!loading && vector == null)
-          TextButton(
-              onPressed: loadVector,
-              child: const Text('Retry loading perturbation',
-                  style: TextStyle(fontFamily: 'VT323', fontSize: 18))),
-        if (source == null)
-          Container(
-            decoration: BoxDecoration(
-              color: context.pixelColors.surface,
-              border: Border.all(color: context.pixelColors.edge),
-            ),
-            child: Column(children: [
-              Container(
-                width: double.infinity,
-                color: context.pixelColors.green,
-                padding: const EdgeInsets.all(12),
-                child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
+  Widget build(BuildContext context) {
+    pageGuard.setActive(!allowLeave && (hasUnsavedResult || busy || exporting));
+    return PopScope<void>(
+        canPop: allowLeave ||
+            (!hasUnsavedResult &&
+                !busy &&
+                !exporting &&
+                !picking &&
+                !confirming),
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) requestLeave();
+        },
+        child: PageShell(label: '01 / PHOTO LAB', children: [
+          eyebrow('YOUR PHOTO. YOUR SIGNAL.'),
+          const SizedBox(height: 10),
+          Text('A little less readable.\nStill entirely you.',
+              style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 12),
+          Text('Choose a photo. Tune the cloak. Compare the pixels.',
+              style: TextStyle(color: context.pixelColors.muted)),
+          const SizedBox(height: 24),
+          CloakingSteps(
+              currentStep: result != null
+                  ? 2
+                  : source != null
+                      ? 1
+                      : 0),
+          const SizedBox(height: 24),
+          if (loading) const LinearProgressIndicator(),
+          if (!loading && vector == null)
+            TextButton(
+                onPressed: loadVector,
+                child: const Text('Retry loading perturbation',
+                    style: TextStyle(fontFamily: 'VT323', fontSize: 18))),
+          if (source == null)
+            Container(
+              decoration: BoxDecoration(
+                color: context.pixelColors.surface,
+                border: Border.all(color: context.pixelColors.edge),
               ),
-              const SizedBox(height: 30),
-              Container(
-                width: 112,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: context.pixelColors.background,
-                  border: Border.all(
-                      color: context.pixelColors.foreground, width: 4),
-                  boxShadow: [
-                    BoxShadow(
-                        color: context.pixelColors.gold,
-                        offset: const Offset(8, 8))
-                  ],
+              child: Column(children: [
+                Container(
+                  width: double.infinity,
+                  color: context.pixelColors.green,
+                  padding: const EdgeInsets.all(12),
+                  child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
                 ),
-                child: Center(
-                    child: PixelIcon(Icons.add_photo_alternate_outlined,
-                        size: 64, color: context.pixelColors.muted)),
-              ),
-              const SizedBox(height: 30),
-              const Text('Start with something worth keeping.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              photoButtons(),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                    'Processed on your device. Original stays untouched.',
+                const SizedBox(height: 30),
+                Container(
+                  width: 112,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: context.pixelColors.background,
+                    border: Border.all(
+                        color: context.pixelColors.foreground, width: 4),
+                    boxShadow: [
+                      BoxShadow(
+                          color: context.pixelColors.gold,
+                          offset: const Offset(8, 8))
+                    ],
+                  ),
+                  child: Center(
+                      child: PixelIcon(Icons.add_photo_alternate_outlined,
+                          size: 64, color: context.pixelColors.muted)),
+                ),
+                const SizedBox(height: 30),
+                const Text('Start with something worth keeping.',
                     textAlign: TextAlign.center,
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                photoButtons(),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                      'Processed on your device. Original stays untouched.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: context.pixelColors.muted, fontSize: 16)),
+                ),
+              ]),
+            )
+          else ...[
+            Container(
+              color: context.pixelColors.surface,
+              padding: const EdgeInsets.all(12),
+              child: Row(children: [
+                const Icon(Icons.image_outlined, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: Text(filename,
+                        maxLines: 1, overflow: TextOverflow.ellipsis)),
+                const SizedBox(width: 8),
+                eyebrow(result != null
+                    ? 'READY'
+                    : busy
+                        ? 'WORKING'
+                        : 'LIVE PREVIEW'),
+              ]),
+            ),
+            if (result != null)
+              PhotoComparison(clean: result!.clean, output: result!.output)
+            else
+              Container(
+                color: context.pixelColors.surface,
+                height: 320,
+                width: double.infinity,
+                child: Image.memory(previewBytes ?? source!,
+                    gaplessPlayback: true,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, e, s) => const Center(
+                        child:
+                            Text('Preview unavailable. Try a PNG or JPEG.'))),
+              ),
+            if (result == null && !busy)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                    previewError ??
+                        (previewAlpha == null
+                            ? 'Preparing live preview…'
+                            : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
                     style: TextStyle(
                         color: context.pixelColors.muted, fontSize: 16)),
               ),
-            ]),
-          )
-        else ...[
-          Container(
-            color: context.pixelColors.surface,
-            padding: const EdgeInsets.all(12),
-            child: Row(children: [
-              const Icon(Icons.image_outlined, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Text(filename,
-                      maxLines: 1, overflow: TextOverflow.ellipsis)),
-              const SizedBox(width: 8),
-              eyebrow(result != null
-                  ? 'READY'
-                  : busy
-                      ? 'WORKING'
-                      : 'LIVE PREVIEW'),
-            ]),
-          ),
-          if (result != null)
-            PhotoComparison(clean: result!.clean, output: result!.output)
-          else
-            Container(
-              color: context.pixelColors.surface,
-              height: 320,
-              width: double.infinity,
-              child: Image.memory(previewBytes ?? source!,
-                  gaplessPlayback: true,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, e, s) => const Center(
-                      child: Text('Preview unavailable. Try a PNG or JPEG.'))),
-            ),
-          if (result == null && !busy)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                  previewError ??
-                      (previewAlpha == null
-                          ? 'Preparing live preview…'
-                          : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
-                  style: TextStyle(
-                      color: context.pixelColors.muted, fontSize: 16)),
-            ),
-          const SizedBox(height: 18),
-          Panel(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Expanded(child: eyebrow('CLOAK INTENSITY')),
-                Text('${(alpha * 100).round()}%',
-                    style: const TextStyle(fontSize: 30)),
-              ]),
-              Slider(
-                key: const ValueKey('cloak-intensity'),
-                value: alpha,
-                divisions: 100,
-                label: '${(alpha * 100).round()}%',
-                semanticFormatterCallback: (value) =>
-                    '${(value * 100).round()} percent intensity',
-                onChanged: locked
-                    ? null
-                    : (value) {
-                        setState(() {
-                          alpha = value;
-                          result = null;
-                        });
-                        refreshPreview();
-                      },
-              ),
-              const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [Text('Subtle'), Text('Full vector')]),
-              const SizedBox(height: 12),
-              Text(
-                  'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
-                  style: TextStyle(
-                      fontSize: 16, color: context.pixelColors.muted)),
-              const SizedBox(height: 18),
-              SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: locked || vector == null ? null : generate,
-                    icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-                    label: Text(busy
-                        ? 'Cloaking ${(completedStages / 3 * 100).round()}%'
-                        : 'Apply cloak'),
-                  )),
-              const SizedBox(height: 10),
-              if (busy || result != null) ...[
-                CloakingProgress(completedStages: completedStages),
+            const SizedBox(height: 18),
+            Panel(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Expanded(child: eyebrow('CLOAK INTENSITY')),
+                  Text('${(alpha * 100).round()}%',
+                      style: const TextStyle(fontSize: 30)),
+                ]),
+                Slider(
+                  key: const ValueKey('cloak-intensity'),
+                  value: alpha,
+                  divisions: 100,
+                  label: '${(alpha * 100).round()}%',
+                  semanticFormatterCallback: (value) =>
+                      '${(value * 100).round()} percent intensity',
+                  onChanged: locked ? null : changeIntensity,
+                ),
+                const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [Text('Subtle'), Text('Full vector')]),
                 const SizedBox(height: 12),
+                Text(
+                    'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
+                    style: TextStyle(
+                        fontSize: 16, color: context.pixelColors.muted)),
+                const SizedBox(height: 18),
+                SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: locked || vector == null ? null : generate,
+                      icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                      label: Text(busy
+                          ? 'Cloaking ${(completedStages / 3 * 100).round()}%'
+                          : 'Apply cloak'),
+                    )),
+                const SizedBox(height: 10),
+                if (busy || result != null) ...[
+                  CloakingProgress(completedStages: completedStages),
+                  if (busy)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: OutlinedButton.icon(
+                          onPressed: cancelCloaking,
+                          icon: const Icon(Icons.stop_circle_outlined),
+                          label: const Text('Cancel cloaking')),
+                    ),
+                  const SizedBox(height: 12),
+                ],
+                Center(child: photoButtons()),
               ],
-              Center(child: photoButtons()),
-            ],
-          )),
-        ],
-        if (exporting || picking)
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: LinearProgressIndicator()),
-        if (error != null)
-          Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Semantics(
-                  liveRegion: true,
-                  child: Text(error!,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.error)))),
-        if (result != null) ...results(context),
-      ]);
+            )),
+          ],
+          if (exporting || picking)
+            const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: LinearProgressIndicator()),
+          if (error != null)
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Semantics(
+                    liveRegion: true,
+                    child: Text(error!,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)))),
+          if (result != null) ...results(context),
+        ]));
+  }
+
   Widget photoButtons() => Wrap(
           alignment: WrapAlignment.center,
           spacing: 12,
@@ -1110,6 +1262,20 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     final r = result!;
     return [
       const SizedBox(height: 32),
+      Text(resultSaved ? 'PNG saved' : 'Unsaved result',
+          style: TextStyle(color: context.pixelColors.muted)),
+      const SizedBox(height: 12),
+      if (kIsWeb && downloadStarted && !resultSaved) ...[
+        const Text('Once your PNG has downloaded, mark this result as saved.'),
+        Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed:
+                  locked ? null : () => setState(() => resultSaved = true),
+              child: const Text('Mark as saved'),
+            )),
+        const SizedBox(height: 16),
+      ],
       ResultInsights(
           result: r,
           alpha: alpha,

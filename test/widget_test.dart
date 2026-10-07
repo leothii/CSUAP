@@ -60,6 +60,15 @@ void main() {
     expect(find.textContaining('Structure'), findsOneWidget);
     expect(find.text('Save PNG'), findsOneWidget);
     tester.widget<Slider>(slider).onChanged!(.8);
+    await tester.pumpAndSettle();
+    expect(find.text('Discard unsaved result?'), findsOneWidget);
+    expect(find.text('Save PNG'), findsOneWidget);
+    await tester.tap(find.text('Keep working'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Slider>(slider).value, 0);
+    tester.widget<Slider>(slider).onChanged!(.8);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Discard result'));
     await tester.pump();
     expect(find.text('Save PNG'), findsNothing);
     expect(find.text('Your photo, explained'), findsNothing);

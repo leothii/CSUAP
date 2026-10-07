@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'pixel_art.dart';
 export 'pixel_art.dart';
 
-ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
+ThemeData pixelTheme(
+    [Brightness brightness = Brightness.light, bool readableText = false]) {
+  final bodyFont = readableText ? 'Rajdhani' : 'VT323';
   final palette = PixelPalette(brightness);
   final pixelBackground = palette.background,
       pixelSurface = palette.surface,
@@ -14,33 +16,26 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
       pixelEdge = palette.edge;
   final base = ThemeData(brightness: brightness, useMaterial3: true);
   final body = base.textTheme
-      .apply(fontFamily: 'VT323')
+      .apply(fontFamily: bodyFont)
       .apply(bodyColor: pixelCream, displayColor: pixelCream);
   final shortText = TextStyle(
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    height: 1.5,
-    color: pixelCream,
-  );
+      fontFamily: readableText ? bodyFont : 'PressStart2P',
+      fontSize: readableText ? 16 : 10,
+      fontWeight: readableText ? FontWeight.w600 : FontWeight.normal,
+      height: 1.5,
+      color: pixelCream);
   final button = ButtonStyle(
-    backgroundColor: WidgetStateProperty.resolveWith(
-      (states) =>
-          states.contains(WidgetState.disabled) ? pixelSurface : pixelGold,
-    ),
-    foregroundColor: WidgetStateProperty.resolveWith(
-      (states) =>
-          states.contains(WidgetState.disabled) ? pixelMuted : pixelCream,
-    ),
-    side: WidgetStateProperty.resolveWith(
-      (states) => BorderSide(
-        width: 1,
-        color:
-            states.contains(WidgetState.focused) ||
+    minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+    backgroundColor: WidgetStateProperty.resolveWith((states) =>
+        states.contains(WidgetState.disabled) ? pixelSurface : pixelGold),
+    foregroundColor: WidgetStateProperty.resolveWith((states) =>
+        states.contains(WidgetState.disabled) ? pixelMuted : pixelCream),
+    side: WidgetStateProperty.resolveWith((states) => BorderSide(
+        width: states.contains(WidgetState.focused) ? 3 : 1,
+        color: states.contains(WidgetState.focused) ||
                 states.contains(WidgetState.hovered)
             ? pixelCream
-            : pixelEdge,
-      ),
-    ),
+            : pixelEdge)),
     shape: const WidgetStatePropertyAll(BeveledRectangleBorder()),
     elevation: const WidgetStatePropertyAll(0),
     shadowColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -50,134 +45,114 @@ ThemeData pixelTheme([Brightness brightness = Brightness.light]) {
   return base.copyWith(
     scaffoldBackgroundColor: pixelBackground,
     splashFactory: NoSplash.splashFactory,
+    focusColor: pixelCream.withValues(alpha: .2),
+    iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+      foregroundColor: WidgetStatePropertyAll(pixelCream),
+      side: WidgetStateProperty.resolveWith((states) => BorderSide(
+            color: states.contains(WidgetState.focused)
+                ? pixelCream
+                : Colors.transparent,
+            width: 2,
+          )),
+    )),
     colorScheme: ColorScheme(
-      brightness: brightness,
-      primary: pixelGold,
-      onPrimary: pixelCream,
-      secondary: pixelGreen,
-      onSecondary: pixelCream,
-      surface: pixelSurface,
-      onSurface: pixelCream,
-      error: pixelCoral,
-      onError: pixelCream,
-    ),
+        brightness: brightness,
+        primary: pixelGold,
+        onPrimary: pixelCream,
+        secondary: pixelGreen,
+        onSecondary: pixelCream,
+        surface: pixelSurface,
+        onSurface: pixelCream,
+        error: pixelCoral,
+        onError: pixelCream),
     textTheme: body.copyWith(
       // Long editorial headings use the readable pixel face; short titles/logo
       // use Press Start 2P locally to avoid dense, overflowing text blocks.
       headlineLarge: TextStyle(
-        fontFamily: 'VT323',
-        fontSize: 44,
-        height: 1.02,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -2,
-        color: pixelCream,
-      ),
+          fontFamily: 'VT323',
+          fontSize: 44,
+          height: 1.02,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -2,
+          color: pixelCream),
       headlineMedium: TextStyle(
-        fontFamily: 'PressStart2P',
-        fontSize: 20,
-        color: pixelCream,
-      ),
+          fontFamily: 'PressStart2P', fontSize: 20, color: pixelCream),
       headlineSmall: TextStyle(
-        fontFamily: 'PressStart2P',
-        fontSize: 16,
-        color: pixelCream,
-      ),
+          fontFamily: 'PressStart2P', fontSize: 16, color: pixelCream),
       bodyMedium: TextStyle(
-        fontFamily: 'VT323',
-        fontSize: 20,
-        height: 1.125,
-        color: pixelCream,
-      ),
+          fontFamily: bodyFont,
+          fontSize: 20,
+          fontWeight: readableText ? FontWeight.w500 : FontWeight.normal,
+          height: readableText ? 1.4 : 1.125,
+          color: pixelCream),
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: pixelBackground,
-      foregroundColor: pixelCream,
-      surfaceTintColor: Colors.transparent,
-      titleTextStyle: TextStyle(
-        fontFamily: 'PressStart2P',
-        fontSize: 18,
-        color: pixelCream,
-      ),
-    ),
+        backgroundColor: pixelBackground,
+        foregroundColor: pixelCream,
+        surfaceTintColor: Colors.transparent,
+        titleTextStyle: TextStyle(
+            fontFamily: 'PressStart2P', fontSize: 18, color: pixelCream)),
     actionIconTheme: ActionIconThemeData(
-      backButtonIconBuilder: (_) => const PixelIcon(Icons.arrow_back),
-    ),
+        backButtonIconBuilder: (_) => const PixelIcon(Icons.arrow_back)),
     filledButtonTheme: FilledButtonThemeData(
-      style: button.copyWith(
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(horizontal: 22, vertical: 19),
-        ),
-      ),
-    ),
+        style: button.copyWith(
+            padding: const WidgetStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: 22, vertical: 19)))),
     outlinedButtonTheme: OutlinedButtonThemeData(style: button),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: pixelCream,
-        shape: const BeveledRectangleBorder(),
-        textStyle: shortText,
-      ),
-    ),
+        style: TextButton.styleFrom(
+                minimumSize: const Size(48, 48),
+                foregroundColor: pixelCream,
+                shape: const BeveledRectangleBorder(),
+                textStyle: shortText)
+            .copyWith(side: button.side)),
     iconTheme: IconThemeData(color: pixelCream),
     dividerTheme: DividerThemeData(color: pixelGreen, thickness: 2),
     chipTheme: base.chipTheme.copyWith(
-      backgroundColor: pixelSurface,
-      selectedColor: pixelGreen,
-      disabledColor: pixelSurface,
-      shape: const BeveledRectangleBorder(),
-      side: BorderSide(color: pixelEdge, width: 1),
-      checkmarkColor: pixelCream,
-      labelStyle: TextStyle(
-        fontFamily: 'VT323',
-        fontSize: 16,
-        color: pixelCream,
-      ),
-      elevation: 0,
-      pressElevation: 0,
-      shadowColor: Colors.transparent,
-      secondaryLabelStyle: TextStyle(
-        fontFamily: 'VT323',
-        fontSize: 16,
-        color: pixelCream,
-      ),
-    ),
+        backgroundColor: pixelSurface,
+        selectedColor: pixelGreen,
+        disabledColor: pixelSurface,
+        shape: const BeveledRectangleBorder(),
+        side: BorderSide(color: pixelEdge, width: 1),
+        checkmarkColor: pixelCream,
+        labelStyle:
+            TextStyle(fontFamily: bodyFont, fontSize: 16, color: pixelCream),
+        elevation: 0,
+        pressElevation: 0,
+        shadowColor: Colors.transparent,
+        secondaryLabelStyle:
+            TextStyle(fontFamily: bodyFont, fontSize: 16, color: pixelCream)),
     expansionTileTheme: ExpansionTileThemeData(
-      iconColor: pixelCream,
-      collapsedIconColor: pixelMuted,
-      textColor: pixelCream,
-      collapsedTextColor: pixelCream,
-    ),
+        iconColor: pixelCream,
+        collapsedIconColor: pixelMuted,
+        textColor: pixelCream,
+        collapsedTextColor: pixelCream),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: pixelGreen,
-      linearTrackColor: pixelEdge,
-      borderRadius: BorderRadius.zero,
-    ),
+        color: palette.chartGreen,
+        linearTrackColor: pixelEdge,
+        borderRadius: BorderRadius.zero),
     sliderTheme: base.sliderTheme.copyWith(
-      trackHeight: 8,
-      activeTrackColor: pixelGold,
-      inactiveTrackColor: pixelEdge,
-      thumbColor: pixelGreen,
-      trackShape: const RectangularSliderTrackShape(),
-      thumbShape: const PixelThumbShape(),
-      overlayShape: SliderComponentShape.noOverlay,
-      valueIndicatorColor: pixelSurface,
-      valueIndicatorTextStyle: TextStyle(
-        fontFamily: 'VT323',
-        color: pixelCream,
-      ),
-      valueIndicatorShape: const RectangularSliderValueIndicatorShape(),
-    ),
+        trackHeight: 8,
+        activeTrackColor: palette.chartGold,
+        inactiveTrackColor: pixelEdge,
+        thumbColor: palette.chartGreen,
+        trackShape: const RectangularSliderTrackShape(),
+        thumbShape: const PixelThumbShape(),
+        overlayColor: pixelCream.withValues(alpha: .2),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
+        valueIndicatorColor: pixelSurface,
+        valueIndicatorTextStyle:
+            TextStyle(fontFamily: 'VT323', color: pixelCream),
+        valueIndicatorShape: const RectangularSliderValueIndicatorShape()),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: pixelSurface,
-      shape: BeveledRectangleBorder(
-        side: BorderSide(color: pixelCoral, width: 1),
-      ),
-      elevation: 0,
-      contentTextStyle: TextStyle(
-        fontFamily: 'VT323',
-        fontSize: 20,
-        color: pixelCream,
-      ),
-    ),
+        backgroundColor: pixelSurface,
+        shape: BeveledRectangleBorder(
+            side: BorderSide(color: pixelCoral, width: 1)),
+        elevation: 0,
+        contentTextStyle:
+            TextStyle(fontFamily: 'VT323', fontSize: 20, color: pixelCream)),
   );
 }
 
@@ -203,13 +178,10 @@ class PixelThumbShape extends SliderComponentShape {
     context.canvas.save();
     context.canvas.translate(center.dx - 9, center.dy - 11);
     PixelBevelPainter(
-      fill: Color.lerp(
-        pixelMuted,
-        sliderTheme.thumbColor ?? pixelGreen,
-        enableAnimation.value,
-      )!,
-      accent: pixelCream,
-    ).paint(context.canvas, const Size(18, 22));
+            fill: Color.lerp(pixelMuted, sliderTheme.thumbColor ?? pixelGreen,
+                enableAnimation.value)!,
+            accent: sliderTheme.valueIndicatorTextStyle?.color ?? pixelCream)
+        .paint(context.canvas, const Size(18, 22));
     context.canvas.restore();
   }
 }

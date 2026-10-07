@@ -9,6 +9,72 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets(
+      'readable text toggles without leaving the page and survives restart',
+      (tester) async {
+    await tester.pumpWidget(const AppThemeHost(home: ProtectionScreen()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Appearance'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+        find.widgetWithText(CheckedPopupMenuItem<ThemeMode>, 'Readable text'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProtectionScreen), findsOneWidget);
+    final theme = Theme.of(tester.element(find.byType(ProtectionScreen)));
+    expect(theme.textTheme.bodyMedium!.fontFamily, 'Rajdhani');
+    expect(theme.textTheme.headlineMedium!.fontFamily, 'PressStart2P');
+    expect(
+        (await SharedPreferences.getInstance())
+            .getBool('appearance.readableText'),
+        true);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(const AppThemeHost(home: ProtectionScreen()));
+    await tester.pumpAndSettle();
+    expect(
+        Theme.of(tester.element(find.byType(ProtectionScreen)))
+            .textTheme
+            .bodyMedium!
+            .fontFamily,
+        'Rajdhani');
+    await tester.tap(find.byTooltip('Appearance'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+        find.widgetWithText(CheckedPopupMenuItem<ThemeMode>, 'Readable text'));
+    await tester.pumpAndSettle();
+    expect(
+        Theme.of(tester.element(find.byType(ProtectionScreen)))
+            .textTheme
+            .bodyMedium!
+            .fontFamily,
+        'VT323');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('readable text fits narrow screens with enlarged text',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    for (final screen in [
+      const MainMenuScreen(),
+      const ProtectionScreen(),
+      const GuideScreen(),
+      const DocsScreen(),
+      const CreditsScreen()
+    ]) {
+      await tester.pumpWidget(MaterialApp(
+        theme: pixelTheme(Brightness.light, true),
+        home: MediaQuery(
+            data: const MediaQueryData(
+                size: Size(320, 900), textScaler: TextScaler.linear(1.5)),
+            child: screen),
+      ));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('theme restores, changes on a nested route, and persists',
       (tester) async {
     SharedPreferences.setMockInitialValues({'appearance.themeMode': 'dark'});

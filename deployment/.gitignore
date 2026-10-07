@@ -21,3 +21,7 @@ android/.gradle/
 ios/Flutter/Generated.xcconfig
 ios/Flutter/flutter_export_environment.sh
 
+
+# Regenerable worker compiler metadata and local browser fixtures
+/web/photo_worker.js.deps
+/build/worker-check/

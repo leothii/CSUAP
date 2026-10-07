@@ -1,39 +1,9 @@
-import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
+import 'photo_processor.dart';
+export 'pixel_histogram.dart' show pixelChangeHistogram;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:image/image.dart' as img;
 import 'lab_processing.dart';
 import 'pixel_theme.dart';
-
-/// Six bins of mean absolute RGB change, sampled on a uniform image grid.
-List<int> pixelChangeHistogram(({Uint8List clean, Uint8List output}) data) {
-  final a = img.decodePng(data.clean)!;
-  final b = img.decodePng(data.output)!;
-  if (a.width != b.width || a.height != b.height) {
-    throw ArgumentError('Image dimensions must match');
-  }
-  final counts = List.filled(6, 0);
-  final step = math.max(1, math.sqrt(a.width * a.height / 65536).ceil());
-  for (var y = 0; y < a.height; y += step) {
-    for (var x = 0; x < a.width; x += step) {
-      final p = a.getPixel(x, y), q = b.getPixel(x, y);
-      final d = ((p.r - q.r).abs() + (p.g - q.g).abs() + (p.b - q.b).abs()) / 3;
-      counts[d == 0
-          ? 0
-          : d <= 2
-              ? 1
-              : d <= 5
-                  ? 2
-                  : d <= 10
-                      ? 3
-                      : d <= 20
-                          ? 4
-                          : 5]++;
-    }
-  }
-  return counts;
-}
 
 class ResultInsights extends StatefulWidget {
   const ResultInsights(
@@ -50,6 +20,7 @@ class ResultInsights extends StatefulWidget {
 
 class _ResultInsightsState extends State<ResultInsights> {
   final controller = PageController();
+  final processor = PhotoProcessor();
   int page = 0;
   late Future<List<int>> histogram;
   static const titles = [
@@ -65,8 +36,7 @@ class _ResultInsightsState extends State<ResultInsights> {
   }
 
   void loadHistogram() {
-    histogram = compute(pixelChangeHistogram,
-        (clean: widget.result.clean, output: widget.result.output));
+    histogram = processor.histogram(widget.result.clean, widget.result.output);
   }
 
   @override
@@ -77,12 +47,19 @@ class _ResultInsightsState extends State<ResultInsights> {
 
   @override
   void dispose() {
+    processor.dispose();
     controller.dispose();
     super.dispose();
   }
 
-  void go(int index) => controller.animateToPage(index,
-      duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+  void go(int index) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      controller.jumpToPage(index);
+    } else {
+      controller.animateToPage(index,
+          duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    }
+  }
 
   final Map<int, double> heights = {};
 
@@ -119,9 +96,13 @@ class _ResultInsightsState extends State<ResultInsights> {
                   'Histogram unavailable. You can still explore your quality scores.');
             }
             if (!snapshot.hasData) {
-              return const SizedBox(
+              return SizedBox(
                   height: 240,
-                  child: Center(child: CircularProgressIndicator()));
+                  child: Center(
+                      child: MediaQuery.disableAnimationsOf(context)
+                          ? const Text('Loading pixel changes')
+                          : const CircularProgressIndicator(
+                              semanticsLabel: 'Loading pixel changes')));
             }
             final bins = snapshot.data!;
             final total = bins.fold<int>(0, (a, b) => a + b);
@@ -139,13 +120,15 @@ class _ResultInsightsState extends State<ResultInsights> {
                   note('SHARE OF SAMPLED PIXELS'),
                   const SizedBox(height: 16),
                   SizedBox(
-                      height: 210,
+                      height: 180 +
+                          MediaQuery.textScalerOf(context).scale(18) * 1.5,
                       child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             for (var i = 0; i < bins.length; i++)
                               Expanded(
                                   child: Semantics(
+                                excludeSemantics: true,
                                 label:
                                     '${labels[i]} RGB change: ${(bins[i] / total * 100).toStringAsFixed(1)} percent of sampled pixels',
                                 child: Column(
@@ -162,8 +145,8 @@ class _ResultInsightsState extends State<ResultInsights> {
                                             horizontal: 5),
                                         height: 170 * bins[i] / total,
                                         color: i == 0
-                                            ? context.pixelColors.green
-                                            : context.pixelColors.gold,
+                                            ? context.pixelColors.chartGreen
+                                            : context.pixelColors.chartGold,
                                       ),
                                     ]),
                               )),
@@ -212,12 +195,9 @@ class _ResultInsightsState extends State<ResultInsights> {
       const Text('Your photo, explained',
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
       const SizedBox(height: 8),
-      note('Swipe to explore quality, pixel changes, and details.'),
+      note('Swipe or use the buttons to explore your results.'),
       const SizedBox(height: 24),
-      AnimatedSize(
-        duration: const Duration(milliseconds: 220),
-        alignment: Alignment.topCenter,
-        curve: Curves.easeOut,
+      resizePage(
         child: SizedBox(
           height: heights[page] ?? 560,
           child: PageView(
@@ -250,45 +230,48 @@ class _ResultInsightsState extends State<ResultInsights> {
             onPressed: page > 0 ? () => go(page - 1) : null,
             icon: const Icon(Icons.chevron_left)),
         Expanded(
-            child: Column(children: [
-          Semantics(
-              liveRegion: true,
-              child: Text('${titles[page]}  \u00b7  ${page + 1} / 4',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18))),
-          const SizedBox(height: 4),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            for (var i = 0; i < titles.length; i++)
-              Semantics(
-                  selected: i == page,
-                  child: Tooltip(
-                      message: titles[i],
-                      child: InkWell(
-                        onTap: () => go(i),
-                        child: SizedBox(
-                            width: 36,
-                            height: 32,
-                            child: Center(
-                                child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              width: i == page ? 22 : 6,
-                              height: 6,
-                              color: i == page
-                                  ? context.pixelColors.foreground
-                                  : context.pixelColors.edge,
-                            ))),
-                      ))),
-          ]),
-        ])),
+            child: Semantics(
+                liveRegion: true,
+                child: Text('${titles[page]}  \u00b7  ${page + 1} / 4',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 18)))),
         IconButton(
             tooltip: 'Next insight',
             onPressed: page < 3 ? () => go(page + 1) : null,
             icon: const Icon(Icons.chevron_right)),
       ]),
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        for (var i = 0; i < titles.length; i++)
+          Semantics(
+              selected: i == page,
+              child: IconButton(
+                tooltip: '${titles[i]}, page ${i + 1} of 4',
+                onPressed: () => go(i),
+                icon: AnimatedContainer(
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 180),
+                  width: i == page ? 22 : 6,
+                  height: 6,
+                  color: i == page
+                      ? context.pixelColors.foreground
+                      : context.pixelColors.muted,
+                ),
+              )),
+      ]),
       const SizedBox(height: 16),
       Center(child: note('Visual quality does not measure AI protection.')),
     ]);
   }
+
+  Widget resizePage({required Widget child}) =>
+      MediaQuery.disableAnimationsOf(context)
+          ? child
+          : AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              alignment: Alignment.topCenter,
+              curve: Curves.easeOut,
+              child: child);
 
   Widget note(String text) => Text(text,
       style: TextStyle(
@@ -348,7 +331,7 @@ class _ResultInsightsState extends State<ResultInsights> {
                     Container(
                         height: 10,
                         width: box.maxWidth * fraction,
-                        color: context.pixelColors.green),
+                        color: context.pixelColors.chartGreen),
                     Positioned(
                         left: (box.maxWidth - 2) * (target - min) / (max - min),
                         child: Container(

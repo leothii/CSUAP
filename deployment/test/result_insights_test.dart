@@ -69,7 +69,7 @@ void main() {
     expect(accepted, true);
   });
 
-  testWidgets('mobile insights support swipes and arrows without overflow', (
+  testWidgets('readable mobile insights support swipes and arrows without overflow', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 850);
@@ -81,7 +81,7 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
-        theme: pixelTheme(Brightness.dark),
+        theme: pixelTheme(Brightness.dark, true),
         home: Scaffold(
           body: SingleChildScrollView(
             child: ResultInsights(

@@ -1,4 +1,4 @@
-// @dart=3.0
+// @dart=3.4
 // Flutter web bootstrap script for package:csuap/main.dart.
 //
 // Generated file. Do not edit.

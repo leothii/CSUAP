@@ -24,6 +24,8 @@ flutter precache --web
 flutter pub get --enforce-lockfile
 flutter analyze --no-pub
 flutter test --no-pub
+dart compile js -O2 --no-source-maps -o web/photo_worker.js lib/photo_worker.dart
 flutter build web --release --no-pub --no-web-resources-cdn
 test -s build/web/main.dart.js
 test -s build/web/assets/assets/cs_uap_v_f32_hwc.bin
+test -s build/web/photo_worker.js

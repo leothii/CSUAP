@@ -8,3 +8,7 @@ data/MS-COCO/train2017/*
 !data/MS-COCO/annotations/.gitkeep
 !data/MS-COCO/processed_portraits/.gitkeep
 !data/MS-COCO/train2017/.gitkeep
+
+# Regenerable worker compiler metadata and local browser fixtures
+/web/photo_worker.js.deps
+/build/worker-check/

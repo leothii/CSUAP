@@ -258,3 +258,49 @@ reported separately from the study's aggregate results. Preserve input hashes,
 manifests, model versions, settings, and split definitions when reproducing or
 comparing experiments.
 
+
+
+### Background photo processing in browsers
+
+Full-resolution photo preparation, cloaking, and histogram calculations run in a
+local browser worker. Stage updates return to Flutter while the interface stays
+available. Native apps continue to use background isolates. Photos stay on the
+device. If the worker fails to load, the app reports an error instead of silently
+running the full job on the browser UI thread.
+
+The generated `web/photo_worker.js` is included for local `flutter run` and web
+builds. After changing `lib/photo_worker.dart`, its protocol, or the image-processing
+functions it imports, regenerate it from the corresponding app directory:
+
+```shell
+dart compile js -O2 --no-source-maps -o web/photo_worker.js lib/photo_worker.dart
+flutter build web --release --no-pub --no-web-resources-cdn
+```
+
+The deployment build script regenerates the worker automatically. Browser checks
+compare synthetic-image pixels and metrics with native output and verify that
+main-thread timers continue during processing:
+
+```shell
+dart run tool/worker_fixture.dart
+dart compile js -O2 --no-source-maps -o build/worker-check/client.js tool/worker_client_check.dart
+python scripts/check_photo_worker.py .
+```
+
+The browser check requires Windows, Microsoft Edge, and Python's `websocket-client`.
+It also checks invalid input, screen disposal, and worker-loading failures.
+
+
+### Cancelling and keeping results
+
+Use **Cancel cloaking** to stop the current background job. The original photo
+remains loaded so you can adjust the intensity and retry. A cancelled job cannot
+replace the result from a later run.
+
+The photo lab asks before leaving, replacing a photo, changing intensity, or
+regenerating an unsaved output. A successful native PNG save clears the warning;
+cancelling or failing a save does not. Sharing alone does not confirm a local save.
+After a browser download finishes, use **Mark as saved** to clear the warning.
+Browser refresh/close protection uses the browser's standard confirmation where
+supported; forced shutdowns cannot be intercepted. Native app-exit requests also
+check for active processing or unsaved output.

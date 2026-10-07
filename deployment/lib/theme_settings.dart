@@ -13,6 +13,8 @@ class AppThemeHost extends StatefulWidget {
 class _AppThemeHostState extends State<AppThemeHost> {
   ThemeMode mode = ThemeMode.system;
   int revision = 0;
+  int textRevision = 0;
+  bool readableText = false;
   Future<void> pendingSave = Future<void>.value();
 
   @override
@@ -23,15 +25,22 @@ class _AppThemeHostState extends State<AppThemeHost> {
 
   Future<void> restore() async {
     final initialRevision = revision;
+    final initialTextRevision = textRevision;
     try {
       final preferences = await SharedPreferences.getInstance();
       final saved = preferences.getString('appearance.themeMode');
-      if (!mounted || revision != initialRevision) return;
+      if (!mounted) return;
       setState(() {
-        mode = ThemeMode.values.firstWhere(
-          (value) => value.name == saved,
-          orElse: () => ThemeMode.system,
-        );
+        if (revision == initialRevision) {
+          mode = ThemeMode.values.firstWhere(
+            (value) => value.name == saved,
+            orElse: () => ThemeMode.system,
+          );
+        }
+        if (textRevision == initialTextRevision) {
+          readableText =
+              preferences.getBool('appearance.readableText') ?? false;
+        }
       });
     } catch (error) {
       debugPrint('Theme preference unavailable: $error');
@@ -52,16 +61,34 @@ class _AppThemeHostState extends State<AppThemeHost> {
     });
   }
 
+  void selectReadableText(bool value) {
+    textRevision++;
+    setState(() => readableText = value);
+    pendingSave = pendingSave.then((_) async {
+      try {
+        final preferences = await SharedPreferences.getInstance();
+        await preferences.setBool('appearance.readableText', value);
+      } catch (error) {
+        debugPrint('Could not save text preference: $error');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
     title: 'invisiAI',
     themeAnimationDuration: Duration.zero,
-    theme: pixelTheme(),
-    darkTheme: pixelTheme(Brightness.dark),
+    theme: pixelTheme(Brightness.light, readableText),
+    darkTheme: pixelTheme(Brightness.dark, readableText),
     themeMode: mode,
-    builder: (context, child) =>
-        ThemeSettings(mode: mode, onChanged: select, child: child!),
+    builder: (context, child) => ThemeSettings(
+      mode: mode,
+      onChanged: select,
+      readableText: readableText,
+      onReadableTextChanged: selectReadableText,
+      child: child!,
+    ),
     home: widget.home,
   );
 }
@@ -71,12 +98,17 @@ class ThemeSettings extends InheritedWidget {
     super.key,
     required this.mode,
     required this.onChanged,
+    this.readableText = false,
+    this.onReadableTextChanged,
     required super.child,
   });
   final ThemeMode mode;
+  final bool readableText;
+  final ValueChanged<bool>? onReadableTextChanged;
   final ValueChanged<ThemeMode> onChanged;
   @override
-  bool updateShouldNotify(ThemeSettings oldWidget) => mode != oldWidget.mode;
+  bool updateShouldNotify(ThemeSettings oldWidget) =>
+      mode != oldWidget.mode || readableText != oldWidget.readableText;
 }
 
 class ThemeModeButton extends StatelessWidget {
@@ -113,6 +145,14 @@ class ThemeModeButton extends StatelessWidget {
               ],
             ),
           ),
+        const PopupMenuDivider(),
+        CheckedPopupMenuItem<ThemeMode>(
+          checked: settings?.readableText ?? false,
+          enabled: settings?.onReadableTextChanged != null,
+          onTap: () =>
+              settings?.onReadableTextChanged?.call(!settings.readableText),
+          child: const Text('Readable text'),
+        ),
       ],
     );
   }
