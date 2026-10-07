@@ -1,3 +1,6 @@
+import 'cloaking_progress.dart';
+import 'photo_terms.dart';
+import 'result_insights.dart';
 import 'theme_settings.dart';
 import 'cloaking_steps.dart';
 import 'pixel_theme.dart';
@@ -824,7 +827,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
   double alpha = .5;
   bool busy = false, exporting = false, picking = false, loading = true;
   int completedStages = 0;
-  String stage = "Preparing photo";
+
   @override
   void initState() {
     super.initState();
@@ -864,6 +867,8 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       error = null;
     });
     try {
+      final agreed = await confirmPhotoTerms(context);
+      if (!mounted || !agreed) return;
       final photo =
           await (widget.photoPicker?.call(from) ??
               ImagePicker().pickImage(source: from));
@@ -943,7 +948,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     setState(() {
       busy = true;
       completedStages = 0;
-      stage = "Preparing photo";
+
       error = null;
       result = null;
     });
@@ -955,7 +960,6 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       if (!mounted) return;
       setState(() {
         completedStages = 1;
-        stage = 'Applying cloak';
       });
       await WidgetsBinding.instance.endOfFrame;
       final cloaked = await compute(cloakPhotoImage, (
@@ -966,7 +970,6 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
       if (!mounted) return;
       setState(() {
         completedStages = 2;
-        stage = 'Measuring image quality';
       });
       await WidgetsBinding.instance.endOfFrame;
       final output = await compute(inspectPhotoImages, (
@@ -1130,10 +1133,7 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               const Text(
                 'Start with something worth keeping.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               photoButtons(),
@@ -1204,31 +1204,6 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
               style: TextStyle(color: context.pixelColors.muted, fontSize: 16),
             ),
           ),
-        if (busy)
-          Container(
-            padding: const EdgeInsets.all(18),
-            color: context.pixelColors.green,
-            child: Semantics(
-              liveRegion: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(stage, style: const TextStyle(fontSize: 23)),
-                  const SizedBox(height: 10),
-                  LinearProgressIndicator(
-                    value: completedStages / 3,
-                    minHeight: 8,
-                    color: context.pixelColors.foreground,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$completedStages of 3 stages complete / Processing on device',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          ),
         const SizedBox(height: 18),
         Panel(
           child: Column(
@@ -1278,10 +1253,18 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
                 child: FilledButton.icon(
                   onPressed: locked || vector == null ? null : generate,
                   icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-                  label: Text(busy ? 'Cloaking...' : 'Apply cloak'),
+                  label: Text(
+                    busy
+                        ? 'Cloaking ${(completedStages / 3 * 100).round()}%'
+                        : 'Apply cloak',
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
+              if (busy || result != null) ...[
+                CloakingProgress(completedStages: completedStages),
+                const SizedBox(height: 12),
+              ],
               Center(child: photoButtons()),
             ],
           ),
@@ -1334,109 +1317,45 @@ class _ProtectionScreenState extends State<ProtectionScreen> {
     final r = result!;
     return [
       const SizedBox(height: 32),
-      Semantics(
-        liveRegion: true,
-        child: heading(
-          context,
-          'Meet your new pixels.',
-          '${r.width} × ${r.height} · Full-resolution PNG · ${(alpha * 100).round()}% intensity',
-        ),
+      ResultInsights(
+        result: r,
+        alpha: alpha,
+        image: imagePanel(r.output, 'CLOAKED / OUTPUT'),
       ),
-      eyebrow('MEASURED ON THIS OUTPUT'),
-      ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        title: const Text('Zoom into cloaked pixels'),
-        children: [imagePanel(r.output, 'CLOAKED / OUTPUT')],
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [
-          metric(
-            'SSIM',
-            r.ssim?.toStringAsFixed(4) ?? 'N/A',
-            'Target ≥ 0.95',
-            r.ssim == null ? null : r.ssim! >= .95,
-          ),
-          metric(
-            'PSNR',
-            r.psnr.isInfinite ? '∞ dB' : '${r.psnr.toStringAsFixed(2)} dB',
-            'Target ≥ 30 dB',
-            r.psnr >= 30,
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      Text(
-        'Full-resolution RGB comparison against the original. SSIM uses 7 × 7 sliding windows; PSNR uses pixel error. Passing these targets indicates image quality, not proven semantic protection.',
-        style: TextStyle(color: context.pixelColors.muted, fontSize: 13),
-      ),
-      if (r.ssim == null)
-        const Text('SSIM requires an image at least 7 × 7 pixels.'),
-      const SizedBox(height: 22),
-      ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        title: const Text('For nerds'),
-        subtitle: const Text('Pixel metrics & model evaluation'),
-        children: [
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Mean squared error (MSE)'),
-            subtitle: Text(
-              '${r.mse.toStringAsFixed(4)} / Full-resolution RGB, 0–255 pixel values. Lower means less pixel change.',
-            ),
-          ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Applied intensity (α)'),
-            subtitle: Text(
-              '${alpha.toStringAsFixed(2)} / Trained 224 × 224 RGB pattern tiled across ${r.width} × ${r.height} pixels.',
-            ),
-          ),
-          for (final item in [
-            (
-              'Fooling rate · Not measured',
-              'Percentage of evaluated images whose predicted class changes after cloaking: changed predictions / evaluated images × 100. Requires a target model, fixed candidate classes, and a test set; pixel quality cannot determine this rate.',
-            ),
-            (
-              'CLIP Score · Not measured',
-              'Clean vs cloaked image–text alignment. Requires the CLIP encoder and a shared text reference.',
-            ),
-            (
-              'BERTScore F1 · Not measured',
-              'Clean vs cloaked ClipCap captions. Requires caption and language models.',
-            ),
-            (
-              'SDXL / LoRA · CLIP Score & FID · Not measured',
-              'Compare outputs from clean and cloaked adapters. Requires fine-tuning and generated image sets; FID is a dataset metric.',
-            ),
-          ])
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const PixelIcon(Icons.science_outlined),
-              title: Text(item.$1),
-              subtitle: Text(item.$2),
-            ),
-        ],
-      ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 28),
+      const Divider(height: 1),
+      const SizedBox(height: 24),
       Builder(
-        builder: (buttonContext) => Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            FilledButton.icon(
+        builder: (buttonContext) => LayoutBuilder(
+          builder: (context, bounds) {
+            final save = FilledButton.icon(
               onPressed: locked ? null : () => export(false, buttonContext),
               icon: const PixelIcon(Icons.download_outlined),
               label: const Text('Save PNG'),
-            ),
-            OutlinedButton.icon(
+            );
+            final share = OutlinedButton.icon(
               onPressed: locked ? null : () => export(true, buttonContext),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+              ),
               icon: const PixelIcon(Icons.ios_share),
               label: const Text('Share output'),
-            ),
-          ],
+            );
+            if (bounds.maxWidth < 440 ||
+                MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [save, const SizedBox(height: 12), share],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: save),
+                const SizedBox(width: 16),
+                Expanded(child: share),
+              ],
+            );
+          },
         ),
       ),
     ];

@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 void main() {
   testWidgets(
-    'lab previews slider changes before applying and reveals nerd metrics',
+    'lab previews slider changes before applying and shows visual insights',
     (tester) async {
       tester.view.physicalSize = const Size(1000, 3000);
       tester.view.devicePixelRatio = 1;
@@ -30,6 +30,10 @@ void main() {
       await tester.ensureVisible(find.text('Choose photo'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Choose photo'));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.tap(find.byType(Checkbox));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.tap(find.text('Agree & continue'));
 
       Future<void> waitFor(Finder finder) async {
         for (var i = 0; i < 200 && finder.evaluate().isEmpty; i++) {
@@ -55,21 +59,15 @@ void main() {
       await tester.ensureVisible(find.text('Apply cloak'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Apply cloak'));
-      await waitFor(find.text('For nerds'));
-      await tester.ensureVisible(find.text('For nerds'));
+      await waitFor(find.text('Your photo, explained'));
+      await tester.ensureVisible(find.text('Your photo, explained'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('For nerds'));
-      await tester.pumpAndSettle();
-      expect(find.text('Fooling rate · Not measured'), findsOneWidget);
-      expect(
-        find.textContaining('0.0000 / Full-resolution RGB'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Structure'), findsOneWidget);
       expect(find.text('Save PNG'), findsOneWidget);
       tester.widget<Slider>(slider).onChanged!(.8);
       await tester.pump();
       expect(find.text('Save PNG'), findsNothing);
-      expect(find.text('For nerds'), findsNothing);
+      expect(find.text('Your photo, explained'), findsNothing);
       await waitFor(find.textContaining('Live preview · 80%'));
       expect(tester.takeException(), isNull);
     },
