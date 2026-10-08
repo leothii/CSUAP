@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -47,6 +48,7 @@ Future<void> waitFor(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   final bytes =
       Uint8List.fromList(img.encodePng(img.Image(width: 16, height: 16)));
   final output = LabResult(bytes, bytes, 16, 16, 1, double.infinity);

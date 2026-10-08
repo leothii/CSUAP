@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:csuap/pixel_theme.dart';
 import 'package:csuap/result_insights.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   test('histogram bins measure actual RGB differences including boundaries',
       () {
     final clean = img.Image(width: 6, height: 1);

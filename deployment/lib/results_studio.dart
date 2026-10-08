@@ -1,3 +1,4 @@
+import 'first_use_tour.dart';
 import 'package:flutter/material.dart';
 import 'lab_processing.dart';
 import 'main.dart' show PhotoComparison;
@@ -35,6 +36,23 @@ class ResultsStudio extends StatefulWidget {
 }
 
 class _ResultsStudioState extends State<ResultsStudio> {
+  final saveTip = GlobalKey();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        showFirstUseTour(context, 'save', [
+          TourStop(
+            saveTip,
+            'Keep your cloaked copy',
+            'Compare or zoom into the result, then Save PNG to keep it. Share output sends the cloaked copy to a destination you choose.',
+          ),
+        ]);
+      }
+    });
+  }
+
   String mode = 'Compare';
   final zoom = TransformationController();
   double scale = 1;
@@ -79,6 +97,7 @@ class _ResultsStudioState extends State<ResultsStudio> {
               builder: (context, bounds) {
                 final buttons = [
                   FilledButton.icon(
+                    key: saveTip,
                     onPressed: widget.locked
                         ? null
                         : () => widget.onSave(buttonContext),

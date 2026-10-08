@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   testWidgets(
     'lab previews slider changes before applying and shows visual insights',
     (tester) async {
@@ -65,22 +67,22 @@ void main() {
       expect(find.textContaining('Structure'), findsOneWidget);
       expect(find.text('Save PNG'), findsOneWidget);
       expect(find.byType(CloakResultsScreen), findsOneWidget);
-    expect(slider, findsNothing);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    expect(find.text('Discard unsaved result?'), findsOneWidget);
-    await tester.tap(find.text('Keep working'));
-    await tester.pumpAndSettle();
-    expect(find.byType(CloakResultsScreen), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Discard result'));
-    await tester.pumpAndSettle();
-    expect(find.byType(CloakResultsScreen), findsNothing);
-    expect(find.text('Save PNG'), findsNothing);
-    tester.widget<Slider>(slider).onChanged!(.8);
-    await waitFor(find.textContaining(RegExp(r'Live preview.*80%')));
-    expect(tester.takeException(), isNull);
+      expect(slider, findsNothing);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Discard unsaved result?'), findsOneWidget);
+      await tester.tap(find.text('Keep working'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CloakResultsScreen), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Discard result'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CloakResultsScreen), findsNothing);
+      expect(find.text('Save PNG'), findsNothing);
+      tester.widget<Slider>(slider).onChanged!(.8);
+      await waitFor(find.textContaining(RegExp(r'Live preview.*80%')));
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -216,6 +218,15 @@ void main() {
     'menu routes into the lab with export unavailable before generation',
     (tester) async {
       await tester.pumpWidget(const CsuapApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue as guest'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(Checkbox));
+      await tester.tap(find.byType(Checkbox));
+      await tester.pump();
+      await tester.tap(find.text('Agree & continue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Skip tips'));
       await tester.pumpAndSettle();
       expect(find.text('Start'), findsOneWidget);
       await tester.tap(find.text('Start'));

@@ -1,3 +1,5 @@
+import 'guest_welcome.dart';
+import 'first_use_tour.dart';
 import 'results_studio.dart';
 import 'batch_screen.dart';
 import 'dart:ui' show AppExitResponse;
@@ -37,7 +39,9 @@ class CsuapApp extends StatelessWidget {
   const CsuapApp({super.key});
   @override
   Widget build(BuildContext context) => AppThemeHost(
-      home: IntroScreen(menuBuilder: (_) => const MainMenuScreen()));
+      home: IntroScreen(
+          menuBuilder: (_) =>
+              GuestWelcome(menuBuilder: (_) => const MainMenuScreen())));
 }
 
 void openPage(BuildContext context, Widget page) =>
@@ -103,6 +107,22 @@ class MainMenuScreen extends StatefulWidget {
 }
 
 class _MainMenuScreenState extends State<MainMenuScreen> {
+  final menuTips = List.generate(4, (_) => GlobalKey());
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        showFirstUseTour(context, 'menu', [
+          TourStop(menuTips[0], 'Start with a photo',
+              'Start opens the photo lab. Choose one photo or process a batch of up to 10.'),
+          TourStop(menuTips[1], 'A guide when you need it',
+              'The field guide explains cloaking, intensity and quality scores. You can return here at any time.'),
+        ]);
+      }
+    });
+  }
+
   int selected = 0;
   final nodes = List.generate(4, (_) => FocusNode());
   static const labels = ['Start', 'Field guide', 'Research', 'Credits'];
@@ -227,6 +247,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                           padding:
                                               const EdgeInsets.only(bottom: 4),
                                           child: TextButton(
+                                            key: menuTips[i],
                                             focusNode: nodes[i],
                                             autofocus: i == 0,
                                             onHover: (hovered) {
@@ -237,6 +258,9 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                                             },
                                             onPressed: () => enter(i),
                                             style: TextButton.styleFrom(
+                                              side: i == 0
+                                                  ? BorderSide.none
+                                                  : null,
                                               backgroundColor: selected == i
                                                   ? context.pixelColors.gold
                                                   : Colors.transparent,
@@ -741,6 +765,31 @@ class CloakResultsScreen extends ProtectionScreen {
 
 class _ProtectionScreenState extends State<ProtectionScreen>
     with WidgetsBindingObserver {
+  final chooseTip = GlobalKey(), batchTip = GlobalKey(), applyTip = GlobalKey();
+  void showImportTips() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && source == null) {
+        showFirstUseTour(context, 'import', [
+          TourStop(chooseTip, 'Choose your photo',
+              'Open a photo from your device. Your original stays unchanged.'),
+          TourStop(batchTip, 'Have more than one?',
+              'Batch cloak lets you add up to 10 photos and save the completed results together.'),
+        ]);
+      }
+    });
+  }
+
+  void showApplyTip() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && source != null) {
+        showFirstUseTour(context, 'apply', [
+          TourStop(applyTip, 'Ready to apply?',
+              'Adjust the intensity slider and check the preview above. Apply cloak processes the full photo and opens your interactive result studio.'),
+        ]);
+      }
+    });
+  }
+
   late final processor = widget.photoProcessor ?? PhotoProcessor();
   final pageGuard = UnsavedPageGuard();
   bool resultSaved = false, downloadStarted = false;
@@ -899,6 +948,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
           vector = loaded;
           loading = false;
         });
+        showImportTips();
       }
     } catch (_) {
       if (mounted) {
@@ -941,6 +991,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
           previewError = null;
         });
         refreshPreview();
+        showApplyTip();
       }
     } on FormatException catch (exception) {
       if (mounted) setState(() => error = exception.message);
@@ -1153,6 +1204,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
                       child: const Text('Retry loading perturbation',
                           style: TextStyle(fontFamily: 'VT323', fontSize: 18))),
                 OutlinedButton.icon(
+                    key: batchTip,
                     onPressed: locked || vector == null
                         ? null
                         : () => openPage(
@@ -1284,6 +1336,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
                       SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
+                            key: applyTip,
                             onPressed:
                                 locked || vector == null ? null : generate,
                             icon: const Icon(Icons.auto_awesome_outlined,
@@ -1334,6 +1387,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
           runSpacing: 10,
           children: [
             OutlinedButton.icon(
+                key: chooseTip,
                 onPressed: locked || vector == null
                     ? null
                     : () => pick(ImageSource.gallery),

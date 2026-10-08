@@ -1,12 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Acceptance is deliberately per import, including camera captures.
-Future<bool> confirmPhotoTerms(BuildContext context) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (_) => const _PhotoTermsDialog(),
-    ) ??
-    false;
+const photoTermsPreference = 'onboarding.photoTerms.v1';
+bool _sessionAccepted = false;
+
+Future<bool> photoTermsAccepted() async {
+  if (_sessionAccepted) return true;
+  try {
+    return (await SharedPreferences.getInstance()).getBool(
+          photoTermsPreference,
+        ) ??
+        false;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Versioned acceptance is shared by the welcome page, single import and batch.
+Future<bool> confirmPhotoTerms(BuildContext context) async {
+  if (await photoTermsAccepted()) return true;
+  if (!context.mounted) return false;
+  final accepted =
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => const _PhotoTermsDialog(),
+      ) ??
+      false;
+  if (accepted) {
+    try {
+      final saved = await (await SharedPreferences.getInstance()).setBool(
+        photoTermsPreference,
+        true,
+      );
+      if (!saved) _sessionAccepted = true;
+    } catch (_) {
+      _sessionAccepted = true;
+    }
+  }
+  return accepted;
+}
 
 class _PhotoTermsDialog extends StatefulWidget {
   const _PhotoTermsDialog();
@@ -26,7 +58,7 @@ class _PhotoTermsDialogState extends State<_PhotoTermsDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Before choosing or taking a photo',
+            'Before using invisiAI',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
@@ -52,7 +84,7 @@ class _PhotoTermsDialogState extends State<_PhotoTermsDialog> {
             value: accepted,
             onChanged: (value) => setState(() => accepted = value ?? false),
             title: const Text(
-              'I have permission to use this photo and agree to these terms.',
+              'I agree to these terms and will only use photos I own or have permission to process.',
             ),
           ),
         ],

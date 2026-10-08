@@ -1,0 +1,28 @@
+2026-10-08 16:23:22.237: [INFO] CurrentProfilePath: C:\Users\Acer\Documents\Programs\CSUAP\build\browser-check\edge-profile-yxqxy72m\Default
+2026-10-08 16:23:22.237: [INFO] Profiles total count: 1
+2026-10-08 16:23:22.237: [INFO] Profile: name=Profile 1 path=C:\Users\Acer\Documents\Programs\CSUAP\build\browser-check\edge-profile-yxqxy72m\Default lastActive=null
+2026-10-08 16:23:22.237: [INFO] LastUsedProfileDir: C:\Users\Acer\Documents\Programs\CSUAP\build\browser-check\edge-profile-yxqxy72m\Default
+2026-10-08 16:23:22.237: [INFO] VisibilityChanged: 0
+2026-10-08 16:23:22.275: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.278: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.281: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.282: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.285: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.288: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.289: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.291: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.293: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.299: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:22.402: [INFO] OnDoneLoading sync enabled: 0
+2026-10-08 16:23:22.402: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-10-08 16:23:22.402: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-10-08 16:23:22.402: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-10-08 16:23:22.406: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:26.095: [INFO] BookmarkNodeAdded, ABU: 0
+2026-10-08 16:23:26.097: [INFO] BookmarkNodeAdded, ABU: 0
+2026-10-08 16:23:29.036: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-08 16:23:29.055: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-08 16:23:29.065: [INFO] Primary account changed.
+2026-10-08 16:23:29.065: [INFO] OnPrimaryAccountChanged PrimaryAccountChangeEvent::Type::kSet
+2026-10-08 16:23:29.108: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-08 16:23:29.153: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
