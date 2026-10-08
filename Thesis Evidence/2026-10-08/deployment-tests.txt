@@ -1,0 +1,62 @@
+00:00 +0: loading C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart
+00:00 +0: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: chart marks and focus outlines contrast with both themes
+00:00 +1: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +2: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +3: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +4: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +5: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +6: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +7: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +8: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +9: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +10: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +11: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +12: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +13: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +14: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +15: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +16: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +17: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +18: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +19: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +20: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +21: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +22: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:02 +23: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:03 +24: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:03 +25: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +26: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +27: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +28: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +29: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:05 +30: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:06 +31: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:07 +32: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:07 +33: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:08 +34: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:08 +35: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:08 +36: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:09 +37: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:09 +38: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: lab previews slider changes before applying and shows visual insights
+00:11 +39: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: lab previews slider changes before applying and shows visual insights
+00:11 +40: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: lab previews slider changes before applying and shows visual insights
+00:12 +41: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: lab previews slider changes before applying and shows visual insights
+00:13 +42: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: lab previews slider changes before applying and shows visual insights
+00:13 +43: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancelled or failed saves remain unsaved; successful save clears guard (variant: TargetPlatform.windows)
+00:14 +44: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancelled or failed saves remain unsaved; successful save clears guard (variant: TargetPlatform.windows)
+00:14 +45: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/photo_safety_test.dart: cancelled or failed saves remain unsaved; successful save clears guard (variant: TargetPlatform.windows)
+00:14 +46: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: dark screens and large step titles fit width 320.0
+00:15 +47: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: guide explores intensity, explains quality, and opens lab
+00:16 +48: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: guide explores intensity, explains quality, and opens lab
+00:16 +49: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: dark screens and large step titles fit width 1100.0
+00:16 +50: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: dark screens and large step titles fit width 1100.0
+00:16 +51: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/theme_settings_test.dart: dark screens and large step titles fit width 1100.0
+00:17 +52: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: research menu option opens the existing research screen
+00:17 +53: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: menu routes into the lab with export unavailable before generation
+00:17 +54: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: research nodes reveal resources and pending paper
+00:18 +55: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: team supports tap selection
+00:18 +56: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: research explores metrics and pipeline stages
+00:19 +57: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: screens fit width 320.0 with enlarged text
+00:20 +58: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: screens fit width 590.0 with enlarged text
+00:21 +59: C:/Users/Acer/Documents/Programs/CSUAP/deployment/test/widget_test.dart: screens fit width 1100.0 with enlarged text
+00:22 +60: All tests passed!

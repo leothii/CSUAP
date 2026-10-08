@@ -1,0 +1,27 @@
+﻿{
+    "gpu":  [
+                {
+                    "Name":  "AMD Radeon(TM) Graphics",
+                    "DriverVersion":  "31.0.21924.61"
+                },
+                {
+                    "Name":  "NVIDIA GeForce RTX 3050 Laptop GPU",
+                    "DriverVersion":  "32.0.16.1047"
+                }
+            ],
+    "cpu":  {
+                "Name":  "AMD Ryzen 5 5500U with Radeon Graphics         ",
+                "NumberOfCores":  6,
+                "NumberOfLogicalProcessors":  12
+            },
+    "computer":  {
+                     "Manufacturer":  "Acer",
+                     "Model":  "Aspire A715-42G",
+                     "TotalPhysicalMemory":  16469520384
+                 },
+    "os":  {
+               "Caption":  "Microsoft Windows 11 Home Single Language",
+               "Version":  "10.0.26300",
+               "BuildNumber":  "26300"
+           }
+}

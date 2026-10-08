@@ -1,0 +1,58 @@
+00:00 +0: loading C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart
+00:00 +0: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: chart marks and focus outlines contrast with both themes
+00:00 +1: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +2: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +3: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +4: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:00 +5: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +6: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +7: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +8: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +9: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +10: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:01 +11: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +12: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +13: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +14: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +15: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +16: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +17: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: progress has one announcement and no spinner with reduced motion
+00:02 +18: C:/Users/Acer/Documents/Programs/CSUAP/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:03 +19: C:/Users/Acer/Documents/Programs/CSUAP/test/intro_screen_test.dart: intro completes its timeline and replaces itself with a fade
+00:03 +20: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:03 +21: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:03 +22: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +23: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +24: C:/Users/Acer/Documents/Programs/CSUAP/test/accessibility_test.dart: large text results have keyboard buttons and reduced motion at 320 pixels
+00:04 +25: C:/Users/Acer/Documents/Programs/CSUAP/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:06 +26: C:/Users/Acer/Documents/Programs/CSUAP/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:07 +27: C:/Users/Acer/Documents/Programs/CSUAP/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:07 +28: C:/Users/Acer/Documents/Programs/CSUAP/test/photo_safety_test.dart: cancel keeps the original and ignores a late result during a retry
+00:08 +29: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:08 +30: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:08 +31: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:09 +32: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: readable text toggles without leaving the page and survives restart
+00:10 +33: C:/Users/Acer/Documents/Programs/CSUAP/test/thesis_evidence_test.dart: evidence: result and batch layouts in portrait and desktop themes
+00:11 +34: C:/Users/Acer/Documents/Programs/CSUAP/test/thesis_evidence_test.dart: evidence: result and batch layouts in portrait and desktop themes
+00:11 +35: C:/Users/Acer/Documents/Programs/CSUAP/test/thesis_evidence_test.dart: evidence: result and batch layouts in portrait and desktop themes
+00:12 +36: C:/Users/Acer/Documents/Programs/CSUAP/test/thesis_evidence_test.dart: evidence: result and batch layouts in portrait and desktop themes
+00:13 +37: C:/Users/Acer/Documents/Programs/CSUAP/test/thesis_evidence_test.dart: evidence: result and batch layouts in portrait and desktop themes
+00:14 +38: C:/Users/Acer/Documents/Programs/CSUAP/test/thesis_evidence_test.dart: evidence: result and batch layouts in portrait and desktop themes
+00:14 +39: C:/Users/Acer/Documents/Programs/CSUAP/test/photo_safety_test.dart: cancelled or failed saves remain unsaved; successful save clears guard (variant: TargetPlatform.windows)
+00:14 +40: C:/Users/Acer/Documents/Programs/CSUAP/test/photo_safety_test.dart: cancelled or failed saves remain unsaved; successful save clears guard (variant: TargetPlatform.windows)
+00:15 +41: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: character selection supports swipes, keys and wraparound
+00:15 +42: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: dark screens and large step titles fit width 320.0
+00:15 +43: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: guide explores intensity, explains quality, and opens lab
+00:17 +44: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: guide explores intensity, explains quality, and opens lab
+00:18 +45: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: dark screens and large step titles fit width 1100.0
+00:18 +46: C:/Users/Acer/Documents/Programs/CSUAP/test/theme_settings_test.dart: dark screens and large step titles fit width 1100.0
+00:19 +47: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: title menu selects with arrow keys and opens the field guide
+00:19 +48: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: research menu option opens the existing research screen
+00:19 +49: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: menu routes into the lab with export unavailable before generation
+00:20 +50: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: research nodes reveal resources and pending paper
+00:21 +51: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: team supports tap selection
+00:21 +52: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: research explores metrics and pipeline stages
+00:23 +53: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: screens fit width 320.0 with enlarged text
+00:25 +54: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: screens fit width 590.0 with enlarged text
+00:26 +55: C:/Users/Acer/Documents/Programs/CSUAP/test/widget_test.dart: screens fit width 1100.0 with enlarged text
+00:28 +56: All tests passed!

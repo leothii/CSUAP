@@ -1,0 +1,1 @@
+{"passed":true,"processingMs":5526,"progressUpdates":87,"heartbeatTicksDuringProcessing":522,"checks":"preview, pixels, SSIM, PSNR, histogram, stage order, identity, invalid input, cancel and restart, dispose","exitGuardPassed":true,"missingWorkerPassed":true}

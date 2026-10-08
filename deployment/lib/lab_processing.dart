@@ -124,7 +124,11 @@ LabResult inspectPhotoImages(({img.Image clean, img.Image output}) job) {
 /// Full-resolution RGB PSNR and mean 7x7 sliding-window SSIM, sample covariance.
 /// Matches skimage defaults on 8-bit RGB (data_range=255, channel_axis=-1).
 /// Uses seven rows of column sums so working memory is proportional to width.
-(double?, double) measureQuality(img.Image a, img.Image b) {
+(double?, double) measureQuality(
+  img.Image a,
+  img.Image b, {
+  void Function(double)? onProgress,
+}) {
   if (a.width != b.width || a.height != b.height) {
     throw ArgumentError('Image dimensions must match.');
   }
@@ -157,6 +161,7 @@ LabResult inspectPhotoImages(({img.Image clean, img.Image output}) job) {
           columns[4][x] -= oldA * oldB;
         }
       }
+      onProgress?.call((channel * a.height + y + 1) / (3 * a.height));
       if (y < 6) continue;
       final sums = Float64List(5);
       for (var x = 0; x < a.width; x++) {

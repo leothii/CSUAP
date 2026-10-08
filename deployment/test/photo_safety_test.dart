@@ -115,11 +115,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('back and replacing a photo protect an unsaved result',
+  testWidgets('results back actions protect unsaved output and return to lab',
       (tester) async {
     final processor = await openLab(tester);
     await finish(tester, processor);
-    await tester.tap(find.text('Change photo'));
+    await tester.ensureVisible(find.text('Back to photo lab'));
+    await tester.tap(find.text('Back to photo lab'));
     await tester.pumpAndSettle();
     expect(find.text('Discard unsaved result?'), findsOneWidget);
     await tester.tap(find.text('Keep working'));
@@ -130,12 +131,13 @@ void main() {
     expect(find.text('Discard unsaved result?'), findsOneWidget);
     await tester.tap(find.text('Keep working'));
     await tester.pumpAndSettle();
-    expect(find.byType(ProtectionScreen), findsOneWidget);
+    expect(find.byType(CloakResultsScreen), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Discard result'));
     await tester.pumpAndSettle();
-    expect(find.byType(ProtectionScreen), findsNothing);
+    expect(find.byType(CloakResultsScreen), findsNothing);
+    expect(find.byType(ProtectionScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -198,7 +200,7 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('Discard unsaved result?'), findsNothing);
-    expect(find.byType(ProtectionScreen), findsNothing);
+    expect(find.byType(ProtectionScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 }

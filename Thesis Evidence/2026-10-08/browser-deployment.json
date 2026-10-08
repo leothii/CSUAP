@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "processingMs": 7228,
+  "progressUpdates": 87,
+  "heartbeatTicksDuringProcessing": 663,
+  "checks": "preview, pixels, SSIM, PSNR, histogram, stage order, identity, invalid input, cancel and restart, dispose",
+  "exitGuardPassed": true,
+  "missingWorkerPassed": true
+}

@@ -1,5 +1,6 @@
 // Compiled separately with dart compile js; this entry point imports no Flutter.
 import 'dart:js_interop';
+import 'progressive_cloak.dart';
 import 'lab_processing.dart';
 import 'pixel_histogram.dart';
 import 'photo_worker_protocol.dart';
@@ -27,15 +28,12 @@ void main() {
               bytes: preview.rgb.toJS,
               vector: preview.vector.toJS));
         case 'generate':
-          final clean = preparePhoto(request.bytes!.toDart);
-          _send(PhotoMessage(type: 'progress', stage: 1));
-          final output = cloakPhoto((
-            bytes: clean,
-            vector: request.vector!.toDart,
-            alpha: request.alpha!
-          ));
-          _send(PhotoMessage(type: 'progress', stage: 2));
-          final result = inspectPhoto((clean: clean, output: output));
+          final result = generateWithProgress(
+              request.bytes!.toDart, request.vector!.toDart, request.alpha!,
+              onStage: (value) =>
+                  _send(PhotoMessage(type: 'progress', stage: value)),
+              onProgress: (value) =>
+                  _send(PhotoMessage(type: 'percent', percent: value)));
           _send(PhotoMessage(
               type: 'result',
               clean: result.clean.toJS,

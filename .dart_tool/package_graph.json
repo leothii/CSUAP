@@ -7,6 +7,7 @@
       "name": "csuap",
       "version": "1.0.0+1",
       "dependencies": [
+        "archive",
         "file_selector",
         "flutter",
         "flutter_animate",
@@ -178,6 +179,14 @@
         "file_selector_web",
         "file_selector_windows",
         "flutter"
+      ]
+    },
+    {
+      "name": "archive",
+      "version": "4.3.0",
+      "dependencies": [
+        "path",
+        "posix"
       ]
     },
     {
@@ -571,14 +580,6 @@
       ]
     },
     {
-      "name": "archive",
-      "version": "4.2.0",
-      "dependencies": [
-        "path",
-        "posix"
-      ]
-    },
-    {
       "name": "http",
       "version": "1.6.0",
       "dependencies": [
@@ -687,6 +688,15 @@
         "flutter",
         "meta",
         "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "posix",
+      "version": "6.5.2",
+      "dependencies": [
+        "ffi",
+        "meta",
+        "path"
       ]
     },
     {
@@ -814,15 +824,6 @@
       "version": "2.0.35",
       "dependencies": [
         "flutter"
-      ]
-    },
-    {
-      "name": "posix",
-      "version": "6.5.2",
-      "dependencies": [
-        "ffi",
-        "meta",
-        "path"
       ]
     },
     {

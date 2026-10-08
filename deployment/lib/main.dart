@@ -1,3 +1,5 @@
+import 'results_studio.dart';
+import 'batch_screen.dart';
 import 'dart:ui' show AppExitResponse;
 import 'unsaved_page_guard.dart';
 import 'photo_processor.dart';
@@ -706,7 +708,13 @@ class Panel extends StatelessWidget {
 
 /// Both layers share the same bounds so the divider never shifts the photo.
 class PhotoComparison extends StatefulWidget {
-  const PhotoComparison({super.key, required this.clean, required this.output});
+  const PhotoComparison({
+    super.key,
+    required this.clean,
+    required this.output,
+    this.height = 320,
+  });
+  final double height;
   final Uint8List clean, output;
 
   @override
@@ -721,7 +729,7 @@ class _PhotoComparisonState extends State<PhotoComparison> {
     children: [
       Container(
         color: context.pixelColors.surface,
-        height: 320,
+        height: widget.height,
         child: LayoutBuilder(
           builder: (context, box) {
             void move(double x) =>
@@ -758,7 +766,7 @@ class _PhotoComparisonState extends State<PhotoComparison> {
                   ),
                   Positioned(
                     left: (box.maxWidth - 36) * position,
-                    top: 142,
+                    top: (widget.height - 36) / 2,
                     child: Container(
                       width: 36,
                       height: 36,
@@ -810,11 +818,45 @@ class _ComparisonClipper extends CustomClipper<Rect> {
 }
 
 class ProtectionScreen extends StatefulWidget {
-  const ProtectionScreen({super.key, this.photoPicker, this.photoProcessor});
+  const ProtectionScreen({
+    super.key,
+    this.photoPicker,
+    this.photoProcessor,
+    this.initialResult,
+    this.initialAlpha = .5,
+    this.initialFilename = '',
+    this.retainedResult = false,
+    this.initialSaved = false,
+    this.onSaved,
+  });
+  final LabResult? initialResult;
+  final double initialAlpha;
+  final String initialFilename;
+  final bool retainedResult, initialSaved;
+  final VoidCallback? onSaved;
   final Future<XFile?> Function(ImageSource source)? photoPicker;
   final PhotoProcessor? photoProcessor;
   @override
   State<ProtectionScreen> createState() => _ProtectionScreenState();
+}
+
+/// A dedicated route for inspecting and exporting a completed photograph.
+class CloakResultsScreen extends ProtectionScreen {
+  const CloakResultsScreen({
+    super.key,
+    required LabResult result,
+    required double alpha,
+    required String filename,
+    bool retained = false,
+    bool saved = false,
+    super.onSaved,
+  }) : super(
+         initialResult: result,
+         initialAlpha: alpha,
+         initialFilename: filename,
+         retainedResult: retained,
+         initialSaved: saved,
+       );
 }
 
 class _ProtectionScreenState extends State<ProtectionScreen>
@@ -824,7 +866,8 @@ class _ProtectionScreenState extends State<ProtectionScreen>
   bool resultSaved = false, downloadStarted = false;
   bool confirming = false, allowLeave = false;
   int generation = 0;
-  bool get hasUnsavedResult => result != null && !resultSaved;
+  bool get hasUnsavedResult =>
+      result != null && !resultSaved && !widget.retainedResult;
 
   Future<bool> confirmAction(
     String title,
@@ -902,6 +945,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
 
   @override
   Future<AppExitResponse> didRequestAppExit() async {
+    if (ModalRoute.of(context)?.isCurrent != true) return AppExitResponse.exit;
     if (!await confirmLeave() || !mounted) return AppExitResponse.cancel;
     pageGuard.setActive(false);
     return AppExitResponse.exit;
@@ -963,12 +1007,18 @@ class _ProtectionScreenState extends State<ProtectionScreen>
   double alpha = .5;
   bool busy = false, exporting = false, picking = false, loading = true;
   int completedStages = 0;
+  int progressPercent = 1;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    loadVector();
+    result = widget.initialResult;
+    alpha = widget.initialAlpha;
+    filename = widget.initialFilename;
+    resultSaved = widget.initialSaved;
+    loading = result == null;
+    if (result == null) loadVector();
   }
 
   Future<void> loadVector() async {
@@ -1094,11 +1144,15 @@ class _ProtectionScreenState extends State<ProtectionScreen>
     setState(() {
       busy = true;
       completedStages = 0;
+      progressPercent = 1;
       error = null;
       result = null;
       resultSaved = false;
       downloadStarted = false;
     });
+    processor.onProgress = (value) {
+      if (mounted && job == generation) setState(() => progressPercent = value);
+    };
     try {
       final output = await processor.generate(
         bytes,
@@ -1112,9 +1166,20 @@ class _ProtectionScreenState extends State<ProtectionScreen>
       );
       if (mounted && job == generation) {
         setState(() {
-          result = output;
+          busy = false;
+          progressPercent = 100;
           completedStages = 3;
         });
+        pageGuard.setActive(false);
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => CloakResultsScreen(
+              result: output,
+              alpha: intensity,
+              filename: filename,
+            ),
+          ),
+        );
       }
     } on PhotoProcessingCancelled {
       // Cancellation is expected; late results cannot replace a newer run.
@@ -1193,6 +1258,7 @@ class _ProtectionScreenState extends State<ProtectionScreen>
       if (!share && mounted && identical(result, output)) {
         setState(() {
           resultSaved = !kIsWeb;
+          if (resultSaved) widget.onSaved?.call();
           downloadStarted = kIsWeb;
         });
       }
@@ -1219,241 +1285,289 @@ class _ProtectionScreenState extends State<ProtectionScreen>
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) requestLeave();
       },
-      child: PageShell(
-        label: '01 / PHOTO LAB',
-        children: [
-          eyebrow('YOUR PHOTO. YOUR SIGNAL.'),
-          const SizedBox(height: 10),
-          Text(
-            'A little less readable.\nStill entirely you.',
-            style: Theme.of(context).textTheme.headlineLarge,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Choose a photo. Tune the cloak. Compare the pixels.',
-            style: TextStyle(color: context.pixelColors.muted),
-          ),
-          const SizedBox(height: 24),
-          CloakingSteps(
-            currentStep: result != null
-                ? 2
-                : source != null
-                ? 1
-                : 0,
-          ),
-          const SizedBox(height: 24),
-          if (loading) const LinearProgressIndicator(),
-          if (!loading && vector == null)
-            TextButton(
-              onPressed: loadVector,
-              child: const Text(
-                'Retry loading perturbation',
-                style: TextStyle(fontFamily: 'VT323', fontSize: 18),
-              ),
-            ),
-          if (source == null)
-            Container(
-              decoration: BoxDecoration(
-                color: context.pixelColors.surface,
-                border: Border.all(color: context.pixelColors.edge),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: context.pixelColors.green,
-                    padding: const EdgeInsets.all(12),
-                    child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
+      child: widget.initialResult != null
+          ? ResultsStudio(
+              result: result!,
+              alpha: alpha,
+              filename: filename,
+              saved: resultSaved,
+              retained: widget.retainedResult,
+              locked: locked,
+              exporting: exporting,
+              confirmDownload: kIsWeb && downloadStarted && !resultSaved,
+              error: error,
+              onSave: (context) => export(false, context),
+              onShare: (context) => export(true, context),
+              onBack: requestLeave,
+              onMarkSaved: () => setState(() {
+                resultSaved = true;
+                widget.onSaved?.call();
+              }),
+            )
+          : PageShell(
+              label: '01 / PHOTO LAB',
+              children: [
+                eyebrow('YOUR PHOTO. YOUR SIGNAL.'),
+                const SizedBox(height: 10),
+                Text(
+                  'A little less readable.\nStill entirely you.',
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Choose a photo. Tune the cloak. Compare the pixels.',
+                  style: TextStyle(color: context.pixelColors.muted),
+                ),
+                const SizedBox(height: 24),
+                CloakingSteps(
+                  currentStep: result != null
+                      ? 2
+                      : source != null
+                      ? 1
+                      : 0,
+                ),
+                const SizedBox(height: 24),
+                if (loading) const LinearProgressIndicator(),
+                if (!loading && vector == null)
+                  TextButton(
+                    onPressed: loadVector,
+                    child: const Text(
+                      'Retry loading perturbation',
+                      style: TextStyle(fontFamily: 'VT323', fontSize: 18),
+                    ),
                   ),
-                  const SizedBox(height: 30),
+                OutlinedButton.icon(
+                  onPressed: locked || vector == null
+                      ? null
+                      : () => openPage(
+                          context,
+                          BatchCloakingScreen(vector: vector!),
+                        ),
+                  icon: const Icon(Icons.photo_library_outlined),
+                  label: const Text('Batch cloak · up to 10 photos'),
+                ),
+                const SizedBox(height: 16),
+                if (source == null)
                   Container(
-                    width: 112,
-                    height: 120,
                     decoration: BoxDecoration(
-                      color: context.pixelColors.background,
-                      border: Border.all(
-                        color: context.pixelColors.foreground,
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.pixelColors.gold,
-                          offset: const Offset(8, 8),
+                      color: context.pixelColors.surface,
+                      border: Border.all(color: context.pixelColors.edge),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          color: context.pixelColors.green,
+                          padding: const EdgeInsets.all(12),
+                          child: eyebrow('PHOTO LAB / AWAITING YOUR IMAGE'),
+                        ),
+                        const SizedBox(height: 30),
+                        Container(
+                          width: 112,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: context.pixelColors.background,
+                            border: Border.all(
+                              color: context.pixelColors.foreground,
+                              width: 4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: context.pixelColors.gold,
+                                offset: const Offset(8, 8),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: PixelIcon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 64,
+                              color: context.pixelColors.muted,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        const Text(
+                          'Start with something worth keeping.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        photoButtons(),
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text(
+                            'Processed on your device. Original stays untouched.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: context.pixelColors.muted,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: PixelIcon(
-                        Icons.add_photo_alternate_outlined,
-                        size: 64,
-                        color: context.pixelColors.muted,
-                      ),
+                  )
+                else ...[
+                  Container(
+                    color: context.pixelColors.surface,
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.image_outlined, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            filename,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        eyebrow(
+                          result != null
+                              ? 'READY'
+                              : busy
+                              ? 'WORKING'
+                              : 'LIVE PREVIEW',
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'Start with something worth keeping.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  photoButtons(),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      'Processed on your device. Original stays untouched.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: context.pixelColors.muted,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else ...[
-            Container(
-              color: context.pixelColors.surface,
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  const Icon(Icons.image_outlined, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      filename,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  eyebrow(
-                    result != null
-                        ? 'READY'
-                        : busy
-                        ? 'WORKING'
-                        : 'LIVE PREVIEW',
-                  ),
-                ],
-              ),
-            ),
-            if (result != null)
-              PhotoComparison(clean: result!.clean, output: result!.output)
-            else
-              Container(
-                color: context.pixelColors.surface,
-                height: 320,
-                width: double.infinity,
-                child: Image.memory(
-                  previewBytes ?? source!,
-                  gaplessPlayback: true,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, e, s) => const Center(
-                    child: Text('Preview unavailable. Try a PNG or JPEG.'),
-                  ),
-                ),
-              ),
-            if (result == null && !busy)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  previewError ??
-                      (previewAlpha == null
-                          ? 'Preparing live preview…'
-                          : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
-                  style: TextStyle(
-                    color: context.pixelColors.muted,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 18),
-            Panel(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(child: eyebrow('CLOAK INTENSITY')),
-                      Text(
-                        '${(alpha * 100).round()}%',
-                        style: const TextStyle(fontSize: 30),
-                      ),
-                    ],
-                  ),
-                  Slider(
-                    key: const ValueKey('cloak-intensity'),
-                    value: alpha,
-                    divisions: 100,
-                    label: '${(alpha * 100).round()}%',
-                    semanticFormatterCallback: (value) =>
-                        '${(value * 100).round()} percent intensity',
-                    onChanged: locked ? null : changeIntensity,
-                  ),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [Text('Subtle'), Text('Full vector')],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: context.pixelColors.muted,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: locked || vector == null ? null : generate,
-                      icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-                      label: Text(
-                        busy
-                            ? 'Cloaking ${(completedStages / 3 * 100).round()}%'
-                            : 'Apply cloak',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (busy || result != null) ...[
-                    CloakingProgress(completedStages: completedStages),
-                    if (busy)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: OutlinedButton.icon(
-                          onPressed: cancelCloaking,
-                          icon: const Icon(Icons.stop_circle_outlined),
-                          label: const Text('Cancel cloaking'),
+                  if (result != null)
+                    PhotoComparison(
+                      clean: result!.clean,
+                      output: result!.output,
+                    )
+                  else
+                    Container(
+                      color: context.pixelColors.surface,
+                      height: 320,
+                      width: double.infinity,
+                      child: Image.memory(
+                        previewBytes ?? source!,
+                        gaplessPlayback: true,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, e, s) => const Center(
+                          child: Text(
+                            'Preview unavailable. Try a PNG or JPEG.',
+                          ),
                         ),
                       ),
-                    const SizedBox(height: 12),
-                  ],
-                  Center(child: photoButtons()),
+                    ),
+                  if (result == null && !busy)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        previewError ??
+                            (previewAlpha == null
+                                ? 'Preparing live preview…'
+                                : 'Live preview · ${(previewAlpha! * 100).round()}% intensity · Reduced resolution'),
+                        style: TextStyle(
+                          color: context.pixelColors.muted,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 18),
+                  Panel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: eyebrow('CLOAK INTENSITY')),
+                            Text(
+                              '${(alpha * 100).round()}%',
+                              style: const TextStyle(fontSize: 30),
+                            ),
+                          ],
+                        ),
+                        Slider(
+                          key: const ValueKey('cloak-intensity'),
+                          value: alpha,
+                          divisions: 100,
+                          label: '${(alpha * 100).round()}%',
+                          semanticFormatterCallback: (value) =>
+                              '${(value * 100).round()} percent intensity',
+                          onChanged: locked ? null : changeIntensity,
+                        ),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [Text('Subtle'), Text('Full vector')],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Preview updates as you slide. Apply cloak to create the full-resolution PNG and measure its quality.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: context.pixelColors.muted,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: locked || vector == null
+                                ? null
+                                : generate,
+                            icon: const Icon(
+                              Icons.auto_awesome_outlined,
+                              size: 18,
+                            ),
+                            label: Text(
+                              busy
+                                  ? 'Cloaking $progressPercent%'
+                                  : 'Apply cloak',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        if (busy || result != null) ...[
+                          CloakingProgress(
+                            completedStages: completedStages,
+                            percent: progressPercent,
+                          ),
+                          if (busy)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: OutlinedButton.icon(
+                                onPressed: cancelCloaking,
+                                icon: const Icon(Icons.stop_circle_outlined),
+                                label: const Text('Cancel cloaking'),
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                        ],
+                        Center(child: photoButtons()),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+                if (exporting || picking)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: LinearProgressIndicator(),
+                  ),
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (result != null) ...results(context),
+              ],
             ),
-          ],
-          if (exporting || picking)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: LinearProgressIndicator(),
-            ),
-          if (error != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Semantics(
-                liveRegion: true,
-                child: Text(
-                  error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ),
-            ),
-          if (result != null) ...results(context),
-        ],
-      ),
     );
   }
 
@@ -1495,7 +1609,12 @@ class _ProtectionScreenState extends State<ProtectionScreen>
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton(
-            onPressed: locked ? null : () => setState(() => resultSaved = true),
+            onPressed: locked
+                ? null
+                : () => setState(() {
+                    resultSaved = true;
+                    widget.onSaved?.call();
+                  }),
             child: const Text('Mark as saved'),
           ),
         ),

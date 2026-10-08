@@ -10,6 +10,7 @@ external String get _baseUri;
 
 /// One worker per job: isolated memory, no shared queue, released on completion.
 class PhotoProcessor {
+  void Function(int)? onProgress;
   final _cancel = <void Function()>[];
   bool _disposed = false;
   void Function()? _cancelGeneration;
@@ -44,6 +45,8 @@ class PhotoProcessor {
           break;
         case 'progress':
           onStage?.call(message.stage!);
+        case 'percent':
+          onProgress?.call(message.percent!);
         case 'error':
           result.completeError(
               FormatException(message.error ?? 'Photo processing failed.'));
@@ -91,6 +94,7 @@ class PhotoProcessor {
             vector: vector.toJS,
             alpha: alpha),
         onStage: onStage);
+    onProgress?.call(100);
     return LabResult(response.clean!.toDart, response.output!.toDart,
         response.width!, response.height!, response.ssim, response.psnr!);
   }

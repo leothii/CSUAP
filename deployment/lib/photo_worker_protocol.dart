@@ -16,6 +16,7 @@ extension type PhotoMessage._(JSObject _) implements JSObject {
     JSArray<JSNumber>? bins,
     String? error,
     int? stage,
+    int? percent,
   });
   external String get type;
   external JSUint8Array? get bytes;
@@ -30,6 +31,7 @@ extension type PhotoMessage._(JSObject _) implements JSObject {
   external JSArray<JSNumber>? get bins;
   external String? get error;
   external int? get stage;
+  external int? get percent;
 }
 
 extension type PhotoMessageEvent._(JSObject _) implements JSObject {

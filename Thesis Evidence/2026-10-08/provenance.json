@@ -1,0 +1,10 @@
+{
+  "git_base_commit": "f252c52e1ee93abf95a8e61c307dcc71132b4aa4",
+  "working_tree": "modified implementation under test",
+  "asset_sha256": "3cba920fa127da664bc6f165d85bfc3e7d46de5f35c973cf857b145242876702",
+  "sources": {
+    "lib\\progressive_cloak.dart": "0a0a0a17b2170419fb7a138c7d5198522285f5dea61c00f0cb70b88f940e9542",
+    "lib\\lab_processing.dart": "5f2f6fa06a4028801916b1e45927d2e161f06abe95ed2e0c9f69fec3e42cfbe3",
+    "tool\\thesis_benchmark.dart": "f0513ef4d6b2348db157a0d2476da3d04923f8c38eb54853aaf4aa9c8fd9dc5a"
+  }
+}

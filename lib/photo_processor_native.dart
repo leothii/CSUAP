@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'progressive_cloak.dart';
 import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'lab_processing.dart';
@@ -13,6 +14,7 @@ typedef _CloakJob = ({
 });
 
 class PhotoProcessor {
+  void Function(int)? onProgress;
   void Function()? _cancelGeneration;
   bool _disposed = false;
   Future<CloakPreview> prepare(Uint8List bytes, Float32List vector) =>
@@ -39,7 +41,10 @@ class PhotoProcessor {
     final subscription = replies.listen((message) {
       if (completion.isCompleted) return;
       if (message is LabResult) {
+        onProgress?.call(100);
         completion.complete(message);
+      } else if (message is (String, int) && message.$1 == 'percent') {
+        onProgress?.call(message.$2);
       } else if (message is (String, int) && message.$1 == 'progress') {
         onStage(message.$2);
       } else if (message is (String, String) && message.$1 == 'error') {
@@ -93,12 +98,9 @@ class PhotoProcessor {
 
 void _generate(_CloakJob job) {
   try {
-    final clean = preparePhoto(job.bytes);
-    job.replies.send(('progress', 1));
-    final output =
-        cloakPhoto((bytes: clean, vector: job.vector, alpha: job.alpha));
-    job.replies.send(('progress', 2));
-    job.replies.send(inspectPhoto((clean: clean, output: output)));
+    job.replies.send(generateWithProgress(job.bytes, job.vector, job.alpha,
+        onStage: (value) => job.replies.send(('progress', value)),
+        onProgress: (value) => job.replies.send(('percent', value))));
   } catch (error) {
     job.replies.send((
       'error',

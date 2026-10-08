@@ -1,0 +1,587 @@
+[
+  {
+    "width": 640,
+    "height": 480,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 7316,
+    "total_ms": 478.84,
+    "process_peak_rss_bytes": 28602368,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 478.832,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 1
+  },
+  {
+    "width": 640,
+    "height": 480,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 7316,
+    "total_ms": 422.25,
+    "process_peak_rss_bytes": 28594176,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 422.24,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 2
+  },
+  {
+    "width": 640,
+    "height": 480,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 7316,
+    "total_ms": 426.465,
+    "process_peak_rss_bytes": 28590080,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 426.457,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 3
+  },
+  {
+    "width": 1280,
+    "height": 720,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 17447,
+    "total_ms": 1216.057,
+    "process_peak_rss_bytes": 45559808,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 1216.047,
+        "ssim": 0.9821200225710617,
+        "psnr_db": 34.155854870401704,
+        "output_bytes": 465072,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 1
+  },
+  {
+    "width": 1280,
+    "height": 720,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 17447,
+    "total_ms": 1158.75,
+    "process_peak_rss_bytes": 45555712,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 1158.741,
+        "ssim": 0.9821200225710617,
+        "psnr_db": 34.155854870401704,
+        "output_bytes": 465072,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 2
+  },
+  {
+    "width": 1280,
+    "height": 720,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 17447,
+    "total_ms": 1106.464,
+    "process_peak_rss_bytes": 45563904,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 1106.455,
+        "ssim": 0.9821200225710617,
+        "psnr_db": 34.155854870401704,
+        "output_bytes": 465072,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 3
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 36063,
+    "total_ms": 2666.687,
+    "process_peak_rss_bytes": 51376128,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 2666.678,
+        "ssim": 0.9821619339644576,
+        "psnr_db": 34.148838334286225,
+        "output_bytes": 808079,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 1
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 36063,
+    "total_ms": 3047.752,
+    "process_peak_rss_bytes": 51359744,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 3047.74,
+        "ssim": 0.9821619339644576,
+        "psnr_db": 34.148838334286225,
+        "output_bytes": 808079,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 2
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "count": 1,
+    "alpha": 0.5,
+    "input_bytes": 36063,
+    "total_ms": 3137.092,
+    "process_peak_rss_bytes": 51630080,
+    "retained_results": 1,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 3137.08,
+        "ssim": 0.9821619339644576,
+        "psnr_db": 34.148838334286225,
+        "output_bytes": 808079,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 3
+  },
+  {
+    "width": 640,
+    "height": 480,
+    "count": 10,
+    "alpha": 0.5,
+    "input_bytes": 7316,
+    "total_ms": 4906.975,
+    "process_peak_rss_bytes": 57593856,
+    "retained_results": 10,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 525.424,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 2,
+        "elapsed_ms": 392.129,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 3,
+        "elapsed_ms": 464.818,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 4,
+        "elapsed_ms": 455.132,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 5,
+        "elapsed_ms": 704.25,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 6,
+        "elapsed_ms": 444.083,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 7,
+        "elapsed_ms": 508.728,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 8,
+        "elapsed_ms": 449.338,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 9,
+        "elapsed_ms": 433.032,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 10,
+        "elapsed_ms": 529.934,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 1
+  },
+  {
+    "width": 640,
+    "height": 480,
+    "count": 10,
+    "alpha": 0.5,
+    "input_bytes": 7316,
+    "total_ms": 4545.773,
+    "process_peak_rss_bytes": 57516032,
+    "retained_results": 10,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 497.544,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 2,
+        "elapsed_ms": 479.379,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 3,
+        "elapsed_ms": 486.114,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 4,
+        "elapsed_ms": 439.171,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 5,
+        "elapsed_ms": 399.664,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 6,
+        "elapsed_ms": 414.355,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 7,
+        "elapsed_ms": 428.508,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 8,
+        "elapsed_ms": 416.837,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 9,
+        "elapsed_ms": 464.275,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 10,
+        "elapsed_ms": 519.621,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 2
+  },
+  {
+    "width": 640,
+    "height": 480,
+    "count": 10,
+    "alpha": 0.5,
+    "input_bytes": 7316,
+    "total_ms": 4151.554,
+    "process_peak_rss_bytes": 57544704,
+    "retained_results": 10,
+    "photos": [
+      {
+        "photo": 1,
+        "elapsed_ms": 413.201,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 2,
+        "elapsed_ms": 451.691,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 3,
+        "elapsed_ms": 426.151,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 4,
+        "elapsed_ms": 387.672,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 5,
+        "elapsed_ms": 485.527,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 6,
+        "elapsed_ms": 409.408,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 7,
+        "elapsed_ms": 393.318,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 8,
+        "elapsed_ms": 397.084,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 9,
+        "elapsed_ms": 399.019,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      },
+      {
+        "photo": 10,
+        "elapsed_ms": 388.388,
+        "ssim": 0.982144010900145,
+        "psnr_db": 34.15366247835318,
+        "output_bytes": 243798,
+        "progress_updates": 86,
+        "progress_monotonic": true,
+        "progress_first": 1,
+        "progress_last_before_delivery": 99
+      }
+    ],
+    "repetition": 3
+  }
+]

@@ -34,6 +34,9 @@ Future<JSString> check(String fixture) async {
       'Preview pixels differ',
     );
     final stages = <int>[];
+    final percentages = <int>[];
+    processor.onProgress = percentages.add;
+    final watch = Stopwatch()..start();
     final result = await processor.generate(
       bytes,
       vector,
@@ -43,6 +46,14 @@ Future<JSString> check(String fixture) async {
         if (stage == 1) beatsAtFirstStage = beats;
       },
     );
+    watch.stop();
+    final elapsedMs = watch.elapsedMilliseconds;
+    final progressCount = percentages.length;
+    require(percentages.first == 1 && percentages.last == 100, 'Progress endpoints differ');
+    require(progressCount > 50, 'Too few progress updates');
+    for (var i = 1; i < percentages.length; i++) {
+      require(percentages[i] > percentages[i - 1], 'Progress moved backwards');
+    }
     final activeBeats = beats - beatsAtFirstStage;
     require(
       activeBeats >= 2,
@@ -105,6 +116,8 @@ Future<JSString> check(String fixture) async {
     }
     return jsonEncode({
       'passed': true,
+      'processingMs': elapsedMs,
+      'progressUpdates': progressCount,
       'heartbeatTicksDuringProcessing': activeBeats,
       'checks':
           'preview, pixels, SSIM, PSNR, histogram, stage order, identity, invalid input, cancel and restart, dispose',

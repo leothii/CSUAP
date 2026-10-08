@@ -1,0 +1,10 @@
+{
+  "root": {
+    "loadingDismissedWithExternalHttpsBlocked": true,
+    "rendererFailureRetry": true
+  },
+  "deployment": {
+    "loadingDismissedWithExternalHttpsBlocked": true,
+    "rendererFailureRetry": true
+  }
+}
